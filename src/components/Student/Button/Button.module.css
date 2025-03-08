@@ -1,0 +1,22 @@
+.button {
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  border: none;
+}
+
+.google {
+  background: white;
+  color: black;
+  border: 1px solid #ccc;
+}
+
+.apple {
+  background: black;
+  color: white;
+}
+
+.button:hover {
+  opacity: 0.9;
+}

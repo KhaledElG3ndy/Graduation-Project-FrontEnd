@@ -1,0 +1,43 @@
+.sidebar {
+  background: linear-gradient(135deg, #003366, #0066cc, #3399ff);
+  color: white;
+  width: 250px;
+  height: 100vh;
+  padding: 20px;
+  transition: transform 0.3s ease-in-out;
+}
+
+.open {
+  transform: translateX(0);
+}
+
+.closed {
+  transform: translateX(-100%);
+}
+
+.title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 30px;
+}
+
+.navList {
+  list-style: none;
+  padding: 0;
+  font-size: 1.3rem;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 10px;
+  transition: background 0.3s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  margin-bottom: 20px;
+}
+
+.navItem:hover {
+  background: rgba(255, 255, 255, 0.2);
+}

@@ -1,0 +1,86 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 25px;
+  background: linear-gradient(135deg, #f8fafc, #cfe8fc);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  height: 70px;
+}
+.darkHeader {
+  background: linear-gradient(135deg, #0a0a0a, #161616, #222222);
+  color: white;
+}
+
+.leftSection {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.greeting {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #1e293b;
+  margin: 0;
+}
+
+.date {
+  font-size: 1rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.rightSection {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 10px;
+  color: gray;
+}
+
+.searchInput {
+  padding: 8px 35px;
+  border: 1px solid lightgray;
+  border-radius: 20px;
+  width: 250px;
+}
+
+.icon {
+  font-size: 1.5rem;
+  color: gray;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconButton {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  transition: transform 0.3s ease;
+}
+
+.iconButton:hover {
+  transform: scale(1.2);
+}
+.lightText {
+  color: #fff;
+}

@@ -1,0 +1,76 @@
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background: linear-gradient(135deg, #003366, #0066cc, #3399ff);
+  color: white;
+  padding: 30px 50px;
+  border-radius: 10px 10px 0 0;
+}
+
+.contactSection,
+.servicesSection {
+  flex: 1;
+  margin-right: 20px;
+}
+
+.contactSection h4,
+.servicesSection h4 {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+
+.contactSection ul,
+.servicesSection ul {
+  list-style: none;
+  padding: 0;
+}
+
+.contactSection li,
+.servicesSection li {
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+}
+
+.socialIcons span {
+  font-size: 1.5rem;
+  margin-right: 10px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.socialIcons span:hover {
+  transform: scale(1.1);
+}
+
+.logoSection {
+  flex: 1;
+  text-align: center;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  background-color: white;
+  color: #0033cc;
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+.lightMode {
+  background-color: #f1f0f0;
+}
+
+.darkMode {
+  background: linear-gradient(135deg, #0a0a0a, #161616, #222222);
+}
+
+.lightText {
+  color: #fff;
+}
+
+.darkText {
+  color: #333;
+}

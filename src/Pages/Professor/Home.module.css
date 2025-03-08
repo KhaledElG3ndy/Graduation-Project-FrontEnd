@@ -1,0 +1,109 @@
+.homeContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 61.8vh;
+  padding: 50px;
+  transition: background-color 0.3s ease;
+}
+
+.textContent {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.textContent h1 {
+  font-size: 2.8rem;
+  margin-bottom: 20px;
+  overflow: hidden;
+  white-space: nowrap;
+  width: 0;
+  animation: typing 3s steps(30) 1s forwards,
+    blink-caret 0.75s step-end infinite;
+  background: linear-gradient(135deg, #003366, #0066cc, #3399ff);
+  -webkit-background-clip: text;
+  color: transparent;
+  font-weight: bold;
+  text-align: center;
+}
+
+.lightText {
+  font-size: 1.5rem;
+  margin-bottom: 30px;
+  color: #fff;
+  text-align: center;
+}
+
+.darkText {
+  font-size: 1.5rem;
+  margin-bottom: 30px;
+  color: #333;
+  text-align: center;
+}
+
+.buttons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+.primaryButton,
+.secondaryButton {
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.primaryButton {
+  background: linear-gradient(135deg, #003366, #0066cc, #3399ff);
+  color: white;
+  border: none;
+}
+
+.primaryButton:hover {
+  background-color: #0056b3;
+}
+
+.secondaryButton {
+  background-color: transparent;
+  color: #0033cc;
+  border: 2px solid #0033cc;
+}
+
+.secondaryButton:hover {
+  background: linear-gradient(135deg, #003366, #0066cc, #3399ff);
+  color: white;
+}
+
+.sectionContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  padding: 50px;
+  background-color: #ffffff;
+}
+
+@keyframes typing {
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes blink-caret {
+  50% {
+    border-color: transparent;
+  }
+}
+.lightMode {
+  background: linear-gradient(135deg, #f1f0f0 0%, #d9d9d9 100%);
+}
+
+.darkMode {
+  background: linear-gradient(135deg, #0a0a0a, #161616, #222222);
+}

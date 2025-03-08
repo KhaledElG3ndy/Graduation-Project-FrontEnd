@@ -1,0 +1,156 @@
+.container {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  margin-top: 20px;
+  gap: 24px;
+}
+
+.darkContainer {
+  background: #121212;
+}
+
+.newsSection {
+  flex: 1;
+  background: #f9fafb;
+  color: #333;
+  padding: 0 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.darkNewsSection {
+  background: #333333;
+  color: #e0e0e0;
+}
+
+.newsList {
+  margin-top: 10px;
+}
+
+.newsItem {
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  background: linear-gradient(to right, #cfe8fc, #f8fafc);
+  border-left: 5px solid #004080;
+}
+
+.darkNewsItem {
+  background: linear-gradient(to right, #444444, #222222);
+  border-left: 5px solid #ffaa00;
+}
+
+.newsItem h2,
+.newsItem p {
+  color: #1e293b;
+}
+
+.rightSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 30%;
+}
+
+.darkRightSection {
+  background: #1c1c1c;
+}
+
+.card {
+  padding: 25px;
+  background: linear-gradient(135deg, #0056b3, #3399ff);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  color: #ffffff;
+  border-radius: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.3s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.darkCard {
+  background: linear-gradient(135deg, #222222, #444444);
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+}
+
+.iconContainer {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  color: #0056b3;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.darkIconContainer {
+  background: #333333;
+  color: #ffaa00;
+}
+
+.card:hover .iconContainer {
+  background: #ffaa00;
+  color: white;
+  transform: translateX(-50%) scale(1.1);
+}
+
+.cardContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 10px 0;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.darkCardButton {
+  background: #333333;
+  color: #ffaa00;
+}
+
+.cardButton {
+  background: white;
+  color: #004080;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s, color 0.3s;
+}
+
+.cardButton:hover {
+  background: #ffaa00;
+  color: white;
+}
+
+.darkCardButton:hover {
+  background: #ffaa00;
+  color: white;
+}
+
+.darkText {
+  color: #ffffff;
+}

@@ -1,0 +1,125 @@
+.homeContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 50px;
+  transition: background-color 0.3s ease;
+}
+
+.textContent {
+  max-width: 50%;
+}
+
+.textContent h1 {
+  font-size: 2.8rem;
+  margin-bottom: 20px;
+  overflow: hidden;
+  border-right: 0.15em solid white;
+  white-space: nowrap;
+  width: 0;
+  animation: typing 3s steps(30) 1s forwards,
+    blink-caret 0.75s step-end infinite;
+  background: linear-gradient(135deg, #003366, #0066cc, #3399ff);
+  -webkit-background-clip: text;
+  color: transparent;
+  font-weight: bold;
+}
+
+.lightText {
+  font-size: 1.2rem;
+  margin-bottom: 30px;
+  color: #fff;
+}
+
+.darkText {
+  font-size: 1.2rem;
+  margin-bottom: 30px;
+  color: #333;
+}
+
+.buttons {
+  display: flex;
+  gap: 20px;
+}
+
+.primaryButton,
+.secondaryButton {
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.primaryButton {
+  background: linear-gradient(135deg, #003366, #0066cc, #3399ff);
+  color: white;
+  border: none;
+}
+
+.primaryButton:hover {
+  background-color: #0056b3;
+}
+
+.secondaryButton {
+  background-color: transparent;
+  color: #0033cc;
+  border: 2px solid #0033cc;
+}
+
+.secondaryButton:hover {
+  background: linear-gradient(135deg, #003366, #0066cc, #3399ff);
+  color: white;
+}
+
+.imageContainer {
+  position: relative;
+  width: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.image {
+  max-width: 60%;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+.image:hover {
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
+  opacity: 0.9;
+}
+.cardsContainer {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 50px;
+}
+.sectionContainer {
+  max-width: 1000px;
+  padding: 50px;
+  justify-content: center;
+  align-items: start;
+}
+
+@keyframes typing {
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes blink-caret {
+  50% {
+    border-color: transparent;
+  }
+}
+.lightMode {
+  background-color: #f1f0f0;
+}
+
+.darkMode {
+  background: linear-gradient(135deg, #0a0a0a, #161616, #222222);
+}
