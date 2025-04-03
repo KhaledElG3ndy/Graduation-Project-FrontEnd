@@ -6,7 +6,7 @@ import Header from "../../../components/Admin/Header/Header";
 import img from "../../../assets/images/EmailCRUD.svg";
 import Swal from "sweetalert2";
 import { Link } from "react-router-dom";
-import {AccountContext} from "../../../contexts/AccountContext";
+import { AccountContext } from "../../../contexts/AccountContext";
 
 export default function EmailCRUD() {
   const [accounts, setAccounts] = useState([]);
@@ -14,46 +14,47 @@ export default function EmailCRUD() {
   const [selectedRole, setSelectedRole] = useState("all");
   const { setSelectedAccount } = useContext(AccountContext);
 
-  const api_url = "https://localhost:7072/api/Account";
+  const API_URL = "https://localhost:7072/api/Account";
 
   useEffect(() => {
-    const fetchAccounts = async () => {
-      try {
-        const studentsResponse = await fetch(`${api_url}/AllByRole?role=0`);
-        const staffResponse = await fetch(`${api_url}/AllByRole?role=1`);
-
-        if (!studentsResponse.ok || !staffResponse.ok)
-          throw new Error("Failed to fetch");
-
-        const studentsData = await studentsResponse.json();
-        const staffData = await staffResponse.json();
-
-        const combinedData = [
-          ...studentsData.map((account) => ({
-            ...account,
-            Type: "Student",
-            role: 0,
-          })),
-          ...staffData.map((account) => ({
-            ...account,
-            Type: "Staff",
-            role: 1,
-          })),
-        ];
-
-        setAccounts(combinedData);
-      } catch (error) {
-        toast.error("Error loading accounts");
-      }
-    };
-
     fetchAccounts();
   }, []);
 
-  const handleSearch = async () => {
-    if (!searchTerm) return;
+  const fetchAccounts = async () => {
     try {
-      const response = await fetch(`${api_url}/ByEmail?email=${searchTerm}`);
+      const studentsResponse = await fetch(`${API_URL}/GetAllByRole?role=0`);
+      const staffResponse = await fetch(`${API_URL}/GetAllByRole?role=1`);
+
+      if (!studentsResponse.ok || !staffResponse.ok)
+        throw new Error("Failed to fetch accounts");
+
+      const studentsData = await studentsResponse.json();
+      const staffData = await staffResponse.json();
+
+      setAccounts([
+        ...studentsData.map((account) => ({
+          ...account,
+          Type: "Student",
+          role: 0,
+        })),
+        ...staffData.map((account) => ({
+          ...account,
+          Type: "Staff",
+          role: 1,
+        })),
+      ]);
+    } catch (error) {
+      toast.error("Error loading accounts");
+      console.error("Fetch Error:", error);
+    }
+  };
+
+  const handleSearch = async () => {
+    if (!searchTerm.trim()) return;
+    try {
+      const response = await fetch(
+        `${API_URL}/ByEmail?email=${searchTerm.toLowerCase()}`
+      );
 
       if (!response.ok) {
         toast.error("Email not found");
@@ -64,25 +65,31 @@ export default function EmailCRUD() {
       setAccounts([{ ...data, Type: data.role === 0 ? "Student" : "Staff" }]);
     } catch (error) {
       toast.error("Search error");
+      console.error("Search Error:", error);
     }
   };
 
   const handleEdit = async (account) => {
-    console.log(account);
-    let role = 0;
-    if (account.Type == "Staff") {
-      role = 1;
-    }
     try {
-      const response = await fetch(`${api_url}/Update?role=${role}`, {
+      const role = account.Type === "Staff" ? 1 : 0;
+      const response = await fetch(`${API_URL}/Update?role=${role}`, {
         method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(account),
       });
+
+      if (!response.ok) throw new Error("Failed to update account");
+
+      toast.success("Account updated successfully");
     } catch (err) {
-      console.log(err);
+      console.error("Edit Error:", err);
+      toast.error("Error updating account");
     }
   };
 
-  const handleDelete = async (email, role) => {
+  const handleDelete = async (id, role) => {
     const result = await Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
@@ -96,34 +103,26 @@ export default function EmailCRUD() {
     if (!result.isConfirmed) return;
 
     try {
-      const response = await fetch(
-        `${api_url}/Delete?role=${role}&email=${email}`,
-        {
-          method: "DELETE",
-        }
-      );
+      const response = await fetch(`${API_URL}/Delete?role=${role}&id=${id}`, {
+        method: "DELETE",
+      });
 
       if (!response.ok) throw new Error("Failed to delete");
 
       setAccounts((prevAccounts) =>
-        prevAccounts.filter((acc) => acc.email !== email)
+        prevAccounts.filter((acc) => acc.id !== id)
       );
       Swal.fire("Deleted!", "The account has been deleted.", "success");
     } catch (error) {
       Swal.fire("Error!", "Failed to delete the account.", "error");
+      console.error("Delete Error:", error);
     }
   };
 
   const handleToggle = () => {
-    if (selectedRole === "all") setSelectedRole("staff");
-    else if (selectedRole === "staff") setSelectedRole("student");
-    else setSelectedRole("all");
-  };
-
-  const positions = {
-    student: 0,
-    all: 70,
-    staff: 140,
+    setSelectedRole((prevRole) =>
+      prevRole === "all" ? "staff" : prevRole === "staff" ? "student" : "all"
+    );
   };
 
   const filteredAccounts = accounts.filter(
@@ -155,7 +154,13 @@ export default function EmailCRUD() {
               <div
                 className={styles.toggleIndicator}
                 style={{
-                  transform: `translateX(${positions[selectedRole]}px)`,
+                  transform: `translateX(${
+                    selectedRole === "student"
+                      ? 0
+                      : selectedRole === "all"
+                      ? 70
+                      : 140
+                  }px)`,
                 }}
               />
               <span className={styles.toggleOption}>Student</span>
@@ -180,7 +185,7 @@ export default function EmailCRUD() {
           <tbody>
             {filteredAccounts.length > 0 ? (
               filteredAccounts.map((account) => (
-                <tr key={account.email}>
+                <tr key={account.id}>
                   <td>{account.name}</td>
                   <td>{account.email}</td>
                   <td>{account.Type}</td>
@@ -194,7 +199,7 @@ export default function EmailCRUD() {
                     </Link>
                     <button
                       className={styles.deleteButton}
-                      onClick={() => handleDelete(account.email, account.role)}
+                      onClick={() => handleDelete(account.id, account.role)}
                     >
                       <FaTrash size={18} color="#fff" />
                     </button>

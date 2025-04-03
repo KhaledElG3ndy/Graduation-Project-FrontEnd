@@ -16,7 +16,6 @@ import Swal from "sweetalert2";
 const EditAccount = () => {
   const { selectedAccount } = useContext(AccountContext);
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [nationalId, setNationalId] = useState("");
   const [year, setYear] = useState("");
@@ -26,7 +25,6 @@ const EditAccount = () => {
   useEffect(() => {
     if (selectedAccount) {
       setName(selectedAccount.name);
-      setEmail(selectedAccount.email);
       setPhoneNumber(selectedAccount.phoneNumber);
       setNationalId(selectedAccount.nationalId);
       setYear(selectedAccount.year);
@@ -40,20 +38,23 @@ const EditAccount = () => {
     let role = selectedAccount.Type === "Staff" ? 1 : 0;
 
     const formData = new FormData();
-    formData.append("Email", email);
+    formData.append("FirstName", selectedAccount.firstName);
+    formData.append("LastName", selectedAccount.lastName);
     formData.append("Name", name);
     formData.append("PhoneNumber", phoneNumber);
     formData.append("NationalId", nationalId);
     formData.append("Year", year);
-    formData.append("Gender", gender === 1 ? true : false);
-    formData.append("Password", selectedAccount?.password);
+    formData.append("Gender", gender === 1);
     formData.append("DepartmentId", departmentId);
 
     try {
-      const response = await fetch(`${api_url}/Update?role=${role}`, {
-        method: "PUT",
-        body: formData,
-      });
+      const response = await fetch(
+        `${api_url}/Update?role=${role}&id=${selectedAccount.id}`,
+        {
+          method: "PUT",
+          body: formData,
+        }
+      );
 
       const responseText = await response.text();
 
@@ -89,17 +90,6 @@ const EditAccount = () => {
           Fill out the form below to edit student or staff account.
         </p>
         <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
-          <div className={styles.inputWithIcon}>
-            <FaEnvelope className={styles.icon} />
-            <input
-              type="email"
-              value={email}
-              className={styles.input}
-              placeholder="Email"
-              disabled
-            />
-          </div>
-
           <div className={styles.inputWithIcon}>
             <FaUser className={styles.icon} />
             <input

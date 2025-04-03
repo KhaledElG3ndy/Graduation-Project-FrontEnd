@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from "react";
+import React, { useEffect } from "react";
 import "./index.css";
 import { Routes, Route } from "react-router-dom";
 
@@ -6,7 +6,7 @@ import SignInPage from "./Pages/Student/Login/SignInPage";
 import Home from "./Pages/Student/Home/Home";
 import AdminCreateAccounts from "./Pages/Admin/CreateAccounts/CreateAccounts";
 import AdminHomePage from "./Pages/Admin/Home/Home";
-import Professor from "./Pages/Professor/Home";
+import Professor from "./Pages/Professor/Home/Home";
 import AddNews from "./Pages/Admin/AddNews/AddNews";
 import EmailCRUD from "./Pages/Admin/EmailCRUD/EmailCRUD";
 
@@ -15,6 +15,16 @@ import "aos/dist/aos.css";
 
 import { useDarkMode } from "./contexts/ThemeContext";
 import EditAccount from "./Pages/Admin/EditAccount/EditAccount";
+import News from "./Pages/Student/News/News";
+import NewsCRUD from "./Pages/Admin/NewsCRUD/NewsCRUD";
+import AddPost from "./Pages/Professor/AddPost/AddPost";
+import Posts from "./Pages/Student/Posts/Posts";
+import AddSubjects from "./Pages/Admin/AddSubjects/AddSubjects";
+import Profile from "./Pages/Student/Profile/Profile";
+import AddDepartmentPage from "./Pages/Admin/AddDepartment/AddDepartment";
+import Channels from "./Pages/Professor/Channels/Channels";
+import Subjects from "./Pages/Professor/Subjects/Subjects";
+import CreateChannel from "./Pages/Professor/CreateChannel/CreateChannel";
 
 function App() {
   const { isDarkMode, toggleTheme } = useDarkMode();
@@ -39,9 +49,19 @@ function App() {
         <Route path="/Admin" element={<AdminHomePage />} />
         <Route path="/Admin/AddNews" element={<AddNews />} />
         <Route path="/Professor" element={<Professor />} />
+        <Route path="/Professor/AddPost" element={<AddPost />} />
+        <Route path="/Professor/Channels" element={<Channels />} />
+        <Route path="/Professor/Subjects" element={<Subjects />} />
+        <Route path="/Professor/CreateChannel" element={<CreateChannel />} />
         <Route path="/Admin/CreateAccounts" element={<AdminCreateAccounts />} />
         <Route path="/Admin/EmailCRUD" element={<EmailCRUD />} />
         <Route path="/Admin/EditAccount" element={<EditAccount />} />
+        <Route path="/Admin/AddSubjects" element={<AddSubjects />} />
+        <Route path="/Admin/AddDepartment" element={<AddDepartmentPage />} />
+        <Route path="/News" element={<News />} />
+        <Route path="/NewsCRUD" element={<NewsCRUD />} />
+        <Route path="/Posts" element={<Posts />} />
+        <Route path="/Profile" element={<Profile />} />
       </Routes>
     </div>
   );

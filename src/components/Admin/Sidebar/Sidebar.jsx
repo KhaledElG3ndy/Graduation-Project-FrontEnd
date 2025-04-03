@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import styles from "./Sidebar.module.css";
 import {
   FaChalkboardTeacher,
@@ -6,7 +7,8 @@ import {
   FaMapMarkedAlt,
   FaClipboardList,
   FaUserPlus,
-  FaInfoCircle,
+  FaUserCog,
+  FaBuilding,
 } from "react-icons/fa";
 
 export default function Sidebar({ isOpen }) {
@@ -17,22 +19,44 @@ export default function Sidebar({ isOpen }) {
       <h1 className={styles.title}>Team Space</h1>
       <ul className={styles.navList}>
         <li className={styles.navItem}>
-          <FaClipboardList /> Dashboard
+          <Link to="/dashboard">
+            <FaClipboardList /> Dashboard
+          </Link>
         </li>
         <li className={styles.navItem}>
-          <FaRegCalendarAlt /> Regulation
+          <Link to="/regulation">
+            <FaRegCalendarAlt /> Regulation
+          </Link>
         </li>
         <li className={styles.navItem}>
-          <FaChalkboardTeacher /> Lecture Scheduler
+          <Link to="/lecture-scheduler">
+            <FaChalkboardTeacher /> Lecture Scheduler
+          </Link>
         </li>
         <li className={styles.navItem}>
-          <FaUniversity /> Professor Scheduler
+          <Link to="/professor-scheduler">
+            <FaUniversity /> Professor Scheduler
+          </Link>
         </li>
         <li className={styles.navItem}>
-          <FaMapMarkedAlt /> Campus Map
+          <Link to="/campus-map">
+            <FaMapMarkedAlt /> Campus Map
+          </Link>
         </li>
         <li className={styles.navItem}>
-          <FaUserPlus /> Create Accounts
+          <Link to="/Admin/CreateAccounts">
+            <FaUserPlus /> Create Accounts
+          </Link>
+        </li>
+        <li className={styles.navItem}>
+          <Link to="/Admin/EmailCRUD">
+            <FaUserCog /> Account Management
+          </Link>
+        </li>
+        <li className={styles.navItem}>
+          <Link to="/Admin/AddDepartment">
+            <FaBuilding /> Departments
+          </Link>
         </li>
       </ul>
     </aside>

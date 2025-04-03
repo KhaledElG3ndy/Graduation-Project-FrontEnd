@@ -113,28 +113,3 @@
   background: #004a99;
   transform: scale(1.05);
 }
-
-.bgImage {
-  max-width: 100%;
-  height: auto;
-  animation: fadeIn 1.5s ease-in-out;
-  margin-bottom: 20px;
-}
-
-.rightText {
-  font-size: 18px;
-  font-weight: bold;
-  color: #003366;
-  text-align: center;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}

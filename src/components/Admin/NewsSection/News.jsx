@@ -67,7 +67,7 @@ const NewsSection = () => {
           {
             title: "Add Subject",
             icon: <MdLibraryBooks size={30} />,
-            action: () => console.log("Adding Subject"),
+            action: () => navigate("/Admin/AddSubjects"),
           },
         ].map((item, index) => (
           <div

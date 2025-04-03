@@ -1,21 +1,21 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./Home.module.css";
-import Header from "../../components/Professor/Header/Header";
-import Footer from "../../components/Professor/Footer/Footer";
-import { useDarkMode } from "../../contexts/ThemeContext";
+import Header from "../../../components/Professor/Header/Header";
+import Footer from "../../../components/Professor/Footer/Footer";
+import { useDarkMode } from "../../../contexts/ThemeContext";
+
 const ProfessorHomePage = () => {
   const { isDarkMode } = useDarkMode();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const isLogged = JSON.parse(sessionStorage.getItem("isLogged"));
-    const userType = JSON.parse(sessionStorage.getItem("userType"));
+  const handleNavigateToSubjects = () => {
+    navigate("/Professor/Subjects");
+  };
+  const handleNavigateToChannels = () => {
+    navigate("/Professor/Channels");
+  };
 
-    if (!isLogged || userType !== "Professor") {
-      navigate("/login/signin");
-    }
-  }, [navigate]);
   return (
     <div className={styles.profHome}>
       <Header />
@@ -33,8 +33,18 @@ const ProfessorHomePage = () => {
           </p>
 
           <div className={styles.buttons}>
-            <button className={styles.primaryButton}>Channels</button>
-            <button className={styles.secondaryButton}>Manage Subject</button>
+            <button
+              className={styles.primaryButton}
+              onClick={handleNavigateToChannels}
+            >
+              Channels
+            </button>
+            <button
+              className={styles.secondaryButton}
+              onClick={handleNavigateToSubjects}
+            >
+              Manage Subject
+            </button>
           </div>
         </div>
       </div>

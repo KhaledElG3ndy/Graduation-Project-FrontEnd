@@ -1,25 +1,17 @@
 import React, { useState, useEffect } from "react";
 import styles from "./CreateAccounts.module.css";
-import {
-  FaUser,
-  FaEnvelope,
-  FaLock,
-  FaPhone,
-  FaIdCard,
-  FaCalendar,
-} from "react-icons/fa";
+import { FaUser, FaPhone, FaIdCard, FaCalendar } from "react-icons/fa";
 import Header from "../../../components/Student/Header/Header";
 import { useDarkMode } from "../../../contexts/ThemeContext";
 
 const CreateStudentAccount = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [gender, setGender] = useState(true);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [nationalId, setNationalId] = useState("");
-  const [year, setYear] = useState(0);
+  const [year, setYear] = useState(1);
+  const [departmentId, setDepartmentId] = useState("");
   const [role, setRole] = useState("student");
 
   const { isDarkMode } = useDarkMode();
@@ -30,55 +22,46 @@ const CreateStudentAccount = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const fullName = `${firstName} ${lastName}`.trim();
 
-    console.log({
-      fullName,
-      email,
-      password,
-      gender,
-      phoneNumber,
-      nationalId,
-      year: parseInt(year),
-    });
+    const formData = new FormData();
+    formData.append("firstName", firstName);
+    formData.append("lastName", lastName);
+    formData.append("name", `${firstName} ${lastName}`);
+    formData.append("gender", gender); 
+    formData.append("phoneNumber", phoneNumber);
+    formData.append("nationalId", nationalId);
 
-    let api_url = "https://localhost:44338/User";
-    const data = {
-      fullName,
-      email,
-      password,
-      gender,
-      phoneNumber,
-      nationalId,
-      year,
-    };
+
+
+    if (role === "student") {
+      formData.append("year", year);
+      formData.append("departmentId", departmentId);
+    }
+
+    
+    const url = `https://localhost:7072/api/Account/AddAccount?role=${
+      role === "student" ? 0 : 1
+    }`;
 
     try {
-      if (role === "student") {
-        api_url = `${api_url}/RegisterStudent`;
-      } else {
-        api_url = `${api_url}/RegisterDoctor`;
-      }
-
-      const response = await fetch(api_url, {
+      const response = await fetch(url, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
+        body: formData,
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create account.");
+        const errorResponse = await response.json();
+        throw new Error(
+          `Failed to create account: ${JSON.stringify(errorResponse)}`
+        );
       }
 
       const result = await response.json();
-      console.log("Response:", result, api_url);
-
+      console.log("Response:", result);
       alert("Account created successfully!");
     } catch (error) {
-      console.error("Error:", error);
-      alert(error.message);
+      console.error("Error:", error.message);
+      alert(`Error: ${error.message}`);
     }
   };
 
@@ -105,11 +88,11 @@ const CreateStudentAccount = () => {
             <label>
               <input
                 type="radio"
-                value="doctor"
-                checked={role === "doctor"}
-                onChange={() => setRole("doctor")}
+                value="staff"
+                checked={role === "staff"}
+                onChange={() => setRole("staff")}
               />
-              Doctor
+              Staff
             </label>
           </div>
 
@@ -140,30 +123,6 @@ const CreateStudentAccount = () => {
           </div>
 
           <div className={styles.inputWithIcon}>
-            <FaEnvelope className={styles.icon} />
-            <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className={styles.inputFullWidth}
-            />
-          </div>
-
-          <div className={styles.inputWithIcon}>
-            <FaLock className={styles.icon} />
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className={styles.inputFullWidth}
-            />
-          </div>
-
-          <div className={styles.inputWithIcon}>
             <FaPhone className={styles.icon} />
             <input
               type="tel"
@@ -186,6 +145,7 @@ const CreateStudentAccount = () => {
               className={styles.inputFullWidth}
             />
           </div>
+
           <div className={styles.inputWithIcon}>
             <label>Gender</label>
             <div>
@@ -210,28 +170,38 @@ const CreateStudentAccount = () => {
             </div>
           </div>
 
-          <div className={styles.inputWithIcon}>
-            <FaCalendar className={styles.icon} />
-            <select
-              value={year}
-              onChange={(e) => setYear(e.target.value)}
-              className={styles.inputFullWidth}
-              disabled={role === "doctor"}
-              required
-            >
-              <option value="" disabled>
-                Select Year
-              </option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-            </select>
-          </div>
+          {role === "student" && (
+            <>
+              <div className={styles.inputWithIcon}>
+                <FaCalendar className={styles.icon} />
+                <select
+                  value={year}
+                  onChange={(e) => setYear(e.target.value)}
+                  className={styles.inputFullWidth}
+                  required
+                >
+                  <option value="" disabled>
+                    Select Year
+                  </option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                </select>
+              </div>
 
-          <p className={styles.passwordNote}>
-            Password must be at least 8 characters long.
-          </p>
+              <div className={styles.inputWithIcon}>
+                <input
+                  type="text"
+                  placeholder="Department ID"
+                  value={departmentId}
+                  onChange={(e) => setDepartmentId(e.target.value)}
+                  required
+                  className={styles.inputFullWidth}
+                />
+              </div>
+            </>
+          )}
 
           <button type="submit" className={styles.submitButton}>
             Create Account

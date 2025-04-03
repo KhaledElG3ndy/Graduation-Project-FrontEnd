@@ -1,0 +1,64 @@
+.page {
+  padding: 40px;
+  text-align: center;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+}
+
+.card {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start; 
+  background: white;
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  transition: 0.3s;
+  max-width: 900px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.card:hover {
+  transform: scale(1.02);
+}
+
+.image {
+  width: 250px;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-left: 20px;
+  flex-shrink: 0;
+}
+
+.contentWrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column; 
+  text-align: left;
+}
+
+.newsTitle {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #003366;
+}
+
+.content {
+  color: #555;
+  font-size: 16px;
+  line-height: 1.5;
+}

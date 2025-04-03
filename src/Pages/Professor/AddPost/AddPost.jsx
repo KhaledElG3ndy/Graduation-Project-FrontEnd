@@ -1,40 +1,43 @@
 import React, { useState } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import styles from "./AddNews.module.css";
-import img from "../../../assets/images/AddNews2.svg";
-import Header from "../../../components/Admin/Header/Header";
+import styles from "./AddPost.module.css";
+import img from "../../../assets/images/AddPost.svg";
+import Header from "../../../components/Professor/Header/Header";
+import { MdClose } from "react-icons/md";
 
-export default function AddNews() {
-  const [title, setTitle] = useState("");
+export default function AddPost() {
   const [content, setContent] = useState("");
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
+  const maxChars = 500;
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setImage(file);
       setPreview(URL.createObjectURL(file));
+    } else {
+      setImage(null);
+      setPreview(null);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const api_url = "http://localhost:5102/api/News";
-
     const data = new FormData();
     data.append("content", content);
-    data.append("image", image);
-    for (let [key, value] of data.entries()) {
-      console.log(key, value);
+
+    if (image) {
+      data.append("image", image);
     }
+
     setLoading(true);
     try {
       const response = await fetch(api_url, {
         method: "POST",
-
         body: data,
       });
 
@@ -43,12 +46,11 @@ export default function AddNews() {
         throw new Error(errorData.message);
       }
       toast.success("News added successfully!");
-      setTitle("");
       setContent("");
       setImage(null);
       setPreview(null);
     } catch (error) {
-      toast.error("Failed");
+      toast.error("Failed to add news");
     }
     setLoading(false);
   };
@@ -58,27 +60,34 @@ export default function AddNews() {
       <Header />
       <div className={styles.page}>
         <div className={styles.container}>
-          <div className={styles.leftSection}>
+          <div className={styles.topSection}>
+            <img src={img} alt="Illustration" className={styles.bgImage} />
+            <MdClose className={styles.exitIcon} />
+          </div>
+          <div className={styles.buttomSection}>
             <div className={styles.card}>
-              <h2 className={styles.title}>Add News</h2>
               <form onSubmit={handleSubmit} className={styles.form}>
-                <input
-                  type="text"
-                  className={styles.input}
-                  placeholder="Enter news title..."
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  required
-                />
                 <textarea
                   className={styles.textarea}
-                  placeholder="Write news content..."
+                  placeholder="What's on your mind?"
                   value={content}
-                  onChange={(e) => setContent(e.target.value)}
+                  onChange={(e) => {
+                    if (e.target.value.length <= maxChars) {
+                      setContent(e.target.value);
+                    }
+                  }}
                   required
                 />
+                <div className={styles.counter}>
+                  {content.length} / {maxChars}
+                </div>
+                <progress
+                  className={styles.progressBar}
+                  value={content.length}
+                  max={maxChars}
+                />
                 <label className={styles.fileLabel}>
-                  Choose an Image
+                  Choose an Image (Optional)
                   <input
                     type="file"
                     accept="image/*"
@@ -94,17 +103,10 @@ export default function AddNews() {
                   className={styles.button}
                   disabled={loading}
                 >
-                  {loading ? "Submitting..." : "Submit News"}
+                  {loading ? "Submitting..." : "Publish"}
                 </button>
               </form>
             </div>
-          </div>
-
-          <div className={styles.rightSection}>
-            <img src={img} alt="Illustration" className={styles.bgImage} />
-            <p className={styles.rightText}>
-              Share your latest news with everyone!
-            </p>
           </div>
         </div>
       </div>
