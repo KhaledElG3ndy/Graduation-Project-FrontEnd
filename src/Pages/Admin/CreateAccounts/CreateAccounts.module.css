@@ -1,49 +1,77 @@
 .container {
-  max-width: 700px;
-  margin: 50px auto;
-  padding: 20px;
+  max-width: 800px;
+  margin: 60px auto;
+  padding: 40px;
   text-align: center;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 51, 102, 0.15);
+  border: 1px solid rgba(0, 51, 102, 0.1);
 }
 
 .title {
-  font-size: 1.8rem;
-  margin-bottom: 10px;
+  font-size: 2.25rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #003366, #0066cc, #3399ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.025em;
 }
 
 .subtitle {
-  font-size: 1rem;
-  margin-bottom: 20px;
-  color: #666;
+  font-size: 1.1rem;
+  margin-bottom: 32px;
+  color: #64748b;
+  font-weight: 400;
+  line-height: 1.6;
 }
 
 .form {
   display: flex;
   flex-direction: column;
+  gap: 20px;
 }
 
 .inputGroup {
   display: flex;
-  gap: 10px;
+  gap: 16px;
 }
 
 .inputWithIcon {
   display: flex;
   align-items: center;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  padding: 10px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 18px;
   flex: 1;
-  margin-bottom: 15px;
-  background-color: #f9f9f9;
+  background-color: #fafbfc;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.inputWithIcon:focus-within {
+  border-color: #0066cc;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+.inputWithIcon:hover {
+  border-color: #cbd5e1;
+  background-color: #ffffff;
 }
 
 .icon {
-  color: #666;
-  margin-right: 10px;
-  font-size: 1.2rem;
+  color: #64748b;
+  margin-right: 14px;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+  transition: color 0.3s ease;
+}
+
+.inputWithIcon:focus-within .icon {
+  color: #0066cc;
 }
 
 .input,
@@ -51,75 +79,278 @@
   flex: 1;
   border: none;
   outline: none;
-  font-size: 1rem;
+  font-size: 1.05rem;
   background: transparent;
+  color: #1e293b;
+  font-weight: 500;
+}
+
+.input::placeholder,
+.inputFullWidth::placeholder {
+  color: #94a3b8;
+  font-weight: 400;
 }
 
 .genderSelection {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  padding: 10px;
-  background: #f9f9f9;
-  margin-bottom: 15px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 18px;
+  background: #fafbfc;
+  transition: all 0.3s ease;
+}
+
+.genderSelection:hover {
+  border-color: #cbd5e1;
+  background-color: #ffffff;
 }
 
 .genderSelection label {
-  font-size: 1rem;
-  color: #333;
+  font-size: 1.05rem;
+  color: #1e293b;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.genderSelection label:hover {
+  color: #0066cc;
 }
 
 .select {
   flex: 1;
-  padding: 8px;
-  font-size: 1rem;
+  padding: 12px;
+  font-size: 1.05rem;
   border: none;
   outline: none;
   background: transparent;
   cursor: pointer;
+  color: #1e293b;
+  font-weight: 500;
 }
 
 .roleSelection {
   display: flex;
   justify-content: center;
-  gap: 20px;
-  margin-bottom: 20px;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  background: #f9f9f9;
+  gap: 32px;
+  margin-bottom: 8px;
+  padding: 20px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fafbfc;
+  transition: all 0.3s ease;
+}
+
+.roleSelection:hover {
+  border-color: #cbd5e1;
+  background-color: #ffffff;
 }
 
 .roleSelection label {
   display: flex;
   align-items: center;
-  font-size: 1rem;
-  font-weight: 500;
-  color: #333;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
   cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 8px 16px;
+  border-radius: 8px;
+}
+
+.roleSelection label:hover {
+  color: #0066cc;
+  background-color: rgba(0, 102, 204, 0.05);
 }
 
 .roleSelection input[type="radio"] {
-  margin-right: 8px;
-  width: 18px;
-  height: 18px;
+  margin-right: 12px;
+  width: 20px;
+  height: 20px;
   cursor: pointer;
+  accent-color: #0066cc;
 }
 
 .submitButton {
-  padding: 10px 15px;
-  font-size: 1rem;
-  color: #fff;
-  background: linear-gradient(135deg, #003366, #0066cc, #3399ff);
+  padding: 16px 32px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffffff;
   background: linear-gradient(135deg, #003366, #0066cc, #3399ff);
   border: none;
-  border-radius: 5px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
+  margin-top: 12px;
+  letter-spacing: 0.025em;
+  box-shadow: 0 4px 12px rgba(0, 51, 102, 0.25);
 }
+
+.submitButton:hover {
+  background: linear-gradient(135deg, #002244, #0052a3, #2d8cdb);
+  box-shadow: 0 6px 20px rgba(0, 51, 102, 0.35);
+}
+
+.submitButton:active {
+  box-shadow: 0 2px 8px rgba(0, 51, 102, 0.3);
+}
+
 .yearField {
   outline: none;
+}
+
+.excelUploadSection {
+  margin-top: 48px;
+  padding-top: 32px;
+  border-top: 2px solid #e2e8f0;
+  text-align: center;
+}
+
+.excelUploadSection h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 24px;
+  background: linear-gradient(135deg, #003366, #0066cc, #3399ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.fileInputRow {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fileInputWrapper {
+  flex: 1;
+  position: relative;
+}
+
+.fileInput {
+  display: none;
+}
+
+.fileLabel {
+  display: block;
+  width: 100%;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+  color: #475569;
+  font-weight: 600;
+  font-size: 1.05rem;
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.3s ease;
+  letter-spacing: 0.025em;
+}
+
+.fileLabel:hover {
+  background: linear-gradient(135deg, #ffffff, #f1f5f9);
+  border-color: #0066cc;
+  color: #0066cc;
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.15);
+}
+
+.uploadButton {
+  margin-left: 40px;
+  padding: 16px 28px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #003366, #0066cc, #3399ff);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+  letter-spacing: 0.025em;
+  box-shadow: 0 4px 12px rgba(0, 51, 102, 0.25);
+}
+
+.uploadButton:hover {
+  background: linear-gradient(135deg, #002244, #0052a3, #2d8cdb);
+  box-shadow: 0 6px 20px rgba(0, 51, 102, 0.35);
+}
+
+.uploadButton:active {
+  box-shadow: 0 2px 8px rgba(0, 51, 102, 0.3);
+}
+
+@media (prefers-color-scheme: dark) {
+  .container {
+    background: #ffffff;
+    border-color: rgba(0, 51, 102, 0.1);
+  }
+  
+  .inputWithIcon,
+  .genderSelection,
+  .roleSelection {
+    background-color: #fafbfc;
+    border-color: #e2e8f0;
+    color: #1e293b;
+  }
+  
+  .input,
+  .inputFullWidth,
+  .select {
+    color: #1e293b;
+  }
+  
+  .icon {
+    color: #64748b;
+  }
+  
+  .roleSelection label,
+  .genderSelection label {
+    color: #1e293b;
+  }
+  
+  .subtitle {
+    color: #64748b;
+  }
+  
+  .excelUploadSection h3 {
+    color: #1e293b;
+  }
+  
+  .fileLabel {
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    color: #475569;
+    border-color: #cbd5e1;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    margin: 20px;
+    padding: 24px;
+  }
+  
+  .title {
+    font-size: 1.875rem;
+  }
+  
+  .inputGroup {
+    flex-direction: column;
+    gap: 0;
+  }
+  
+  .roleSelection {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .fileInputRow {
+    flex-direction: column;
+    gap: 12px;
+  }
 }

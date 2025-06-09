@@ -7,12 +7,14 @@ import { useDarkMode } from "../../../contexts/ThemeContext";
 const CreateStudentAccount = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [gender, setGender] = useState(true);
+  const [gender, setGender] = useState("Male");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [nationalId, setNationalId] = useState("");
   const [year, setYear] = useState(1);
   const [departmentId, setDepartmentId] = useState("");
   const [role, setRole] = useState("student");
+  const [excelFile, setExcelFile] = useState(null);
+  const [excelRole, setExcelRole] = useState("student");
 
   const { isDarkMode } = useDarkMode();
 
@@ -24,21 +26,18 @@ const CreateStudentAccount = () => {
     e.preventDefault();
 
     const formData = new FormData();
-    formData.append("firstName", firstName);
-    formData.append("lastName", lastName);
-    formData.append("name", `${firstName} ${lastName}`);
-    formData.append("gender", gender); 
-    formData.append("phoneNumber", phoneNumber);
-    formData.append("nationalId", nationalId);
-
-
+    formData.append("FirstName", firstName);
+    formData.append("LastName", lastName);
+    formData.append("Name", `${firstName} ${lastName}`);
+    formData.append("Gender", gender === "Female");
+    formData.append("PhoneNumber", phoneNumber);
+    formData.append("NationalId", nationalId);
 
     if (role === "student") {
-      formData.append("year", year);
-      formData.append("departmentId", departmentId);
+      formData.append("Year", year);
+      formData.append("DepartmentId", departmentId);
     }
 
-    
     const url = `https://localhost:7072/api/Account/AddAccount?role=${
       role === "student" ? 0 : 1
     }`;
@@ -50,18 +49,53 @@ const CreateStudentAccount = () => {
       });
 
       if (!response.ok) {
-        const errorResponse = await response.json();
-        throw new Error(
-          `Failed to create account: ${JSON.stringify(errorResponse)}`
-        );
+        const errorResponse = await response.text();
+        throw new Error(`Failed to create account: ${errorResponse}`);
       }
 
       const result = await response.json();
       console.log("Response:", result);
-      alert("Account created successfully!");
+      alert("Account created successfully! Use generated credentials to login");
     } catch (error) {
       console.error("Error:", error.message);
       alert(`Error: ${error.message}`);
+    }
+  };
+
+  const handleExcelChange = (e) => {
+    setExcelFile(e.target.files[0]);
+  };
+
+  const handleExcelSubmit = async () => {
+    if (!excelFile) {
+      alert("Please select an Excel file.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("ExcelFile", excelFile);
+    formData.append("role", excelRole === "student" ? 0 : 1);
+
+    try {
+      const response = await fetch(
+        "https://localhost:7072/api/Account/AddByExcel",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`Upload failed: ${error}`);
+      }
+
+      alert(
+        "Accounts added successfully! Users can login with generated credentials"
+      );
+    } catch (error) {
+      console.error("Error uploading Excel file:", error.message);
+      alert("Failed to upload Excel file");
     }
   };
 
@@ -148,22 +182,22 @@ const CreateStudentAccount = () => {
 
           <div className={styles.inputWithIcon}>
             <label>Gender</label>
-            <div>
+            <div className={styles.radioGroup}>
               <label>
                 <input
                   type="radio"
-                  value="true"
-                  checked={gender === true}
-                  onChange={() => setGender(true)}
+                  value="Male"
+                  checked={gender === "Male"}
+                  onChange={() => setGender("Male")}
                 />
                 Male
               </label>
               <label>
                 <input
                   type="radio"
-                  value="false"
-                  checked={gender === false}
-                  onChange={() => setGender(false)}
+                  value="Female"
+                  checked={gender === "Female"}
+                  onChange={() => setGender("Female")}
                 />
                 Female
               </label>
@@ -176,13 +210,10 @@ const CreateStudentAccount = () => {
                 <FaCalendar className={styles.icon} />
                 <select
                   value={year}
-                  onChange={(e) => setYear(e.target.value)}
+                  onChange={(e) => setYear(parseInt(e.target.value))}
                   className={styles.inputFullWidth}
                   required
                 >
-                  <option value="" disabled>
-                    Select Year
-                  </option>
                   <option value="1">1</option>
                   <option value="2">2</option>
                   <option value="3">3</option>
@@ -192,7 +223,7 @@ const CreateStudentAccount = () => {
 
               <div className={styles.inputWithIcon}>
                 <input
-                  type="text"
+                  type="number"
                   placeholder="Department ID"
                   value={departmentId}
                   onChange={(e) => setDepartmentId(e.target.value)}
@@ -207,6 +238,55 @@ const CreateStudentAccount = () => {
             Create Account
           </button>
         </form>
+
+        <div className={styles.excelUploadSection}>
+          <h3>Upload Excel File</h3>
+
+          <div className={styles.roleSelection}>
+            <label>
+              <input
+                type="radio"
+                value="student"
+                checked={excelRole === "student"}
+                onChange={() => setExcelRole("student")}
+              />
+              Student Accounts
+            </label>
+            <label>
+              <input
+                type="radio"
+                value="staff"
+                checked={excelRole === "staff"}
+                onChange={() => setExcelRole("staff")}
+              />
+              Staff Accounts
+            </label>
+          </div>
+
+          <div className={styles.fileInputRow}>
+            <div className={styles.fileInputWrapper}>
+              <label htmlFor="excelUpload" className={styles.fileLabel}>
+                {excelFile ? excelFile.name : "Choose Excel File"}
+              </label>
+              <input
+                id="excelUpload"
+                type="file"
+                accept=".xlsx, .xls"
+                onChange={handleExcelChange}
+                className={styles.fileInput}
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={handleExcelSubmit}
+              className={styles.uploadButton}
+              disabled={!excelFile}
+            >
+              Upload
+            </button>
+          </div>
+        </div>
       </div>
     </>
   );

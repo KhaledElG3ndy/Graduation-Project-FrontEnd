@@ -1,45 +1,54 @@
 .homeContainer {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   padding: 50px;
   transition: background-color 0.3s ease;
+  flex-wrap: nowrap;
+  height: 45vh;
 }
 
 .textContent {
-  max-width: 50%;
+  text-align: center;
+  align-items: center;
+  margin: 0 auto;
 }
 
 .textContent h1 {
   font-size: 2.8rem;
   margin-bottom: 20px;
   overflow: hidden;
-  border-right: 0.15em solid white;
   white-space: nowrap;
   width: 0;
+  text-align: center;
   animation: typing 3s steps(30) 1s forwards,
     blink-caret 0.75s step-end infinite;
   background: linear-gradient(135deg, #003366, #0066cc, #3399ff);
   -webkit-background-clip: text;
   color: transparent;
   font-weight: bold;
+  display: inline-block;
 }
 
 .lightText {
   font-size: 1.2rem;
   margin-bottom: 30px;
   color: #fff;
+  text-align: center;
 }
 
 .darkText {
   font-size: 1.2rem;
   margin-bottom: 30px;
   color: #333;
+  text-align: center;
 }
 
 .buttons {
   display: flex;
   gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .primaryButton,
@@ -72,25 +81,6 @@
   color: white;
 }
 
-.imageContainer {
-  position: relative;
-  width: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.image {
-  max-width: 60%;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.3s ease-in-out, opacity 0.3s ease-in-out;
-}
-
-.image:hover {
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
-  opacity: 0.9;
-}
 .cardsContainer {
   display: flex;
   gap: 20px;
@@ -98,6 +88,7 @@
   align-items: center;
   margin-bottom: 50px;
 }
+
 .sectionContainer {
   max-width: 1000px;
   padding: 50px;
@@ -116,10 +107,66 @@
     border-color: transparent;
   }
 }
+
 .lightMode {
   background-color: #f1f0f0;
 }
 
 .darkMode {
   background: linear-gradient(135deg, #0a0a0a, #161616, #222222);
+}
+
+@media (max-width: 1024px) {
+  .homeContainer {
+    flex-direction: column;
+    padding: 40px 30px;
+    height: auto;
+  }
+
+  .textContent {
+    max-width: 100%;
+    margin-bottom: 30px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .textContent h1 {
+    font-size: 2.2rem;
+  }
+
+  .textContent p {
+    font-size: 1.1rem;
+  }
+
+  .buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .primaryButton,
+  .secondaryButton {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .homeContainer {
+    padding: 30px 20px;
+  }
+
+  .textContent h1 {
+    font-size: 1.8rem;
+  }
+
+  .textContent p {
+    font-size: 1rem;
+  }
+
+  .primaryButton,
+  .secondaryButton {
+    font-size: 0.95rem;
+    padding: 10px;
+  }
 }

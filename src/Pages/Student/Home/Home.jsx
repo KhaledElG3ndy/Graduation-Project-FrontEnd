@@ -80,21 +80,14 @@ const Home = () => {
         <div className={styles.textContent}>
           <h1>Empower Your College Journey</h1>
           <p className={isDarkMode ? styles.lightText : styles.darkText}>
-            Manage your studies, stay updated with campus events, and connect
-            with your academic community—all in one platform.
+          Organize your studies, track campus events, and engage with your
+            academic network — all in one unified space.
           </p>
 
           <div className={styles.buttons}>
             <button className={styles.primaryButton}>Get Started</button>
             <button className={styles.secondaryButton}>Learn More</button>
           </div>
-        </div>
-        <div className={styles.imageContainer}>
-          <img
-            src={img}
-            alt="Empower your college journey"
-            className={styles.image}
-          />
         </div>
       </div>
 

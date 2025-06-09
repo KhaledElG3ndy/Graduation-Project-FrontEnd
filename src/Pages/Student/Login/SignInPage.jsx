@@ -12,6 +12,13 @@ const SignInForm = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const parseJwt = (token) => {
+    try {
+      return JSON.parse(atob(token.split(".")[1]));
+    } catch (e) {
+      return null;
+    }
+  };
 
   const handleLogin = async () => {
     if (!termsAccepted) {
@@ -21,7 +28,7 @@ const SignInForm = () => {
 
     setLoading(true);
     setError("");
-    const api_url = "https://localhost:44338/User/Login";
+    const api_url = "https://localhost:7072/api/Account/Login";
 
     try {
       const response = await fetch(api_url, {
@@ -39,19 +46,28 @@ const SignInForm = () => {
       const data = await response.json();
       console.log("Success:", data);
 
+      document.cookie = `token=${data.token}; path=/; max-age=1800`;
+
       sessionStorage.setItem("isLogged", JSON.stringify(true));
 
-      if (data.doctor) {
-        if (data.doctor.name === "Admin User") {
+      const payload = parseJwt(data.token);
+      console.log("Decoded JWT Payload:", payload);
+      if (payload) {
+        const role =
+          payload[
+            "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+          ];
+
+        if (role === "Admin") {
           sessionStorage.setItem("userType", JSON.stringify("Admin"));
           navigate("/Admin");
-        } else {
+        } else if (role === "Professor") {
           sessionStorage.setItem("userType", JSON.stringify("Professor"));
           navigate("/Professor");
+        } else {
+          sessionStorage.setItem("userType", JSON.stringify("Student"));
+          navigate("/");
         }
-      } else {
-        sessionStorage.setItem("userType", JSON.stringify("Student"));
-        navigate("/");
       }
     } catch (error) {
       console.error("Error:", error);

@@ -31,7 +31,7 @@ function AddDepartmentPage() {
           text: "Department added successfully!",
           confirmButtonText: "OK",
         });
-        navigate("/departments");
+        //navigate("/departments");
       } else {
         const errorMessage = await response.text();
         Swal.fire({

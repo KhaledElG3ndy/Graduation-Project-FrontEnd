@@ -19,7 +19,7 @@ export default function Sidebar({ isOpen }) {
       <h1 className={styles.title}>Team Space</h1>
       <ul className={styles.navList}>
         <li className={styles.navItem}>
-          <Link to="/dashboard">
+          <Link to="/admin">
             <FaClipboardList /> Dashboard
           </Link>
         </li>
@@ -54,7 +54,7 @@ export default function Sidebar({ isOpen }) {
           </Link>
         </li>
         <li className={styles.navItem}>
-          <Link to="/Admin/AddDepartment">
+          <Link to="/Admin/Departments">
             <FaBuilding /> Departments
           </Link>
         </li>

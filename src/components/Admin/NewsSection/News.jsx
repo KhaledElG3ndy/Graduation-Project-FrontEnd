@@ -62,7 +62,7 @@ const NewsSection = () => {
           {
             title: "Update News",
             icon: <MdEditNote size={30} />,
-            action: () => console.log("Updating News"),
+            action: () => navigate("/Admin/UpdateNews"),
           },
           {
             title: "Add Subject",
