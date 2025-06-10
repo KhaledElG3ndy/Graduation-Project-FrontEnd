@@ -2,21 +2,31 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "./Channels.module.css";
 import Header from "../../../components/Professor/Header/Header";
+
 const Channels = () => {
   const [courses, setCourses] = useState([]);
+  const [subjects, setSubjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchCourses = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch(
-          "https://localhost:7072/Courses/GetCourses"
-        );
-        if (!response.ok) throw new Error("Failed to fetch courses");
+        // Fetch both courses and subjects in parallel
+        const [coursesRes, subjectsRes] = await Promise.all([
+          fetch("https://localhost:7072/Courses/GetCourses"),
+          fetch("https://localhost:7072/Subjects/GetSubjects"),
+        ]);
 
-        const data = await response.json();
-        setCourses(data);
+        if (!coursesRes.ok || !subjectsRes.ok) {
+          throw new Error("Failed to fetch courses or subjects");
+        }
+
+        const coursesData = await coursesRes.json();
+        const subjectsData = await subjectsRes.json();
+
+        setCourses(coursesData);
+        setSubjects(subjectsData);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -24,8 +34,13 @@ const Channels = () => {
       }
     };
 
-    fetchCourses();
+    fetchData();
   }, []);
+
+  const getSubjectName = (subjectId) => {
+    const subject = subjects.find((s) => s.id === subjectId);
+    return subject ? subject.name : "Unknown Subject";
+  };
 
   if (loading) return <p className={styles.loading}>Loading courses...</p>;
   if (error) return <p className={styles.error}>{error}</p>;
@@ -42,7 +57,9 @@ const Channels = () => {
           <div className={styles.courseGrid}>
             {courses.map((course) => (
               <div key={course.id} className={styles.courseCard}>
-                <h2 className={styles.courseTitle}>{course.subjectName}</h2>
+                <h2 className={styles.courseTitle}>
+                  {getSubjectName(course.subjectId)}
+                </h2>
                 <p className={styles.courseInfo}>
                   Semester: <strong>{course.semester}</strong>
                 </p>

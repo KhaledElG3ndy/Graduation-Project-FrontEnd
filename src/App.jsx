@@ -28,6 +28,7 @@ import Subjects from "./Pages/Professor/Subjects/Subjects";
 import CreateChannel from "./Pages/Professor/CreateChannel/CreateChannel";
 import UpdateNews from "./Pages/Admin/UpdateNews/UpdateNews";
 import UpdateForm from "./Pages/Admin/UpdateNews/UpdateForm";
+import CoursePage from "./Pages/Professor/CoursePage/CoursePage";
 
 function App() {
   const { isDarkMode, toggleTheme } = useDarkMode();
@@ -56,12 +57,16 @@ function App() {
         <Route path="/Professor/Channels" element={<Channels />} />
         <Route path="/Professor/Subjects" element={<Subjects />} />
         <Route path="/Professor/CreateChannel" element={<CreateChannel />} />
+        <Route path="/course/:id" element={<CoursePage />} />
         <Route path="/Admin/CreateAccounts" element={<AdminCreateAccounts />} />
         <Route path="/Admin/EmailCRUD" element={<EmailCRUD />} />
         <Route path="/Admin/EditAccount" element={<EditAccount />} />
         <Route path="/Admin/AddSubjects" element={<AddSubjects />} />
         <Route path="/Admin/UpdateNews" element={<UpdateNews />} />
-        <Route path="/Admin/UpdateNews/UpdateForm/:id" element={<UpdateForm />} />
+        <Route
+          path="/Admin/UpdateNews/UpdateForm/:id"
+          element={<UpdateForm />}
+        />
         <Route path="/Admin/Departments" element={<Departments />} />
         <Route path="/Admin/AddDepartment" element={<AddDepartmentPage />} />
         <Route path="/News" element={<News />} />
