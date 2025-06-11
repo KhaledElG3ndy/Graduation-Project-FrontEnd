@@ -9,6 +9,9 @@ import {
   FiSend,
   FiLoader,
   FiFileText,
+  FiMessageCircle,
+  FiChevronDown,
+  FiChevronUp,
 } from "react-icons/fi";
 import styles from "./CoursePage.module.css";
 import Header from "../../../components/Professor/Header/Header";
@@ -25,6 +28,11 @@ const CoursePage = () => {
     image: null,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [expandedComments, setExpandedComments] = useState({});
+  const [comments, setComments] = useState({});
+  const [commentForms, setCommentForms] = useState({});
+  const [submittingComments, setSubmittingComments] = useState({});
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -51,6 +59,7 @@ const CoursePage = () => {
 
     fetchCourse();
   }, [id]);
+
   const fetchPosts = async () => {
     try {
       const res = await fetch(`https://localhost:7072/api/Post/${id}/${1}`);
@@ -62,6 +71,27 @@ const CoursePage = () => {
     } catch (err) {
       console.error("Failed to fetch posts", err);
       setPosts([]);
+    }
+  };
+
+  const fetchComments = async (courseId, staffId) => {
+    try {
+      const res = await fetch(
+        `https://localhost:7072/api/Post/getAllComments?CourseId=${courseId}&StaffId=${staffId}`
+      );
+      const data = await res.json();
+      const postKey = `${courseId}-${staffId}`;
+      setComments((prev) => ({
+        ...prev,
+        [postKey]: Array.isArray(data) ? data : [],
+      }));
+    } catch (err) {
+      console.error("Failed to fetch comments", err);
+      const postKey = `${courseId}-${staffId}`;
+      setComments((prev) => ({
+        ...prev,
+        [postKey]: [],
+      }));
     }
   };
 
@@ -155,6 +185,79 @@ const CoursePage = () => {
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
+  };
+
+  const toggleComments = (courseId, staffId) => {
+    const postKey = `${courseId}-${staffId}`;
+    const isExpanded = expandedComments[postKey];
+
+    setExpandedComments((prev) => ({
+      ...prev,
+      [postKey]: !isExpanded,
+    }));
+
+    if (!isExpanded && !comments[postKey]) {
+      fetchComments(courseId, staffId);
+    }
+  };
+
+  const handleCommentChange = (postKey, value) => {
+    setCommentForms((prev) => ({
+      ...prev,
+      [postKey]: value,
+    }));
+  };
+
+  const handleCommentSubmit = async (courseId, staffId) => {
+    const postKey = `${courseId}-${staffId}`;
+    const commentText = commentForms[postKey];
+
+    if (!commentText || !commentText.trim()) {
+      showErrorAlert("Please enter a comment");
+      return;
+    }
+
+    setSubmittingComments((prev) => ({
+      ...prev,
+      [postKey]: true,
+    }));
+
+    const formData = new FormData();
+    formData.append("Content", commentText.trim());
+    formData.append("CourseId", courseId);
+    formData.append("StaffId", staffId);
+    formData.append("UserId", 1);
+
+    for (let [key, value] of formData.entries()) {
+      console.log(`Sent -> ${key}:`, value);
+    }
+
+    try {
+      const res = await fetch("https://localhost:7072/api/Post/addComment", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (res.ok) {
+        showSuccessAlert("Comment added successfully!");
+        setCommentForms((prev) => ({
+          ...prev,
+          [postKey]: "",
+        }));
+        await fetchComments(courseId, staffId);
+      } else {
+        const errorData = await res.json().catch(() => ({}));
+        showErrorAlert(errorData.message || "Failed to add comment.");
+      }
+    } catch (err) {
+      console.error(err);
+      showErrorAlert("Network error. Please try again.");
+    } finally {
+      setSubmittingComments((prev) => ({
+        ...prev,
+        [postKey]: false,
+      }));
+    }
   };
 
   return (
@@ -254,25 +357,120 @@ const CoursePage = () => {
             <div className={styles.postsContainer}>
               <h3>All Posts for This Course</h3>
               {posts.length > 0 ? (
-                posts.map((post) => (
-                  <div
-                    key={`${post.title}-${post.uploadedAt}`}
-                    className={styles.postCard}
-                  >
-                    <h4>{post.title}</h4>
-                    <p>{post.content}</p>
-                    {post.image && (
-                      <img
-                        src={`data:image/jpeg;base64,${post.image}`}
-                        alt="Post"
-                        className={styles.postImage}
-                      />
-                    )}
-                    <small>
-                      Uploaded: {new Date(post.uploadedAt).toLocaleString()}
-                    </small>
-                  </div>
-                ))
+                posts.map((post) => {
+                  const postKey = `${post.courseId || id}-${post.staffId || 1}`;
+                  const isCommentsExpanded = expandedComments[postKey];
+                  const postComments = comments[postKey] || [];
+                  const isSubmittingComment = submittingComments[postKey];
+
+                  return (
+                    <div
+                      key={`${post.title}-${post.uploadedAt}`}
+                      className={styles.postCard}
+                    >
+                      <h4>{post.title}</h4>
+                      <p>{post.content}</p>
+                      {post.image && (
+                        <img
+                          src={`data:image/jpeg;base64,${post.image}`}
+                          alt="Post"
+                          className={styles.postImage}
+                        />
+                      )}
+                      <small>
+                        Uploaded: {new Date(post.uploadedAt).toLocaleString()}
+                      </small>
+
+                      <div className={styles.commentsSection}>
+                        <button
+                          className={styles.commentsToggle}
+                          onClick={() =>
+                            toggleComments(
+                              post.courseId || id,
+                              post.staffId || 1
+                            )
+                          }
+                        >
+                          <FiMessageCircle className={styles.buttonIcon} />
+                          Comments ({postComments.length})
+                          {isCommentsExpanded ? (
+                            <FiChevronUp className={styles.chevronIcon} />
+                          ) : (
+                            <FiChevronDown className={styles.chevronIcon} />
+                          )}
+                        </button>
+
+                        {isCommentsExpanded && (
+                          <div className={styles.commentsContainer}>
+                            <div className={styles.addCommentForm}>
+                              <textarea
+                                placeholder="Write a comment..."
+                                value={commentForms[postKey] || ""}
+                                onChange={(e) =>
+                                  handleCommentChange(postKey, e.target.value)
+                                }
+                                className={styles.commentTextarea}
+                                disabled={isSubmittingComment}
+                              />
+                              <button
+                                onClick={() =>
+                                  handleCommentSubmit(
+                                    post.courseId || id,
+                                    post.staffId || 1
+                                  )
+                                }
+                                disabled={isSubmittingComment}
+                                className={styles.addCommentButton}
+                              >
+                                {isSubmittingComment ? (
+                                  <>
+                                    <FiLoader
+                                      className={`${styles.buttonIcon} ${styles.spinning}`}
+                                    />
+                                    Adding...
+                                  </>
+                                ) : (
+                                  <>
+                                    <FiSend className={styles.buttonIcon} />
+                                    Add Comment
+                                  </>
+                                )}
+                              </button>
+                            </div>
+
+                            <div className={styles.commentsList}>
+                              {postComments.length > 0 ? (
+                                postComments.map((comment, index) => (
+                                  <div
+                                    key={index}
+                                    className={styles.commentItem}
+                                  >
+                                    <div className={styles.commentContent}>
+                                      {comment.content}
+                                    </div>
+                                    <div className={styles.commentMeta}>
+                                      <small>
+                                        {comment.createdAt
+                                          ? new Date(
+                                              comment.createdAt
+                                            ).toLocaleString()
+                                          : "Just now"}
+                                      </small>
+                                    </div>
+                                  </div>
+                                ))
+                              ) : (
+                                <div className={styles.noComments}>
+                                  <p>No comments yet.</p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
               ) : (
                 <div className={styles.noPosts}>
                   <p>No posts found for this course.</p>
