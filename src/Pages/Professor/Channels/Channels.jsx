@@ -12,7 +12,6 @@ const Channels = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch both courses and subjects in parallel
         const [coursesRes, subjectsRes] = await Promise.all([
           fetch("https://localhost:7072/Courses/GetCourses"),
           fetch("https://localhost:7072/Subjects/GetSubjects"),
