@@ -12,7 +12,26 @@ import {
   FiMessageCircle,
   FiChevronDown,
   FiChevronUp,
+  FiDownload,
+  FiFile,
+  FiImage,
+  FiArchive,
+  FiX,
+  FiEye,
+  FiPlus,
 } from "react-icons/fi";
+import {
+  FaFilePdf,
+  FaFileWord,
+  FaFileExcel,
+  FaFilePowerpoint,
+  FaFileImage,
+  FaFileArchive,
+  FaFileAlt,
+  FaFileCode,
+  FaFileAudio,
+  FaFileVideo,
+} from "react-icons/fa";
 import styles from "./CoursePage.module.css";
 import Header from "../../../components/Professor/Header/Header";
 
@@ -33,6 +52,14 @@ const CoursePage = () => {
   const [comments, setComments] = useState({});
   const [commentForms, setCommentForms] = useState({});
   const [submittingComments, setSubmittingComments] = useState({});
+
+  const [materials, setMaterials] = useState([]);
+  const [materialForm, setMaterialForm] = useState({
+    title: "",
+    files: [], 
+  });
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -62,42 +89,56 @@ const CoursePage = () => {
 
   const fetchPosts = async () => {
     try {
-      const res = await fetch(`https://localhost:7072/api/Post/${id}/${1}`);
+      const res = await fetch(
+        `https://localhost:7072/api/Post/getAllPosts/${id}`
+      );
       const data = await res.json();
-
-      const postsArray = Array.isArray(data) ? data : [data];
-
-      setPosts(postsArray);
+      setPosts(Array.isArray(data) ? data : [data]);
     } catch (err) {
       console.error("Failed to fetch posts", err);
       setPosts([]);
     }
   };
 
-  const fetchComments = async (courseId, staffId) => {
+  const fetchComments = async (postId) => {
     try {
       const res = await fetch(
-        `https://localhost:7072/api/Post/getAllComments?CourseId=${courseId}&StaffId=${staffId}`
+        `https://localhost:7072/api/Post/getAllComments?postId=${postId}`
       );
       const data = await res.json();
-      const postKey = `${courseId}-${staffId}`;
       setComments((prev) => ({
         ...prev,
-        [postKey]: Array.isArray(data) ? data : [],
+        [postId]: Array.isArray(data) ? data : [],
       }));
     } catch (err) {
       console.error("Failed to fetch comments", err);
-      const postKey = `${courseId}-${staffId}`;
       setComments((prev) => ({
         ...prev,
-        [postKey]: [],
+        [postId]: [],
       }));
+    }
+  };
+
+  const fetchMaterials = async () => {
+    try {
+      const res = await fetch(`https://localhost:7072/api/Material/${id}`);
+      const data = await res.json();
+      setMaterials(
+        Array.isArray(data)
+          ? data.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt))
+          : []
+      );
+    } catch (err) {
+      console.error("Failed to fetch materials", err);
+      setMaterials([]);
     }
   };
 
   useEffect(() => {
     if (activeTab === "allPosts") {
       fetchPosts();
+    } else if (activeTab === "material") {
+      fetchMaterials();
     }
   }, [activeTab]);
 
@@ -154,11 +195,12 @@ const CoursePage = () => {
     setIsSubmitting(true);
 
     const formData = new FormData();
+    formData.append("id", 0);
     formData.append("Title", postForm.title);
     formData.append("Content", postForm.content);
     formData.append("Image", postForm.image);
     formData.append("CourseId", course.id);
-    formData.append("StaffId", 1);
+    formData.append("StaffId", 7);
 
     try {
       const res = await fetch("https://localhost:7072/api/Post", {
@@ -172,6 +214,7 @@ const CoursePage = () => {
         const fileInput = document.querySelector('input[type="file"]');
         if (fileInput) fileInput.value = "";
       } else {
+        console.log({ formData });
         const errorData = await res.json().catch(() => ({}));
         showErrorAlert(errorData.message || "Failed to add post.");
       }
@@ -187,77 +230,240 @@ const CoursePage = () => {
     setActiveTab(tab);
   };
 
-  const toggleComments = (courseId, staffId) => {
-    const postKey = `${courseId}-${staffId}`;
-    const isExpanded = expandedComments[postKey];
+  const toggleComments = (postId) => {
+    const isExpanded = expandedComments[postId];
 
     setExpandedComments((prev) => ({
       ...prev,
-      [postKey]: !isExpanded,
+      [postId]: !isExpanded,
     }));
 
-    if (!isExpanded && !comments[postKey]) {
-      fetchComments(courseId, staffId);
+    if (!isExpanded && !comments[postId]) {
+      fetchComments(postId);
     }
   };
 
-  const handleCommentChange = (postKey, value) => {
+  const handleCommentChange = (postId, value) => {
     setCommentForms((prev) => ({
       ...prev,
-      [postKey]: value,
+      [postId]: value,
     }));
   };
 
-  const handleCommentSubmit = async (courseId, staffId) => {
-    const postKey = `${courseId}-${staffId}`;
-    const commentText = commentForms[postKey];
-
-    if (!commentText || !commentText.trim()) {
+  const handleCommentSubmit = async (postId, content) => {
+    if (!content.trim()) {
       showErrorAlert("Please enter a comment");
       return;
     }
 
     setSubmittingComments((prev) => ({
       ...prev,
-      [postKey]: true,
+      [postId]: true,
     }));
 
     const formData = new FormData();
-    formData.append("Content", commentText.trim());
-    formData.append("CourseId", courseId);
-    formData.append("StaffId", staffId);
-    formData.append("UserId", 1);
-
-    for (let [key, value] of formData.entries()) {
-      console.log(`Sent -> ${key}:`, value);
-    }
+    formData.append("PostId", postId.toString());
+    formData.append("Content", content);
+    formData.append("CommenterId", "7");
 
     try {
-      const res = await fetch("https://localhost:7072/api/Post/addComment", {
-        method: "POST",
-        body: formData,
-      });
+      const response = await fetch(
+        "https://localhost:7072/api/Post/addComment",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
-      if (res.ok) {
+      if (response.ok) {
         showSuccessAlert("Comment added successfully!");
         setCommentForms((prev) => ({
           ...prev,
-          [postKey]: "",
+          [postId]: "",
         }));
-        await fetchComments(courseId, staffId);
+        fetchComments(postId);
       } else {
-        const errorData = await res.json().catch(() => ({}));
-        showErrorAlert(errorData.message || "Failed to add comment.");
+        const errorText = await response.text();
+        console.error("Server responded with error:", errorText);
+        showErrorAlert("Failed to add comment");
       }
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error("Failed to submit comment:", error);
       showErrorAlert("Network error. Please try again.");
     } finally {
       setSubmittingComments((prev) => ({
         ...prev,
-        [postKey]: false,
+        [postId]: false,
       }));
     }
+  };
+
+  const handleMaterialInputChange = (e) => {
+    setMaterialForm({ ...materialForm, title: e.target.value });
+  };
+
+  const handleMaterialFileChange = (e) => {
+    console.log("File input changed", e.target.files);
+    const files = Array.from(e.target.files);
+    const maxSize = 10 * 1024 * 1024;
+    const validFiles = [];
+    const invalidFiles = [];
+
+    files.forEach((file) => {
+      if (file.size > maxSize) {
+        invalidFiles.push(`${file.name} (too large)`);
+      } else {
+        validFiles.push(file);
+      }
+    });
+
+    if (invalidFiles.length > 0) {
+      showErrorAlert(
+        `Some files were too large (max 10MB): ${invalidFiles.join(", ")}`
+      );
+    }
+
+    const filePreview = validFiles.map((file) => ({
+      file,
+      id: Math.random().toString(36).substr(2, 9),
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      extension: file.name.split(".").pop()?.toLowerCase(),
+      preview: file.type.startsWith("image/")
+        ? URL.createObjectURL(file)
+        : null,
+    }));
+
+    setSelectedFiles((prev) => [...prev, ...filePreview]);
+    setMaterialForm({
+      ...materialForm,
+      files: [...materialForm.files, ...validFiles],
+    });
+  };
+
+
+  const removeFile = (fileId) => {
+    setSelectedFiles((prev) => {
+      const updatedFiles = prev.filter((f) => f.id !== fileId);
+
+      const removedFile = prev.find((f) => f.id === fileId);
+      if (removedFile && removedFile.preview) {
+        URL.revokeObjectURL(removedFile.preview);
+      }
+      return updatedFiles;
+    });
+
+    setMaterialForm((prev) => ({
+      ...prev,
+      files: prev.files.filter((_, index) =>
+        selectedFiles.find((sf) => sf.id === fileId)
+          ? selectedFiles.indexOf(
+              selectedFiles.find((sf) => sf.id === fileId)
+            ) !== index
+          : true
+      ),
+    }));
+  };
+
+  const clearAllFiles = () => {
+    selectedFiles.forEach((file) => {
+      if (file.preview) {
+        URL.revokeObjectURL(file.preview);
+      }
+    });
+    setSelectedFiles([]);
+    setMaterialForm({ ...materialForm, files: [] });
+  };
+
+  const handleMaterialSubmit = async (e) => {
+    e.preventDefault();
+    if (!materialForm.title || materialForm.files.length === 0) {
+      showErrorAlert("Please provide a title and select at least one file.");
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      const uploadPromises = materialForm.files.map(async (file) => {
+        const formData = new FormData();
+        formData.append("Title", `${materialForm.title} - ${file.name}`);
+        formData.append("File", file);
+        formData.append("CourseId", course.id);
+        formData.append("StaffId", 1);
+
+        return fetch("https://localhost:7072/api/Material", {
+          method: "POST",
+          body: formData,
+        });
+      });
+
+      const responses = await Promise.all(uploadPromises);
+      const failedUploads = responses.filter((res) => !res.ok);
+
+      if (failedUploads.length === 0) {
+        showSuccessAlert(
+          `Successfully uploaded ${materialForm.files.length} file(s)!`
+        );
+        setMaterialForm({ title: "", files: [] });
+        clearAllFiles();
+        fetchMaterials();
+      } else {
+        showErrorAlert(`${failedUploads.length} file(s) failed to upload.`);
+      }
+    } catch (err) {
+      console.error("Failed to upload materials", err);
+      showErrorAlert("Network error. Please try again.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+  const getFileIcon = (extension) => {
+    switch (extension?.toLowerCase()) {
+      case "pdf":
+        return <FaFilePdf color="#e84118" />;
+      case "doc":
+      case "docx":
+        return <FaFileWord color="#2b579a" />;
+      case "xls":
+      case "xlsx":
+      case "csv":
+        return <FaFileExcel color="#217346" />;
+      case "ppt":
+      case "pptx":
+        return <FaFilePowerpoint color="#d24726" />;
+      case "jpg":
+      case "jpeg":
+      case "png":
+      case "gif":
+        return <FaFileImage color="#009432" />;
+      case "zip":
+      case "rar":
+        return <FaFileArchive color="#e58e26" />;
+      case "txt":
+        return <FaFileAlt color="#718093" />;
+      case "mp3":
+      case "wav":
+        return <FaFileAudio color="#8e44ad" />;
+      case "mp4":
+      case "avi":
+        return <FaFileVideo color="#2980b9" />;
+      case "js":
+      case "html":
+      case "css":
+        return <FaFileCode color="#f1c40f" />;
+      default:
+        return <FaFileAlt color="#718093" />;
+    }
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
   return (
@@ -345,12 +551,166 @@ const CoursePage = () => {
           )}
 
           {activeTab === "material" && (
-            <div className={styles.materialSection}>
-              <div className={styles.materialIcon}>
-                <FiFolder />
+            <>
+              <div className={styles.uploadFormCard}>
+                <h3>Upload New Materials</h3>
+                <form onSubmit={handleMaterialSubmit} className={styles.form}>
+                  <input
+                    type="text"
+                    name="title"
+                    placeholder="Enter material title..."
+                    value={materialForm.title}
+                    onChange={handleMaterialInputChange}
+                    required
+                    disabled={isUploading}
+                    className={styles.inputField}
+                  />
+
+                  <div className={styles.fileInputWrapper}>
+                    <label
+                      htmlFor="file-upload"
+                      className={styles.fileInputLabel}
+                    >
+                      <FiPlus className={styles.uploadIcon} />
+                      Select Files
+                    </label>
+                    <input
+                     id="file-upload"
+                      type="file"
+                      name="files"
+                      onChange={handleMaterialFileChange}
+                      multiple
+                      className={styles.fileInput}
+                    />
+                  </div>
+
+                  {selectedFiles.length > 0 && (
+                    <div className={styles.filePreviewSection}>
+                      <div className={styles.previewHeader}>
+                        <h4>Selected Files ({selectedFiles.length})</h4>
+                        <button
+                          type="button"
+                          onClick={clearAllFiles}
+                          className={styles.clearAllButton}
+                          disabled={isUploading}
+                        >
+                          Clear All
+                        </button>
+                      </div>
+
+                      <div className={styles.filePreviewGrid}>
+                        {selectedFiles.map((fileData) => (
+                          <div
+                            key={fileData.id}
+                            className={styles.filePreviewCard}
+                          >
+                            <div className={styles.filePreviewHeader}>
+                              <div className={styles.fileIcon}>
+                                {getFileIcon(fileData.extension)}
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => removeFile(fileData.id)}
+                                className={styles.removeFileButton}
+                                disabled={isUploading}
+                              >
+                                <FiX />
+                              </button>
+                            </div>
+
+                            {fileData.preview && (
+                              <div className={styles.imagePreview}>
+                                <img
+                                  src={fileData.preview}
+                                  alt={fileData.name}
+                                  className={styles.previewImage}
+                                />
+                              </div>
+                            )}
+
+                            <div className={styles.fileInfo}>
+                              <p
+                                className={styles.fileName}
+                                title={fileData.name}
+                              >
+                                {fileData.name.length > 20
+                                  ? `${fileData.name.substring(0, 20)}...`
+                                  : fileData.name}
+                              </p>
+                              <p className={styles.fileSize}>
+                                {formatFileSize(fileData.size)}
+                              </p>
+                              <p className={styles.fileType}>
+                                {fileData.extension?.toUpperCase() || "Unknown"}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={isUploading || selectedFiles.length === 0}
+                    className={styles.submitButton}
+                  >
+                    {isUploading ? (
+                      <>
+                        <FiLoader
+                          className={`${styles.buttonIcon} ${styles.spinning}`}
+                        />
+                        Uploading {selectedFiles.length} file(s)...
+                      </>
+                    ) : (
+                      <>
+                        <FiUpload className={styles.buttonIcon} />
+                        Upload {selectedFiles.length} Material(s)
+                      </>
+                    )}
+                  </button>
+                </form>
               </div>
-              <h3>Course Materials</h3>
-            </div>
+
+              <div className={styles.materialsGrid}>
+                <h3>Course Materials</h3>
+                {materials.length > 0 ? (
+                  materials.map((material) => {
+                    const fileExtension = material.fileName?.split(".").pop();
+                    return (
+                      <div key={material.id} className={styles.materialCard}>
+                        <div className={styles.materialIcon}>
+                          {getFileIcon(fileExtension)}
+                        </div>
+                        <div className={styles.materialInfo}>
+                          <h4>{material.title}</h4>
+                          <p className={styles.fileName}>{material.fileName}</p>
+                          <small>
+                            Uploaded:{" "}
+                            {new Date(material.uploadedAt).toLocaleString()}
+                          </small>
+                        </div>
+                        <button
+                          className={styles.downloadButton}
+                          onClick={() =>
+                            window.open(
+                              `https://localhost:7072/api/Material/download/${material.id}`,
+                              "_blank"
+                            )
+                          }
+                        >
+                          <FiDownload />
+                        </button>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className={styles.noMaterials}>
+                    <p>No materials uploaded yet.</p>
+                  </div>
+                )}
+              </div>
+            </>
           )}
 
           {activeTab === "allPosts" && (
@@ -358,16 +718,12 @@ const CoursePage = () => {
               <h3>All Posts for This Course</h3>
               {posts.length > 0 ? (
                 posts.map((post) => {
-                  const postKey = `${post.courseId || id}-${post.staffId || 1}`;
-                  const isCommentsExpanded = expandedComments[postKey];
-                  const postComments = comments[postKey] || [];
-                  const isSubmittingComment = submittingComments[postKey];
+                  const isCommentsExpanded = expandedComments[post.id];
+                  const postComments = comments[post.id] || [];
+                  const isSubmittingComment = submittingComments[post.id];
 
                   return (
-                    <div
-                      key={`${post.title}-${post.uploadedAt}`}
-                      className={styles.postCard}
-                    >
+                    <div key={post.id} className={styles.postCard}>
                       <h4>{post.title}</h4>
                       <p>{post.content}</p>
                       {post.image && (
@@ -384,12 +740,7 @@ const CoursePage = () => {
                       <div className={styles.commentsSection}>
                         <button
                           className={styles.commentsToggle}
-                          onClick={() =>
-                            toggleComments(
-                              post.courseId || id,
-                              post.staffId || 1
-                            )
-                          }
+                          onClick={() => toggleComments(post.id)}
                         >
                           <FiMessageCircle className={styles.buttonIcon} />
                           Comments ({postComments.length})
@@ -405,9 +756,9 @@ const CoursePage = () => {
                             <div className={styles.addCommentForm}>
                               <textarea
                                 placeholder="Write a comment..."
-                                value={commentForms[postKey] || ""}
+                                value={commentForms[post.id] || ""}
                                 onChange={(e) =>
-                                  handleCommentChange(postKey, e.target.value)
+                                  handleCommentChange(post.id, e.target.value)
                                 }
                                 className={styles.commentTextarea}
                                 disabled={isSubmittingComment}
@@ -415,11 +766,14 @@ const CoursePage = () => {
                               <button
                                 onClick={() =>
                                   handleCommentSubmit(
-                                    post.courseId || id,
-                                    post.staffId || 1
+                                    post.id,
+                                    commentForms[post.id] || ""
                                   )
                                 }
-                                disabled={isSubmittingComment}
+                                disabled={
+                                  isSubmittingComment ||
+                                  !commentForms[post.id]?.trim()
+                                }
                                 className={styles.addCommentButton}
                               >
                                 {isSubmittingComment ? (
@@ -442,7 +796,7 @@ const CoursePage = () => {
                               {postComments.length > 0 ? (
                                 postComments.map((comment, index) => (
                                   <div
-                                    key={index}
+                                    key={comment.id || index}
                                     className={styles.commentItem}
                                   >
                                     <div className={styles.commentContent}>
@@ -450,9 +804,9 @@ const CoursePage = () => {
                                     </div>
                                     <div className={styles.commentMeta}>
                                       <small>
-                                        {comment.createdAt
+                                        {comment.sentAt
                                           ? new Date(
-                                              comment.createdAt
+                                              comment.sentAt
                                             ).toLocaleString()
                                           : "Just now"}
                                       </small>
