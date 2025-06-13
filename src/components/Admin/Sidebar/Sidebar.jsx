@@ -29,12 +29,12 @@ export default function Sidebar({ isOpen }) {
           </Link>
         </li>
         <li className={styles.navItem}>
-          <Link to="/lecture-scheduler">
+          <Link to="/admin/lectureScheduler">
             <FaChalkboardTeacher /> Lecture Scheduler
           </Link>
         </li>
         <li className={styles.navItem}>
-          <Link to="/professor-scheduler">
+          <Link to="/admin/professorScheduler">
             <FaUniversity /> Professor Scheduler
           </Link>
         </li>

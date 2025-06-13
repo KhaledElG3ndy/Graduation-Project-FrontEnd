@@ -1039,6 +1039,7 @@
   box-shadow: 0 8px 24px rgba(0, 86, 179, 0.3);
 }
 .filePreviewSection {
+  width: 1200px;
   margin: 20px 0;
   padding: 20px;
   background: #f8f9fa;

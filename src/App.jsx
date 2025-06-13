@@ -29,6 +29,8 @@ import CreateChannel from "./Pages/Professor/CreateChannel/CreateChannel";
 import UpdateNews from "./Pages/Admin/UpdateNews/UpdateNews";
 import UpdateForm from "./Pages/Admin/UpdateNews/UpdateForm";
 import CoursePage from "./Pages/Professor/CoursePage/CoursePage";
+import LectureScheduler from "./Pages/Admin/LectureScheduler/LectureScheduler";
+import ProfessorScheduler from "./Pages/Admin/ProfessorScheduler/ProfessorScheduler";
 
 function App() {
   const { isDarkMode, toggleTheme } = useDarkMode();
@@ -69,6 +71,11 @@ function App() {
         />
         <Route path="/Admin/Departments" element={<Departments />} />
         <Route path="/Admin/AddDepartment" element={<AddDepartmentPage />} />
+        <Route path="/Admin/LectureScheduler" element={<LectureScheduler />} />
+        <Route
+          path="/Admin/professorScheduler"
+          element={<ProfessorScheduler />}
+        />
         <Route path="/News" element={<News />} />
         <Route path="/NewsCRUD" element={<NewsCRUD />} />
         <Route path="/Posts" element={<Posts />} />

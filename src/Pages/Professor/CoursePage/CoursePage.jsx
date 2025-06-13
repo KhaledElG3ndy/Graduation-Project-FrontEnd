@@ -56,7 +56,7 @@ const CoursePage = () => {
   const [materials, setMaterials] = useState([]);
   const [materialForm, setMaterialForm] = useState({
     title: "",
-    files: [], 
+    files: [],
   });
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -121,7 +121,9 @@ const CoursePage = () => {
 
   const fetchMaterials = async () => {
     try {
-      const res = await fetch(`https://localhost:7072/api/Material/${id}`);
+      const res = await fetch(
+        `https://localhost:7072/api/Materials/getAllMaterials/${id}`
+      );
       const data = await res.json();
       setMaterials(
         Array.isArray(data)
@@ -342,7 +344,6 @@ const CoursePage = () => {
     });
   };
 
-
   const removeFile = (fileId) => {
     setSelectedFiles((prev) => {
       const updatedFiles = prev.filter((f) => f.id !== fileId);
@@ -375,10 +376,19 @@ const CoursePage = () => {
     setSelectedFiles([]);
     setMaterialForm({ ...materialForm, files: [] });
   };
-
   const handleMaterialSubmit = async (e) => {
     e.preventDefault();
+
+    console.groupCollapsed("Material Upload Debug");
+    console.time("Upload Duration");
+
+    console.log(`Starting upload at ${new Date().toLocaleTimeString()}`);
+    console.log(`Title: ${materialForm.title}`);
+    console.log(`Files to upload: ${materialForm.files.length}`);
+
     if (!materialForm.title || materialForm.files.length === 0) {
+      console.error("Validation failed: Title or files missing");
+      console.groupEnd();
       showErrorAlert("Please provide a title and select at least one file.");
       return;
     }
@@ -386,37 +396,61 @@ const CoursePage = () => {
     setIsUploading(true);
 
     try {
-      const uploadPromises = materialForm.files.map(async (file) => {
-        const formData = new FormData();
-        formData.append("Title", `${materialForm.title} - ${file.name}`);
-        formData.append("File", file);
-        formData.append("CourseId", course.id);
-        formData.append("StaffId", 1);
+      const formData = new FormData();
+      formData.append("Id", 0);
+      formData.append("Name", materialForm.title);
+      formData.append("StaffId", 7);
+      formData.append("CourseId", course.id);
 
-        return fetch("https://localhost:7072/api/Material", {
-          method: "POST",
-          body: formData,
-        });
+      const file = materialForm.files[0];
+
+      if (file) {
+        formData.append("File", file);
+        console.log(`Adding file: ${file.name} (${formatFileSize(file.size)})`);
+      }
+      console.log("FormData contents:");
+      for (let [key, value] of formData.entries()) {
+        console.log(
+          `  ${key}: ${value instanceof File ? value.name + " (file)" : value}`
+        );
+      }
+
+      console.log(
+        "Sending request to: https://localhost:7072/Courses/Material"
+      );
+      console.log({ formData });
+
+      const response = await fetch("https://localhost:7072/api/Materials", {
+        method: "POST",
+        body: formData,
       });
 
-      const responses = await Promise.all(uploadPromises);
-      const failedUploads = responses.filter((res) => !res.ok);
+      console.log(`Server response: ${response.status} ${response.statusText}`);
 
-      if (failedUploads.length === 0) {
-        showSuccessAlert(
-          `Successfully uploaded ${materialForm.files.length} file(s)!`
-        );
+      if (response.ok) {
+        const successMsg = `Successfully uploaded ${materialForm.files.length} file(s)!`;
+        console.log(successMsg);
+        showSuccessAlert(successMsg);
         setMaterialForm({ title: "", files: [] });
         clearAllFiles();
         fetchMaterials();
       } else {
-        showErrorAlert(`${failedUploads.length} file(s) failed to upload.`);
+        const errorData = await response.json().catch(() => ({}));
+        const errorMsg = `Upload failed: ${
+          errorData.message || response.statusText
+        }`;
+        console.error(errorMsg);
+        showErrorAlert(errorMsg);
       }
     } catch (err) {
-      console.error("Failed to upload materials", err);
+      const errorMsg = `Network error: ${err.message}`;
+      console.error(errorMsg);
       showErrorAlert("Network error. Please try again.");
     } finally {
       setIsUploading(false);
+
+      console.timeEnd("Upload Duration");
+      console.groupEnd();
     }
   };
   const getFileIcon = (extension) => {
@@ -575,7 +609,7 @@ const CoursePage = () => {
                       Select Files
                     </label>
                     <input
-                     id="file-upload"
+                      id="file-upload"
                       type="file"
                       name="files"
                       onChange={handleMaterialFileChange}
