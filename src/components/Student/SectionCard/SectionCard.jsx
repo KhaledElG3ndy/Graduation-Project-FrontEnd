@@ -1,9 +1,17 @@
 import React from "react";
 import styles from "./SectionCard.module.css";
 import { useDarkMode } from "../../../contexts/ThemeContext";
+import { useNavigate } from "react-router-dom";
 
-const SectionCard = ({ title, description, buttonText, image }) => {
+const SectionCard = ({ title, description, buttonText, image, route }) => {
   const { isDarkMode } = useDarkMode();
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    if (route) {
+      navigate(route);
+    }
+  };
 
   return (
     <div
@@ -30,7 +38,9 @@ const SectionCard = ({ title, description, buttonText, image }) => {
           </p>
         </div>
         <div className={styles.bottomSection}>
-          <button className={styles.button}>{buttonText}</button>
+          <button className={styles.button} onClick={handleClick}>
+            {buttonText}
+          </button>
         </div>
       </div>
       <div className={styles.imageContainer}>
@@ -39,4 +49,5 @@ const SectionCard = ({ title, description, buttonText, image }) => {
     </div>
   );
 };
+
 export default SectionCard;

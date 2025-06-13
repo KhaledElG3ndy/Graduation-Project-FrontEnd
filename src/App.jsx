@@ -31,6 +31,7 @@ import UpdateForm from "./Pages/Admin/UpdateNews/UpdateForm";
 import CoursePage from "./Pages/Professor/CoursePage/CoursePage";
 import LectureScheduler from "./Pages/Admin/LectureScheduler/LectureScheduler";
 import ProfessorScheduler from "./Pages/Admin/ProfessorScheduler/ProfessorScheduler";
+import Study from "./Pages/Student/Study/Study";
 
 function App() {
   const { isDarkMode, toggleTheme } = useDarkMode();
@@ -52,19 +53,15 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/Login/signin" element={<SignInPage />} />
+        <Route path="/student/study" element={<Study />} />
         <Route path="/Admin" element={<AdminHomePage />} />
         <Route path="/Admin/AddNews" element={<AddNews />} />
-        <Route path="/Professor" element={<Professor />} />
-        <Route path="/Professor/AddPost" element={<AddPost />} />
-        <Route path="/Professor/Channels" element={<Channels />} />
-        <Route path="/Professor/Subjects" element={<Subjects />} />
-        <Route path="/Professor/CreateChannel" element={<CreateChannel />} />
-        <Route path="/course/:id" element={<CoursePage />} />
         <Route path="/Admin/CreateAccounts" element={<AdminCreateAccounts />} />
         <Route path="/Admin/EmailCRUD" element={<EmailCRUD />} />
         <Route path="/Admin/EditAccount" element={<EditAccount />} />
         <Route path="/Admin/AddSubjects" element={<AddSubjects />} />
         <Route path="/Admin/UpdateNews" element={<UpdateNews />} />
+
         <Route
           path="/Admin/UpdateNews/UpdateForm/:id"
           element={<UpdateForm />}
@@ -80,6 +77,13 @@ function App() {
         <Route path="/NewsCRUD" element={<NewsCRUD />} />
         <Route path="/Posts" element={<Posts />} />
         <Route path="/Profile" element={<Profile />} />
+
+        <Route path="/Professor" element={<Professor />} />
+        <Route path="/Professor/AddPost" element={<AddPost />} />
+        <Route path="/Professor/Channels" element={<Channels />} />
+        <Route path="/Professor/Subjects" element={<Subjects />} />
+        <Route path="/Professor/CreateChannel" element={<CreateChannel />} />
+        <Route path="/course/:id" element={<CoursePage />} />
       </Routes>
     </div>
   );

@@ -2,25 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import {
-  FiEdit3,
-  FiBook,
-  FiFolder,
-  FiUpload,
-  FiSend,
-  FiLoader,
-  FiFileText,
-  FiMessageCircle,
-  FiChevronDown,
-  FiChevronUp,
-  FiDownload,
-  FiFile,
-  FiImage,
-  FiArchive,
-  FiX,
-  FiEye,
-  FiPlus,
-} from "react-icons/fi";
-import {
   FaFilePdf,
   FaFileWord,
   FaFileExcel,
@@ -34,6 +15,12 @@ import {
 } from "react-icons/fa";
 import styles from "./CoursePage.module.css";
 import Header from "../../../components/Professor/Header/Header";
+import Sidebar from "../../../components/Professor/channel/Sidebar";
+import PostForm from "../../../components/Professor/channel/PostForm";
+import MaterialForm from "../../../components/Professor/channel/MaterialForm";
+import MaterialGrid from "../../../components/Professor/channel/MaterialGrid";
+import PostsList from "../../../components/Professor/channel/PostsList";
+import PreviewModal from "../../../components/Professor/channel/PreviewModal";
 
 const CoursePage = () => {
   const { id } = useParams();
@@ -60,6 +47,11 @@ const CoursePage = () => {
   });
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
+
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [previewType, setPreviewType] = useState("");
+  const [previewFileName, setPreviewFileName] = useState("");
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -144,6 +136,22 @@ const CoursePage = () => {
     }
   }, [activeTab]);
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setIsPreviewModalOpen(false);
+      }
+    };
+
+    if (isPreviewModalOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isPreviewModalOpen]);
+
   const showSuccessAlert = (message) => {
     Swal.fire({
       icon: "success",
@@ -216,7 +224,6 @@ const CoursePage = () => {
         const fileInput = document.querySelector('input[type="file"]');
         if (fileInput) fileInput.value = "";
       } else {
-        console.log({ formData });
         const errorData = await res.json().catch(() => ({}));
         showErrorAlert(errorData.message || "Failed to add post.");
       }
@@ -305,7 +312,6 @@ const CoursePage = () => {
   };
 
   const handleMaterialFileChange = (e) => {
-    console.log("File input changed", e.target.files);
     const files = Array.from(e.target.files);
     const maxSize = 10 * 1024 * 1024;
     const validFiles = [];
@@ -347,7 +353,6 @@ const CoursePage = () => {
   const removeFile = (fileId) => {
     setSelectedFiles((prev) => {
       const updatedFiles = prev.filter((f) => f.id !== fileId);
-
       const removedFile = prev.find((f) => f.id === fileId);
       if (removedFile && removedFile.preview) {
         URL.revokeObjectURL(removedFile.preview);
@@ -376,19 +381,11 @@ const CoursePage = () => {
     setSelectedFiles([]);
     setMaterialForm({ ...materialForm, files: [] });
   };
+
   const handleMaterialSubmit = async (e) => {
     e.preventDefault();
 
-    console.groupCollapsed("Material Upload Debug");
-    console.time("Upload Duration");
-
-    console.log(`Starting upload at ${new Date().toLocaleTimeString()}`);
-    console.log(`Title: ${materialForm.title}`);
-    console.log(`Files to upload: ${materialForm.files.length}`);
-
     if (!materialForm.title || materialForm.files.length === 0) {
-      console.error("Validation failed: Title or files missing");
-      console.groupEnd();
       showErrorAlert("Please provide a title and select at least one file.");
       return;
     }
@@ -403,56 +400,34 @@ const CoursePage = () => {
       formData.append("CourseId", course.id);
 
       const file = materialForm.files[0];
-
       if (file) {
         formData.append("File", file);
-        console.log(`Adding file: ${file.name} (${formatFileSize(file.size)})`);
       }
-      console.log("FormData contents:");
-      for (let [key, value] of formData.entries()) {
-        console.log(
-          `  ${key}: ${value instanceof File ? value.name + " (file)" : value}`
-        );
-      }
-
-      console.log(
-        "Sending request to: https://localhost:7072/Courses/Material"
-      );
-      console.log({ formData });
 
       const response = await fetch("https://localhost:7072/api/Materials", {
         method: "POST",
         body: formData,
       });
 
-      console.log(`Server response: ${response.status} ${response.statusText}`);
-
       if (response.ok) {
         const successMsg = `Successfully uploaded ${materialForm.files.length} file(s)!`;
-        console.log(successMsg);
         showSuccessAlert(successMsg);
         setMaterialForm({ title: "", files: [] });
         clearAllFiles();
         fetchMaterials();
       } else {
         const errorData = await response.json().catch(() => ({}));
-        const errorMsg = `Upload failed: ${
-          errorData.message || response.statusText
-        }`;
-        console.error(errorMsg);
-        showErrorAlert(errorMsg);
+        showErrorAlert(
+          `Upload failed: ${errorData.message || response.statusText}`
+        );
       }
     } catch (err) {
-      const errorMsg = `Network error: ${err.message}`;
-      console.error(errorMsg);
       showErrorAlert("Network error. Please try again.");
     } finally {
       setIsUploading(false);
-
-      console.timeEnd("Upload Duration");
-      console.groupEnd();
     }
   };
+
   const getFileIcon = (extension) => {
     switch (extension?.toLowerCase()) {
       case "pdf":
@@ -500,374 +475,75 @@ const CoursePage = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
+  const handlePreview = (materialId, extension, fileName) => {
+    const url = `https://localhost:7072/api/Material/download/${materialId}`;
+    setPreviewUrl(url);
+    setPreviewType(extension.toLowerCase());
+    setPreviewFileName(fileName);
+    setIsPreviewModalOpen(true);
+  };
+
   return (
     <>
       <Header />
       <div className={styles.container}>
-        <aside className={styles.sidebar}>
-          <h2 className={subjectName === "Loading..." ? styles.loading : ""}>
-            {subjectName}
-          </h2>
-          <button
-            onClick={() => handleTabChange("addPost")}
-            className={activeTab === "addPost" ? styles.active : ""}
-          >
-            <FiEdit3 className={styles.buttonIcon} />
-            Add Post
-          </button>
-          <button
-            onClick={() => handleTabChange("material")}
-            className={activeTab === "material" ? styles.active : ""}
-          >
-            <FiBook className={styles.buttonIcon} />
-            Material
-          </button>
-          <button
-            onClick={() => handleTabChange("allPosts")}
-            className={activeTab === "allPosts" ? styles.active : ""}
-          >
-            <FiFileText className={styles.buttonIcon} />
-            All Posts
-          </button>
-        </aside>
-
+        <Sidebar
+          subjectName={subjectName}
+          activeTab={activeTab}
+          handleTabChange={handleTabChange}
+        />
         <main className={styles.content}>
           {activeTab === "addPost" && (
-            <div>
-              <h3>Add a New Post</h3>
-              <form onSubmit={handlePostSubmit} className={styles.form}>
-                <input
-                  type="text"
-                  name="title"
-                  placeholder="Enter post title..."
-                  value={postForm.title}
-                  onChange={handleInputChange}
-                  required
-                  disabled={isSubmitting}
-                />
-                <textarea
-                  name="content"
-                  placeholder="Write your post content here..."
-                  value={postForm.content}
-                  onChange={handleInputChange}
-                  required
-                  disabled={isSubmitting}
-                />
-                <input
-                  type="file"
-                  name="image"
-                  onChange={handleFileChange}
-                  accept="image/*"
-                  required
-                  disabled={isSubmitting}
-                />
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className={styles.submitButton}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <FiLoader
-                        className={`${styles.buttonIcon} ${styles.spinning}`}
-                      />
-                      Submitting...
-                    </>
-                  ) : (
-                    <>
-                      <FiSend className={styles.buttonIcon} />
-                      Submit Post
-                    </>
-                  )}
-                </button>
-              </form>
-            </div>
+            <PostForm
+              postForm={postForm}
+              handleInputChange={handleInputChange}
+              handleFileChange={handleFileChange}
+              handlePostSubmit={handlePostSubmit}
+              isSubmitting={isSubmitting}
+            />
           )}
-
           {activeTab === "material" && (
             <>
-              <div className={styles.uploadFormCard}>
-                <h3>Upload New Materials</h3>
-                <form onSubmit={handleMaterialSubmit} className={styles.form}>
-                  <input
-                    type="text"
-                    name="title"
-                    placeholder="Enter material title..."
-                    value={materialForm.title}
-                    onChange={handleMaterialInputChange}
-                    required
-                    disabled={isUploading}
-                    className={styles.inputField}
-                  />
-
-                  <div className={styles.fileInputWrapper}>
-                    <label
-                      htmlFor="file-upload"
-                      className={styles.fileInputLabel}
-                    >
-                      <FiPlus className={styles.uploadIcon} />
-                      Select Files
-                    </label>
-                    <input
-                      id="file-upload"
-                      type="file"
-                      name="files"
-                      onChange={handleMaterialFileChange}
-                      multiple
-                      className={styles.fileInput}
-                    />
-                  </div>
-
-                  {selectedFiles.length > 0 && (
-                    <div className={styles.filePreviewSection}>
-                      <div className={styles.previewHeader}>
-                        <h4>Selected Files ({selectedFiles.length})</h4>
-                        <button
-                          type="button"
-                          onClick={clearAllFiles}
-                          className={styles.clearAllButton}
-                          disabled={isUploading}
-                        >
-                          Clear All
-                        </button>
-                      </div>
-
-                      <div className={styles.filePreviewGrid}>
-                        {selectedFiles.map((fileData) => (
-                          <div
-                            key={fileData.id}
-                            className={styles.filePreviewCard}
-                          >
-                            <div className={styles.filePreviewHeader}>
-                              <div className={styles.fileIcon}>
-                                {getFileIcon(fileData.extension)}
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => removeFile(fileData.id)}
-                                className={styles.removeFileButton}
-                                disabled={isUploading}
-                              >
-                                <FiX />
-                              </button>
-                            </div>
-
-                            {fileData.preview && (
-                              <div className={styles.imagePreview}>
-                                <img
-                                  src={fileData.preview}
-                                  alt={fileData.name}
-                                  className={styles.previewImage}
-                                />
-                              </div>
-                            )}
-
-                            <div className={styles.fileInfo}>
-                              <p
-                                className={styles.fileName}
-                                title={fileData.name}
-                              >
-                                {fileData.name.length > 20
-                                  ? `${fileData.name.substring(0, 20)}...`
-                                  : fileData.name}
-                              </p>
-                              <p className={styles.fileSize}>
-                                {formatFileSize(fileData.size)}
-                              </p>
-                              <p className={styles.fileType}>
-                                {fileData.extension?.toUpperCase() || "Unknown"}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <button
-                    type="submit"
-                    disabled={isUploading || selectedFiles.length === 0}
-                    className={styles.submitButton}
-                  >
-                    {isUploading ? (
-                      <>
-                        <FiLoader
-                          className={`${styles.buttonIcon} ${styles.spinning}`}
-                        />
-                        Uploading {selectedFiles.length} file(s)...
-                      </>
-                    ) : (
-                      <>
-                        <FiUpload className={styles.buttonIcon} />
-                        Upload {selectedFiles.length} Material(s)
-                      </>
-                    )}
-                  </button>
-                </form>
-              </div>
-
-              <div className={styles.materialsGrid}>
-                <h3>Course Materials</h3>
-                {materials.length > 0 ? (
-                  materials.map((material) => {
-                    const fileExtension = material.fileName?.split(".").pop();
-                    return (
-                      <div key={material.id} className={styles.materialCard}>
-                        <div className={styles.materialIcon}>
-                          {getFileIcon(fileExtension)}
-                        </div>
-                        <div className={styles.materialInfo}>
-                          <h4>{material.title}</h4>
-                          <p className={styles.fileName}>{material.fileName}</p>
-                          <small>
-                            Uploaded:{" "}
-                            {new Date(material.uploadedAt).toLocaleString()}
-                          </small>
-                        </div>
-                        <button
-                          className={styles.downloadButton}
-                          onClick={() =>
-                            window.open(
-                              `https://localhost:7072/api/Material/download/${material.id}`,
-                              "_blank"
-                            )
-                          }
-                        >
-                          <FiDownload />
-                        </button>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div className={styles.noMaterials}>
-                    <p>No materials uploaded yet.</p>
-                  </div>
-                )}
-              </div>
+              <MaterialForm
+                materialForm={materialForm}
+                handleMaterialInputChange={handleMaterialInputChange}
+                handleMaterialFileChange={handleMaterialFileChange}
+                selectedFiles={selectedFiles}
+                removeFile={removeFile}
+                clearAllFiles={clearAllFiles}
+                handleMaterialSubmit={handleMaterialSubmit}
+                isUploading={isUploading}
+                getFileIcon={getFileIcon}
+                formatFileSize={formatFileSize}
+              />
+              <MaterialGrid
+                materials={materials}
+                getFileIcon={getFileIcon}
+                handlePreview={handlePreview}
+              />
             </>
           )}
-
           {activeTab === "allPosts" && (
-            <div className={styles.postsContainer}>
-              <h3>All Posts for This Course</h3>
-              {posts.length > 0 ? (
-                posts.map((post) => {
-                  const isCommentsExpanded = expandedComments[post.id];
-                  const postComments = comments[post.id] || [];
-                  const isSubmittingComment = submittingComments[post.id];
-
-                  return (
-                    <div key={post.id} className={styles.postCard}>
-                      <h4>{post.title}</h4>
-                      <p>{post.content}</p>
-                      {post.image && (
-                        <img
-                          src={`data:image/jpeg;base64,${post.image}`}
-                          alt="Post"
-                          className={styles.postImage}
-                        />
-                      )}
-                      <small>
-                        Uploaded: {new Date(post.uploadedAt).toLocaleString()}
-                      </small>
-
-                      <div className={styles.commentsSection}>
-                        <button
-                          className={styles.commentsToggle}
-                          onClick={() => toggleComments(post.id)}
-                        >
-                          <FiMessageCircle className={styles.buttonIcon} />
-                          Comments ({postComments.length})
-                          {isCommentsExpanded ? (
-                            <FiChevronUp className={styles.chevronIcon} />
-                          ) : (
-                            <FiChevronDown className={styles.chevronIcon} />
-                          )}
-                        </button>
-
-                        {isCommentsExpanded && (
-                          <div className={styles.commentsContainer}>
-                            <div className={styles.addCommentForm}>
-                              <textarea
-                                placeholder="Write a comment..."
-                                value={commentForms[post.id] || ""}
-                                onChange={(e) =>
-                                  handleCommentChange(post.id, e.target.value)
-                                }
-                                className={styles.commentTextarea}
-                                disabled={isSubmittingComment}
-                              />
-                              <button
-                                onClick={() =>
-                                  handleCommentSubmit(
-                                    post.id,
-                                    commentForms[post.id] || ""
-                                  )
-                                }
-                                disabled={
-                                  isSubmittingComment ||
-                                  !commentForms[post.id]?.trim()
-                                }
-                                className={styles.addCommentButton}
-                              >
-                                {isSubmittingComment ? (
-                                  <>
-                                    <FiLoader
-                                      className={`${styles.buttonIcon} ${styles.spinning}`}
-                                    />
-                                    Adding...
-                                  </>
-                                ) : (
-                                  <>
-                                    <FiSend className={styles.buttonIcon} />
-                                    Add Comment
-                                  </>
-                                )}
-                              </button>
-                            </div>
-
-                            <div className={styles.commentsList}>
-                              {postComments.length > 0 ? (
-                                postComments.map((comment, index) => (
-                                  <div
-                                    key={comment.id || index}
-                                    className={styles.commentItem}
-                                  >
-                                    <div className={styles.commentContent}>
-                                      {comment.content}
-                                    </div>
-                                    <div className={styles.commentMeta}>
-                                      <small>
-                                        {comment.sentAt
-                                          ? new Date(
-                                              comment.sentAt
-                                            ).toLocaleString()
-                                          : "Just now"}
-                                      </small>
-                                    </div>
-                                  </div>
-                                ))
-                              ) : (
-                                <div className={styles.noComments}>
-                                  <p>No comments yet.</p>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className={styles.noPosts}>
-                  <p>No posts found for this course.</p>
-                </div>
-              )}
-            </div>
+            <PostsList
+              posts={posts}
+              comments={comments}
+              expandedComments={expandedComments}
+              toggleComments={toggleComments}
+              commentForms={commentForms}
+              handleCommentChange={handleCommentChange}
+              handleCommentSubmit={handleCommentSubmit}
+              submittingComments={submittingComments}
+            />
           )}
         </main>
       </div>
+      <PreviewModal
+        isPreviewModalOpen={isPreviewModalOpen}
+        setIsPreviewModalOpen={setIsPreviewModalOpen}
+        previewUrl={previewUrl}
+        previewType={previewType}
+        previewFileName={previewFileName}
+      />
     </>
   );
 };

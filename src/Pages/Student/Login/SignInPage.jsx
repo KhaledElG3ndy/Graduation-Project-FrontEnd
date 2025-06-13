@@ -49,6 +49,7 @@ const SignInForm = () => {
       document.cookie = `token=${data.token}; path=/; max-age=1800`;
 
       sessionStorage.setItem("isLogged", JSON.stringify(true));
+      sessionStorage.setItem("Token", data.token);
 
       const payload = parseJwt(data.token);
       console.log("Decoded JWT Payload:", payload);

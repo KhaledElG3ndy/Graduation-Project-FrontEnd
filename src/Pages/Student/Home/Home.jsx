@@ -34,6 +34,7 @@ const Home = () => {
         "Gain access to a comprehensive collection of study materials, including lecture notes, e-books, and practice questions. Enhance your learning experience with interactive resources tailored to your courses.",
       buttonText: "Explore Study",
       image: study,
+      route: "/student/study",
     },
     {
       id: 2,
@@ -42,6 +43,7 @@ const Home = () => {
         "Stay informed with the latest updates from your college, including important announcements, event schedules, policy changes, and achievements. Never miss out on crucial information about campus life.",
       buttonText: "Read News",
       image: news,
+      route: "/student/news",
     },
     {
       id: 3,
@@ -50,6 +52,7 @@ const Home = () => {
         "Effortlessly connect with classmates, professors, and academic staff through chat, forums, and discussion boards. Share ideas, collaborate on projects, and stay engaged with your academic community.",
       buttonText: "Start Communicating",
       image: Communication,
+      route: "/student/communication",
     },
     {
       id: 4,
@@ -58,6 +61,7 @@ const Home = () => {
         "Receive personalized academic advice and career counseling from experienced mentors. Get support for course selection, career planning, and skill development to achieve your academic and professional goals.",
       buttonText: "Seek Guidance",
       image: guide,
+      route: "/student/guidance",
     },
     {
       id: 5,
@@ -66,8 +70,10 @@ const Home = () => {
         "Easily check your class schedules, faculty office hours, and exam timetables. Stay organized and plan your academic activities efficiently with up-to-date scheduling information.",
       buttonText: "View Schedule",
       image: schedule,
+      route: "/student/schedules",
     },
   ];
+  
 
   return (
     <div>

@@ -14,8 +14,17 @@ const Subjects = () => {
     const fetchSubjects = async () => {
       try {
         const response = await fetch(
-          "https://localhost:7072/Subjects/GetSubjects"
+          "https://localhost:7072/Subjects/GetSubjects",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${sessionStorage.getItem("Token")}`,
+            },
+          }
         );
+        console.log(sessionStorage.getItem("Token"));
+
         if (!response.ok) throw new Error("Failed to fetch subjects");
         const data = await response.json();
         setSubjects(data);

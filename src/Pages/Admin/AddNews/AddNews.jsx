@@ -48,7 +48,7 @@ export default function AddNews() {
     const api_url = "https://localhost:7072/api/News";
 
     const data = new FormData();
-    data.append("staffId", 1);
+    data.append("staffId", 7);
     data.append("title", title);
     data.append("content", content);
     data.append("image", image);
@@ -57,6 +57,9 @@ export default function AddNews() {
     try {
       const response = await fetch(api_url, {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${sessionStorage.getItem("Token")}`,
+        },
         body: data,
       });
 
