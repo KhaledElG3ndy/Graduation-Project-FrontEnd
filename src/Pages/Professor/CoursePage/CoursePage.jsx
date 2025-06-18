@@ -12,6 +12,8 @@ import {
   FaFileCode,
   FaFileAudio,
   FaFileVideo,
+  FaSpinner,
+  FaPaperPlane,
 } from "react-icons/fa";
 import styles from "./CoursePage.module.css";
 import Header from "../../../components/Professor/Header/Header";
@@ -21,6 +23,7 @@ import MaterialForm from "../../../components/Professor/channel/MaterialForm";
 import MaterialGrid from "../../../components/Professor/channel/MaterialGrid";
 import PostsList from "../../../components/Professor/channel/PostsList";
 import PreviewModal from "../../../components/Professor/channel/PreviewModal";
+import ExamMain from "../../../components/Professor/Exam/ExamMain";
 
 const CoursePage = () => {
   const { id } = useParams();
@@ -202,15 +205,25 @@ const CoursePage = () => {
 
   const handlePostSubmit = async (e) => {
     e.preventDefault();
+
+    if (!postForm.title.trim() || !postForm.content.trim()) {
+      showErrorAlert("Please fill all required fields");
+      return;
+    }
+
     setIsSubmitting(true);
 
     const formData = new FormData();
-    formData.append("id", 0);
+    formData.append("id", "0");
     formData.append("Title", postForm.title);
     formData.append("Content", postForm.content);
-    formData.append("Image", postForm.image);
-    formData.append("CourseId", course.id);
-    formData.append("StaffId", 7);
+
+    if (postForm.image) {
+      formData.append("Image", postForm.image);
+    }
+
+    formData.append("CourseId", course.id.toString());
+    formData.append("StaffId", "1");
 
     try {
       const res = await fetch("https://localhost:7072/api/Post", {
@@ -223,9 +236,13 @@ const CoursePage = () => {
         setPostForm({ title: "", content: "", image: null });
         const fileInput = document.querySelector('input[type="file"]');
         if (fileInput) fileInput.value = "";
+
+        if (activeTab === "allPosts") {
+          fetchPosts();
+        }
       } else {
-        const errorData = await res.json().catch(() => ({}));
-        showErrorAlert(errorData.message || "Failed to add post.");
+        const errorText = await res.text();
+        showErrorAlert(errorText || "Failed to add post.");
       }
     } catch (err) {
       console.error(err);
@@ -273,7 +290,7 @@ const CoursePage = () => {
     const formData = new FormData();
     formData.append("PostId", postId.toString());
     formData.append("Content", content);
-    formData.append("CommenterId", "7");
+    formData.append("CommenterId", "1"); 
 
     try {
       const response = await fetch(
@@ -285,7 +302,6 @@ const CoursePage = () => {
       );
 
       if (response.ok) {
-        showSuccessAlert("Comment added successfully!");
         setCommentForms((prev) => ({
           ...prev,
           [postId]: "",
@@ -396,7 +412,7 @@ const CoursePage = () => {
       const formData = new FormData();
       formData.append("Id", 0);
       formData.append("Name", materialForm.title);
-      formData.append("StaffId", 7);
+      formData.append("StaffId", "1");
       formData.append("CourseId", course.id);
 
       const file = materialForm.files[0];
@@ -533,6 +549,16 @@ const CoursePage = () => {
               handleCommentChange={handleCommentChange}
               handleCommentSubmit={handleCommentSubmit}
               submittingComments={submittingComments}
+            />
+          )}
+          {activeTab === "exam" && (
+            <ExamMain
+              subjectName={subjectName}
+              courseId={course?.id}
+              onSuccess={(message) => {
+                showSuccessAlert(message);
+                setActiveTab("allPosts");
+              }}
             />
           )}
         </main>

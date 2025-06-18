@@ -25,21 +25,33 @@ const CreateStudentAccount = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (
+      !firstName ||
+      !lastName ||
+      !phoneNumber ||
+      !nationalId ||
+      (role === "student" && (!year || !departmentId))
+    ) {
+      alert("Please fill in all required fields.");
+      return;
+    }
+
     const formData = new FormData();
     formData.append("FirstName", firstName);
     formData.append("LastName", lastName);
     formData.append("Name", `${firstName} ${lastName}`);
-    formData.append("Gender", gender === "Female");
     formData.append("PhoneNumber", phoneNumber);
     formData.append("NationalId", nationalId);
+    formData.append("Gender", gender); 
 
     if (role === "student") {
-      formData.append("Year", year);
+      formData.append("Year", year.toString());
       formData.append("DepartmentId", departmentId);
     }
 
+   
     const url = `https://localhost:7072/api/Account/AddAccount?role=${
-      role === "student" ? 0 : 1
+      role === "student" ? 3 : 1
     }`;
 
     try {
@@ -54,13 +66,13 @@ const CreateStudentAccount = () => {
       }
 
       const result = await response.json();
-      console.log("Response:", result);
       alert("Account created successfully! Use generated credentials to login");
     } catch (error) {
       console.error("Error:", error.message);
       alert(`Error: ${error.message}`);
     }
   };
+  
 
   const handleExcelChange = (e) => {
     setExcelFile(e.target.files[0]);

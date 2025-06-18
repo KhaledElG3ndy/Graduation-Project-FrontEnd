@@ -1,5 +1,5 @@
 import React from "react";
-import { FiEdit3, FiBook, FiFileText } from "react-icons/fi";
+import { FiEdit3, FiBook, FiFileText, FiClipboard } from "react-icons/fi";
 import styles from "./CoursePage.module.css";
 
 const Sidebar = ({ subjectName, activeTab, handleTabChange }) => {
@@ -28,6 +28,13 @@ const Sidebar = ({ subjectName, activeTab, handleTabChange }) => {
       >
         <FiFileText className={styles.buttonIcon} />
         All Posts
+      </button>
+      <button
+        onClick={() => handleTabChange("exam")}
+        className={activeTab === "exam" ? styles.active : ""}
+      >
+        <FiClipboard className={styles.buttonIcon} />
+        Create Exam
       </button>
     </aside>
   );
