@@ -93,7 +93,7 @@ const ExamQuestions = ({ subjectName, examData, onBack, onSubmit }) => {
         editingIndex: data.editingIndex,
       });
     } catch (e) {
-      console.error("[Auto-Save] Failed to save data to localStorage", e);
+      console.error(e);
     }
   };
 
@@ -320,43 +320,67 @@ const ExamQuestions = ({ subjectName, examData, onBack, onSubmit }) => {
     return questions.reduce((total, q) => total + parseInt(q.marks), 0);
   };
   const handleSubmitExam = async () => {
-    if (questions.length === 0) {
+    const saved = localStorage.getItem(storageKey);
+    if (!saved) {
+      alert("No saved questions to submit.");
+      return;
+    }
+
+    const parsed = JSON.parse(saved);
+    const storedQuestions = parsed.questions || [];
+
+    if (storedQuestions.length === 0) {
       alert("Please add at least one question");
       return;
     }
 
-    const totalMarks = getTotalMarks();
+    const totalMarks = storedQuestions.reduce(
+      (sum, q) => sum + parseInt(q.marks || 0),
+      0
+    );
+
+    const cleanedQuestions = storedQuestions.map((q) => {
+      const choices = (q.options || []).map((opt) => ({
+        choice: opt,
+      }));
+
+      let correctAns = "";
+      if (q.type === "checkbox" && Array.isArray(q.correctAnswers)) {
+        correctAns = q.correctAnswers.map((i) => q.options[i]).join(",");
+      } else if (q.correctAnswer !== undefined && q.options?.length > 0) {
+        correctAns = q.options[q.correctAnswer];
+      }
+
+      return {
+        title: q.question,
+        type: mapTypeToEnum(q.type), 
+        grade: parseInt(q.marks),
+        correctAns: correctAns,
+        examId: examData.id,
+        choices: choices,
+      };
+    });
+
     const examPayload = {
       ...examData,
-      questions,
+      questions: cleanedQuestions,
       totalCalculatedMarks: totalMarks,
     };
 
     try {
-      for (const question of questions) {
-        const formData = new FormData();
-        formData.append("Title", question.question);
-        formData.append("Type", question.type);
-        formData.append("Grade", question.marks);
-        formData.append("CorrectAns", question.correctAnswer?.toString() || "");
-        formData.append("ExamId", examData.id);
-        formData.append("Image", ""); 
-        formData.append("File", "");
+      const response = await fetch("https://localhost:7072/api/Question/Add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(cleanedQuestions),
+      });
 
-        const response = await fetch(
-          "https://localhost:7072/api/Question/Add",
-          {
-            method: "POST",
-            body: formData,
-          }
-        );
-
-        const result = await response.json();
-        if (!response.ok) {
-          console.error("Failed to add question:", result);
-          alert("حدث خطأ أثناء إرسال أحد الأسئلة. راجع الكونسول.");
-          return;
-        }
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Failed to add questions:", errorText);
+        alert("حدث خطأ أثناء إرسال الأسئلة.");
+        return;
       }
 
       alert("Exam created successfully!");
@@ -364,11 +388,12 @@ const ExamQuestions = ({ subjectName, examData, onBack, onSubmit }) => {
       onSubmit(examPayload);
     } catch (error) {
       console.error("Submission error:", error);
-      alert("Failed to submit exam. Please try again.");
+      alert("فشل إرسال الامتحان. حاول مرة أخرى.");
     }
   };
+
   
- 
+  
   const renderQuestionForm = () => {
     return (
       <div className={styles.questionForm}>

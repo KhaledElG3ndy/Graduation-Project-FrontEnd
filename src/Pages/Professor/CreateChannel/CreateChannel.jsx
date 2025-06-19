@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import {
@@ -18,16 +18,35 @@ import Footer from "../../../components/Professor/Footer/Footer";
 const CreateChannel = () => {
   const [semester, setSemester] = useState("");
   const [year, setYear] = useState("");
+  const [departments, setDepartments] = useState([]);
+  const [allDepartments, setAllDepartments] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const subjectName = new URLSearchParams(location.search).get("subject");
 
+  // Get Departments from API
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const res = await fetch(
+          "https://localhost:7072/Departments/GetDepartments"
+        );
+        const data = await res.json();
+        setAllDepartments(data);
+      } catch (error) {
+        console.error("Failed to fetch departments:", error);
+      }
+    };
+
+    fetchDepartments();
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!semester || !year) {
+    if (!semester || !year || departments.length === 0) {
       setError("All fields are required!");
       return;
     }
@@ -37,8 +56,9 @@ const CreateChannel = () => {
 
     const formData = new FormData();
     formData.append("SubjectName", subjectName);
-    formData.append("Semester", semester);
-    formData.append("Year", year);
+    formData.append("Semester", Number(semester));
+    formData.append("Year", Number(year));
+    departments.forEach((deptId) => formData.append("Departments", deptId));
 
     console.log("Sending data to API:", Object.fromEntries(formData.entries()));
 
@@ -155,6 +175,32 @@ const CreateChannel = () => {
                 max="4"
                 required
               />
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label className={styles.label}>
+                <FaChevronDown className={styles.labelIcon} />
+                <span className={styles.labelText}>Select Departments</span>
+                <span className={styles.required}>*</span>
+              </label>
+              <select
+                multiple
+                className={styles.input}
+                value={departments}
+                onChange={(e) =>
+                  setDepartments(
+                    Array.from(e.target.selectedOptions, (option) =>
+                      parseInt(option.value)
+                    )
+                  )
+                }
+              >
+                {allDepartments.map((dep) => (
+                  <option key={dep.id} value={dep.id}>
+                    {dep.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {error && (

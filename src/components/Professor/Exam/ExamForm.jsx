@@ -77,38 +77,36 @@ const ExamForm = ({ subjectName, courseId, onNext }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!validateForm()) return;
-
+  
     const formData = new FormData();
     formData.append("StartDate", examForm.startDate);
     formData.append("Duration", examForm.duration);
     formData.append("type", examForm.examType);
     formData.append("Grade", examForm.totalMarks);
     formData.append("PassingScore", examForm.passingMarks);
-    formData.append("Instructions", examForm.instructions);
+    formData.append("Description", examForm.instructions); // <-- هنا التغيير
     formData.append("IsShuffled", examForm.shuffleQuestions ? 1 : 0);
     formData.append("GradeIsSeen", examForm.showResults ? 1 : 0);
     formData.append("CourseId", courseId);
-    console.log(courseId);
-
+  
     try {
       const response = await fetch("https://localhost:7072/Exams/PostExam/0", {
         method: "POST",
         body: formData,
       });
-
+  
       if (!response.ok) {
         const errText = await response.text();
         throw new Error(`Failed to create exam: ${errText}`);
       }
-
+  
       const data = await response.json();
       console.log("Exam created:", data);
-
+  
       if (onNext) {
         console.log("Exam data to pass to next step:", data);
-
         onNext(data);
       }
     } catch (error) {
@@ -116,7 +114,7 @@ const ExamForm = ({ subjectName, courseId, onNext }) => {
       alert("Failed to submit exam. Please try again.");
     }
   };
-
+  
   const formatDate = (dateString) => {
     if (!dateString) return "";
     const date = new Date(dateString);

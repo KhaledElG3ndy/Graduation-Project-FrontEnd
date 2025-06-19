@@ -32,6 +32,7 @@ import CoursePage from "./Pages/Professor/CoursePage/CoursePage";
 import LectureScheduler from "./Pages/Admin/LectureScheduler/LectureScheduler";
 import ProfessorScheduler from "./Pages/Admin/ProfessorScheduler/ProfessorScheduler";
 import Study from "./Pages/Student/Study/Study";
+import SubjectPage from "./Pages/Student/SubjectPage/SubjectPage";
 
 function App() {
   const { isDarkMode, toggleTheme } = useDarkMode();
@@ -54,6 +55,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/Login/signin" element={<SignInPage />} />
         <Route path="/student/study" element={<Study />} />
+        <Route path="/student/subject/:id" element={<SubjectPage />} />
         <Route path="/Admin" element={<AdminHomePage />} />
         <Route path="/Admin/AddNews" element={<AddNews />} />
         <Route path="/Admin/CreateAccounts" element={<AdminCreateAccounts />} />
