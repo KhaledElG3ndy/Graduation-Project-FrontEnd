@@ -65,17 +65,14 @@ const ExamMain = ({ subjectName, courseId, onSuccess }) => {
       if (!response.ok) {
         const error = await response.text();
         console.error("Failed to add questions:", error);
-        alert("فشل إرسال الأسئلة.");
         return;
       }
 
       const result = await response.text();
       console.log("Questions submitted:", result);
-      alert("تم إرسال الأسئلة بنجاح!");
       if (onSuccess) onSuccess("Questions added successfully!");
     } catch (error) {
-      console.error("🚨 Error submitting questions:", error);
-      alert("حدث خطأ أثناء إرسال الأسئلة.");
+      console.error("Error submitting questions:", error);
     }
   };
   

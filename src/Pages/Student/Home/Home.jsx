@@ -6,7 +6,7 @@ import SectionCard from "../../../components/Student/SectionCard/SectionCard";
 import Footer from "../../../components/Student/Footer/Footer";
 import { useDarkMode } from "../../../contexts/ThemeContext";
 
-import img from "../../../assets/images/img.svg";
+import { FaRocket, FaInfoCircle } from "react-icons/fa";
 import news from "../../../assets/images/news.svg";
 import schedule from "../../../assets/images/Schedules.svg";
 import guide from "../../../assets/images/guidance.svg";
@@ -99,8 +99,12 @@ const Home = () => {
           </p>
 
           <div className={styles.buttons}>
-            <button className={styles.primaryButton}>Get Started</button>
-            <button className={styles.secondaryButton}>Learn More</button>
+            <button className={styles.primaryButton}>
+              <FaRocket /> Get Started
+            </button>
+            <button className={styles.secondaryButton}>
+              <FaInfoCircle /> Learn More
+            </button>
           </div>
         </div>
       </div>

@@ -26,6 +26,7 @@ const SubjectPage = () => {
     { name: "Posts", icon: <FileText size={18} /> },
     { name: "Material", icon: <BookOpen size={18} /> },
     { name: "Exams & Quizzes", icon: <ClipboardList size={18} /> },
+    { name: "Grades", icon: <File size={18} /> },
     { name: "Chat", icon: <MessageCircle size={18} /> },
   ];
 
@@ -99,7 +100,7 @@ const SubjectPage = () => {
         return "Unknown";
     }
   };
-  
+
   const renderTabContent = () => {
     switch (activeTab) {
       case "Posts":
@@ -177,9 +178,35 @@ const SubjectPage = () => {
                     </div>
                     <button
                       className={styles.startButton}
-                      onClick={() =>
-                        navigate(`/exam/${exam.id}`, { state: { exam } })
-                      }
+                      onClick={async () => {
+                        // const studentId = localStorage.getItem("studentId");
+                        const studentId = 1;
+                        if (!studentId) {
+                          alert("Student ID is missing!");
+                          return;
+                        }
+
+                        try {
+                          const res = await fetch(
+                            `https://localhost:7072/Answer/InitExamAnss?examId=${exam.id}&studentId=${studentId}`,
+                            {
+                              method: "POST",
+                            }
+                          );
+
+                          if (res.ok) {
+                            console.log("Initialized answers successfully");
+                            navigate(`/exam/${exam.id}`, { state: { exam } });
+                          } else {
+                            alert("Failed to initialize answers.");
+                          }
+                        } catch (err) {
+                          console.error(
+                            "Error initializing exam answers:",
+                            err
+                          );
+                        }
+                      }}
                     >
                       Start
                     </button>

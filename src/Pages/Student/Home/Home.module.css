@@ -2,137 +2,99 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 50px;
-  transition: background-color 0.3s ease;
+  padding: 60px 20px;
   flex-wrap: nowrap;
-  height: 45vh;
+  min-height: 60vh;
+  transition: background-color 0.3s ease;
 }
 
 .textContent {
   text-align: center;
-  align-items: center;
   margin: 0 auto;
+  max-width: 900px;
+  animation: fadeIn 1.5s ease-in-out;
 }
 
 .textContent h1 {
-  font-size: 2.8rem;
+  font-size: 3.2rem;
   margin-bottom: 20px;
-  overflow: hidden;
-  white-space: nowrap;
-  width: 0;
-  text-align: center;
-  animation: typing 3s steps(30) 1s forwards,
-    blink-caret 0.75s step-end infinite;
-  background: linear-gradient(135deg, #003366, #0066cc, #3399ff);
+  font-weight: 800;
+  background: linear-gradient(90deg, #003366, #0066cc, #3399ff);
   -webkit-background-clip: text;
   color: transparent;
-  font-weight: bold;
   display: inline-block;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.lightText,
+.darkText {
+  font-size: 1.3rem;
+  margin-bottom: 35px;
+  line-height: 1.6;
+  color: #444;
 }
 
 .lightText {
-  font-size: 1.2rem;
-  margin-bottom: 30px;
-  color: #fff;
-  text-align: center;
-}
-
-.darkText {
-  font-size: 1.2rem;
-  margin-bottom: 30px;
-  color: #333;
-  text-align: center;
+  color: #eee;
 }
 
 .buttons {
   display: flex;
-  gap: 20px;
+  gap: 16px;
   flex-wrap: wrap;
   justify-content: center;
 }
 
 .primaryButton,
 .secondaryButton {
-  padding: 10px 20px;
+  padding: 12px 24px;
   font-size: 1rem;
-  border-radius: 4px;
+  font-weight: 600;
+  border-radius: 30px;
   cursor: pointer;
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .primaryButton {
-  background: linear-gradient(135deg, #003366, #0066cc, #3399ff);
-  color: white;
+  background: linear-gradient(to right, #0066cc, #3399ff);
+  color: #fff;
   border: none;
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
 }
 
 .primaryButton:hover {
-  background-color: #0056b3;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 102, 204, 0.4);
 }
 
 .secondaryButton {
   background-color: transparent;
-  color: #0033cc;
-  border: 2px solid #0033cc;
+  color: #0066cc;
+  border: 2px solid #0066cc;
 }
 
 .secondaryButton:hover {
-  background: linear-gradient(135deg, #003366, #0066cc, #3399ff);
-  color: white;
+  background: #e6f0ff;
+  color: #003366;
 }
 
-.cardsContainer {
-  display: flex;
-  gap: 20px;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 50px;
-}
-
-.sectionContainer {
-  max-width: 1000px;
-  padding: 50px;
-  justify-content: center;
-  align-items: start;
-}
-
-@keyframes typing {
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
   to {
-    width: 100%;
-  }
-}
-
-@keyframes blink-caret {
-  50% {
-    border-color: transparent;
-  }
-}
-
-.lightMode {
-  background-color: #f1f0f0;
-}
-
-.darkMode {
-  background: linear-gradient(135deg, #0a0a0a, #161616, #222222);
-}
-
-@media (max-width: 1024px) {
-  .homeContainer {
-    flex-direction: column;
-    padding: 40px 30px;
-    height: auto;
-  }
-
-  .textContent {
-    max-width: 100%;
-    margin-bottom: 30px;
-    text-align: center;
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
 @media (max-width: 768px) {
   .textContent h1 {
-    font-size: 2.2rem;
+    font-size: 2.4rem;
   }
 
   .textContent p {
@@ -141,21 +103,15 @@
 
   .buttons {
     flex-direction: column;
-    gap: 10px;
   }
 
   .primaryButton,
   .secondaryButton {
     width: 100%;
-    text-align: center;
   }
 }
 
 @media (max-width: 480px) {
-  .homeContainer {
-    padding: 30px 20px;
-  }
-
   .textContent h1 {
     font-size: 1.8rem;
   }
@@ -163,10 +119,14 @@
   .textContent p {
     font-size: 1rem;
   }
-
-  .primaryButton,
-  .secondaryButton {
-    font-size: 0.95rem;
-    padding: 10px;
-  }
+}
+.cardsContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 50px;
+  padding: 0 20px;
+  max-width: 1200px; 
+  margin-left: auto;
+  margin-right: auto;
 }

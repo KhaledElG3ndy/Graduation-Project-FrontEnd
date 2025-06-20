@@ -74,7 +74,6 @@ const ExamQuestions = ({ subjectName, examData, onBack, onSubmit }) => {
   const questionTypes = [
     { value: "multiple-choice", label: "Multiple Choice" },
     { value: "checkbox", label: "Multiple Select (Checkbox)" },
-    { value: "true-false", label: "True/False" },
     { value: "essay", label: "Essay" },
   ];
 
@@ -133,10 +132,6 @@ const ExamQuestions = ({ subjectName, examData, onBack, onSubmit }) => {
       updatedQuestion.options = ["", ""];
       updatedQuestion.correctAnswers = [];
       updatedQuestion.correctAnswer = null;
-    } else if (newType === "true-false") {
-      updatedQuestion.options = [];
-      updatedQuestion.correctAnswer = null;
-      updatedQuestion.correctAnswers = [];
     } else {
       updatedQuestion.options = [];
       updatedQuestion.correctAnswer = null;
@@ -237,11 +232,7 @@ const ExamQuestions = ({ subjectName, examData, onBack, onSubmit }) => {
         newErrors.correctAnswers =
           "Please ensure all selected correct answers have text";
     }
-    if (
-      currentQuestion.type === "true-false" &&
-      currentQuestion.correctAnswer === null
-    )
-      newErrors.correctAnswer = "Please select the correct answer";
+
     if (currentQuestion.marks <= 0)
       newErrors.marks = "Marks must be greater than 0";
     setErrors(newErrors);
@@ -496,34 +487,7 @@ const ExamQuestions = ({ subjectName, examData, onBack, onSubmit }) => {
           )}
         </div>
       )}
-      {currentQuestion.type === "true-false" && (
-        <div className={styles.optionsSection}>
-          <label className={styles.label}>Correct Answer</label>
-          <div className={styles.trueFalseOptions}>
-            <label>
-              <input
-                type="radio"
-                name="trueFalseAnswer"
-                checked={currentQuestion.correctAnswer === true}
-                onChange={() => handleQuestionChange("correctAnswer", true)}
-              />
-              True
-            </label>
-            <label>
-              <input
-                type="radio"
-                name="trueFalseAnswer"
-                checked={currentQuestion.correctAnswer === false}
-                onChange={() => handleQuestionChange("correctAnswer", false)}
-              />
-              False
-            </label>
-          </div>
-          {errors.correctAnswer && (
-            <span className={styles.errorText}>{errors.correctAnswer}</span>
-          )}
-        </div>
-      )}
+
       <button onClick={addQuestion} className={styles.addButton}>
         <FiSave className={styles.buttonIcon} />
         {editingIndex >= 0 ? "Update Question" : "Add Question"}
@@ -651,7 +615,10 @@ const ExamQuestions = ({ subjectName, examData, onBack, onSubmit }) => {
       )}
       <div className={styles.footer}>
         <button
-          onClick={() => onSubmit(examData, questions)}
+          onClick={() => {
+            onSubmit(examData, questions);
+            localStorage.removeItem(storageKey);
+          }}
           className={styles.submitButton}
           disabled={questions.length === 0}
         >

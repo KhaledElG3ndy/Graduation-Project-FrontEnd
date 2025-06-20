@@ -364,6 +364,34 @@
 .submitInfo {
   margin-bottom: 2rem;
 }
+.fileWrapper {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.fileLabel {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #334155;
+}
+
+.downloadButton {
+  font-size: 0.85rem;
+  background-color: #3b82f6;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+  font-weight: 500;
+}
+
+.downloadButton:hover {
+  background-color: #2563eb;
+}
 
 .submitText {
   font-size: 1.1rem;
@@ -472,4 +500,72 @@
   height: auto;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.filePreview {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  background-color: #f1f5f9;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+}
+
+.fileInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fileIcon {
+  font-size: 1.2rem;
+}
+
+.fileName {
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.downloadButton {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  padding: 0.3rem 0.8rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.downloadButton:hover {
+  background-color: #1d4ed8;
+}
+.checkboxInput {
+  appearance: none;
+  width: 26px;
+  height: 26px;
+  border: 2px solid #cbd5e1;
+  border-radius: 6px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  margin-top: 2px;
+  background-color: white;
+}
+
+.checkboxInput:checked {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.checkboxInput:checked::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 7px;
+  width: 6px;
+  height: 12px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
 }
