@@ -41,7 +41,7 @@ const ExamMain = ({ subjectName, courseId, onSuccess }) => {
         formData.append(`Questions[${index}].CorrectAns`, correctAns);
 
         (q.options || []).forEach((opt, i) => {
-          formData.append(`Questions[${index}].Choices[${i}]`, opt);
+          formData.append(`Questions[${index}].Choices[${i}].choice`, opt);
         });
 
         formData.append(

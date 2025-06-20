@@ -1,16 +1,27 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { BookOpen, FileText, ClipboardList, MessageCircle } from "lucide-react";
+import {
+  BookOpen,
+  FileText,
+  ClipboardList,
+  MessageCircle,
+  File,
+} from "lucide-react";
 import Header from "../../../components/student/Header/Header";
 import styles from "./SubjectPage.module.css";
-
+import { useNavigate } from "react-router-dom";
 const SubjectPage = () => {
   const { id } = useParams();
   const [activeTab, setActiveTab] = useState("Posts");
   const [subject, setSubject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [posts, setPosts] = useState([]);
-
+  const [exams, setExams] = useState([]);
+  const [examsLoading, setExamsLoading] = useState(false);
+  const [selectedExamId, setSelectedExamId] = useState(null);
+  const [questions, setQuestions] = useState([]);
+  const [questionsLoading, setQuestionsLoading] = useState(false);
+  const navigate = useNavigate();
   const tabs = [
     { name: "Posts", icon: <FileText size={18} /> },
     { name: "Material", icon: <BookOpen size={18} /> },
@@ -26,6 +37,7 @@ const SubjectPage = () => {
         const found = data.find((s) => s.id === parseInt(id));
         setSubject(found);
         setLoading(false);
+        console.log("Fetched subject:", found);
       } catch (err) {
         console.error("Error fetching subject:", err);
         setLoading(false);
@@ -48,6 +60,46 @@ const SubjectPage = () => {
     fetchPosts();
   }, [id]);
 
+  useEffect(() => {
+    const fetchExams = async () => {
+      const courseId = subject?.id;
+      if (!courseId) return;
+
+      setExamsLoading(true);
+      try {
+        const res = await fetch(
+          `https://localhost:7072/Exams/GetCourseExams/${courseId}`
+        );
+        const data = await res.json();
+        setExams(data);
+        console.log("Fetched exams:", data);
+      } catch (err) {
+        console.error("Error fetching exams:", err);
+        setExams([]);
+      } finally {
+        setExamsLoading(false);
+      }
+    };
+
+    if (activeTab === "Exams & Quizzes" && subject) {
+      fetchExams();
+    }
+  }, [activeTab, subject]);
+  const examTypeLabel = (type) => {
+    switch (type) {
+      case 0:
+        return "Final";
+      case 1:
+        return "Midterm";
+      case 2:
+        return "Practical";
+      case 3:
+        return "Quiz";
+      default:
+        return "Unknown";
+    }
+  };
+  
   const renderTabContent = () => {
     switch (activeTab) {
       case "Posts":
@@ -56,7 +108,6 @@ const SubjectPage = () => {
             <div className={styles.postsHeader}>
               <h3 className={styles.tabTitle}>Recent Posts</h3>
             </div>
-
             <div className={styles.postsGrid}>
               {posts.length === 0 ? (
                 <div className={styles.emptyState}>
@@ -68,7 +119,6 @@ const SubjectPage = () => {
                   <article key={post.id} className={styles.postCard}>
                     <div className={styles.postBody}>
                       <h4 className={styles.postTitle}>{post.title}</h4>
-
                       {post.image && (
                         <div className={styles.postImageContainer}>
                           <img
@@ -78,16 +128,10 @@ const SubjectPage = () => {
                           />
                         </div>
                       )}
-
                       <p className={styles.postContent}>{post.content}</p>
                     </div>
-
                     <div className={styles.postFooter}>
-                      <button
-                        className={styles.commentBtn}
-                        onClick={() => {
-                        }}
-                      >
+                      <button className={styles.commentBtn}>
                         <MessageCircle size={16} />
                         <span>Comment</span>
                       </button>
@@ -113,12 +157,39 @@ const SubjectPage = () => {
         return (
           <div className={styles.tabContent}>
             <h3 className={styles.tabTitle}>Assessments</h3>
-            <div className={styles.emptyState}>
-              <ClipboardList size={48} />
-              <p>Exams and quizzes will appear here.</p>
-            </div>
+            {examsLoading ? (
+              <p>Loading exams...</p>
+            ) : exams.length === 0 ? (
+              <div className={styles.emptyState}>
+                <ClipboardList size={48} />
+                <p>No exams or quizzes available.</p>
+              </div>
+            ) : (
+              <ul className={styles.examList}>
+                {exams.map((exam) => (
+                  <li key={exam.id} className={styles.examItem}>
+                    <File size={20} />
+                    <div>
+                      <strong>{exam.description}</strong>
+                      <div>Duration: {exam.duration} mins</div>
+                      <div>Grade: {exam.grade}</div>
+                      <div>Type: {examTypeLabel(exam.type)}</div>{" "}
+                    </div>
+                    <button
+                      className={styles.startButton}
+                      onClick={() =>
+                        navigate(`/exam/${exam.id}`, { state: { exam } })
+                      }
+                    >
+                      Start
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         );
+
       case "Chat":
         return (
           <div className={styles.tabContent}>
@@ -129,6 +200,7 @@ const SubjectPage = () => {
             </div>
           </div>
         );
+
       default:
         return (
           <div className={styles.tabContent}>

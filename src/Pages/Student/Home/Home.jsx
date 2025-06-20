@@ -11,7 +11,7 @@ import news from "../../../assets/images/news.svg";
 import schedule from "../../../assets/images/Schedules.svg";
 import guide from "../../../assets/images/guidance.svg";
 import Communication from "../../../assets/images/Communication.svg";
-import study from "../../../assets/images/study1.svg";
+import study from "../../../assets/images/study.svg";
 import regulation from "../../../assets/images/regulation.svg";
 const Home = () => {
   const { isDarkMode } = useDarkMode();
