@@ -21,7 +21,6 @@ const ExamForm = ({ subjectName, courseId, onNext }) => {
     shuffleQuestions: false,
     showResults: true,
   });
-  console.log(courseId, subjectName);
 
   const [errors, setErrors] = useState({});
 
@@ -86,7 +85,7 @@ const ExamForm = ({ subjectName, courseId, onNext }) => {
     formData.append("type", examForm.examType);
     formData.append("Grade", examForm.totalMarks);
     formData.append("PassingScore", examForm.passingMarks);
-    formData.append("Description", examForm.instructions); // <-- هنا التغيير
+    formData.append("Description", examForm.instructions);
     formData.append("IsShuffled", examForm.shuffleQuestions ? 1 : 0);
     formData.append("GradeIsSeen", examForm.showResults ? 1 : 0);
     formData.append("CourseId", courseId);
@@ -115,16 +114,6 @@ const ExamForm = ({ subjectName, courseId, onNext }) => {
     }
   };
   
-  const formatDate = (dateString) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
 
   const getPassRate = () => {
     if (examForm.totalMarks && examForm.passingMarks) {

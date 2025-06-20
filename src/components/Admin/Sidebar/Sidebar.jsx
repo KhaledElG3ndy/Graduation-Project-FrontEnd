@@ -24,7 +24,7 @@ export default function Sidebar({ isOpen }) {
           </Link>
         </li>
         <li className={styles.navItem}>
-          <Link to="/regulation">
+          <Link to="/admin/regulation">
             <FaRegCalendarAlt /> Regulation
           </Link>
         </li>

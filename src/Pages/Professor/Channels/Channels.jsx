@@ -119,7 +119,11 @@ const Channels = () => {
       try {
         const [coursesRes, subjectsRes] = await Promise.all([
           fetch("https://localhost:7072/Courses/GetCourses"),
-          fetch("https://localhost:7072/Subjects/GetSubjects"),
+          fetch("https://localhost:7072/Subjects/GetSubjects", {
+            headers: {
+              Accept: "application/json",
+            },
+          }),
         ]);
 
         if (!coursesRes.ok || !subjectsRes.ok) {

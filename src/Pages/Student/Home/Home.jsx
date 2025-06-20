@@ -12,7 +12,7 @@ import schedule from "../../../assets/images/Schedules.svg";
 import guide from "../../../assets/images/guidance.svg";
 import Communication from "../../../assets/images/Communication.svg";
 import study from "../../../assets/images/study1.svg";
-
+import regulation from "../../../assets/images/regulation.svg";
 const Home = () => {
   const { isDarkMode } = useDarkMode();
   const navigate = useNavigate();
@@ -72,8 +72,16 @@ const Home = () => {
       image: schedule,
       route: "/student/schedules",
     },
+    {
+      id: 6,
+      title: "Regulation",
+      description:
+        "Access college rules, academic regulations, and student conduct guidelines to ensure you're informed and aligned with institutional policies.",
+      buttonText: "View Regulation",
+      image: regulation,
+      route: "/student/regulation",
+    },
   ];
-  
 
   return (
     <div>
@@ -86,7 +94,7 @@ const Home = () => {
         <div className={styles.textContent}>
           <h1>Empower Your College Journey</h1>
           <p className={isDarkMode ? styles.lightText : styles.darkText}>
-          Organize your studies, track campus events, and engage with your
+            Organize your studies, track campus events, and engage with your
             academic network — all in one unified space.
           </p>
 
