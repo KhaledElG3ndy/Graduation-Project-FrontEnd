@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FaBookOpen, FaClock } from "react-icons/fa";
+import { FaBookOpen, FaClock, FaPlus } from "react-icons/fa";
 import Header from "../../../components/student/Header/Header";
 import styles from "./Study.module.css";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +10,7 @@ const Study = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  
   useEffect(() => {
     const token = sessionStorage.getItem("Token");
     if (!token) {
@@ -76,11 +77,24 @@ const Study = () => {
     fetchAll();
   }, []);
 
+  const handleSubjectRegistration = () => {
+    navigate("/student/subjectRegistration");
+  };
+
   return (
     <div className={styles.container}>
       <Header />
       <div className={styles.content}>
-        <h2 className={styles.title}>Your Subjects</h2>
+        <div className={styles.titleSection}>
+          <h2 className={styles.title}>Your Subjects</h2>
+          <button 
+            className={styles.registerButton}
+            onClick={handleSubjectRegistration}
+          >
+            <FaPlus className={styles.registerIcon} />
+            Register for New Subjects
+          </button>
+        </div>
 
         {loading ? (
           <p className={styles.message}>Loading...</p>

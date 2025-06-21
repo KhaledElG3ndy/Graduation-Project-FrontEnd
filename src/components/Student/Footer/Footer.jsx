@@ -14,11 +14,6 @@ const Footer = () => {
           <li>Phone: +123 456 789</li>
           <li>Address: 123 College Street</li>
         </ul>
-        <div className={styles.socialIcons}>
-          <span>🔗</span>
-          <span>💬</span>
-          <span>📷</span>
-        </div>
       </div>
       <div className={styles.logoSection}>
         <div className={styles.logo}>Team Space</div>
