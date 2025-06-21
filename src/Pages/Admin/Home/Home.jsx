@@ -10,14 +10,36 @@ export default function AdminHomePage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   const isLogged = JSON.parse(sessionStorage.getItem("isLogged"));
-  //   const userType = JSON.parse(sessionStorage.getItem("userType"));
+  useEffect(() => {
+    const token = sessionStorage.getItem("Token");
+    if (!token) {
+      navigate("/login/signin");
+      return;
+    }
 
-  //   if (!isLogged || userType !== "Admin") {
-  //     navigate("/login/signin");
-  //   }
-  // }, [navigate]);
+    const parseJwt = (token) => {
+      try {
+        return JSON.parse(atob(token.split(".")[1]));
+      } catch (e) {
+        console.error("Invalid token", e);
+        return null;
+      }
+    };
+
+    const payload = parseJwt(token);
+    if (!payload) {
+      navigate("/login/signin");
+      return;
+    }
+
+    const roleClaim =
+      payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+
+    if (roleClaim !== "Admin" && roleClaim !== 0) {
+      navigate("/login/signin");
+    }
+  }, [navigate]);
+  
 
   return (
     <div className={styles.container}>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
 import {
   FaFilePdf,
   FaFileWord,
@@ -55,6 +56,36 @@ const CoursePage = () => {
   const [previewUrl, setPreviewUrl] = useState("");
   const [previewType, setPreviewType] = useState("");
   const [previewFileName, setPreviewFileName] = useState("");
+  const navigate = useNavigate();
+  useEffect(() => {
+    const token = sessionStorage.getItem("Token");
+    if (!token) {
+      navigate("/login/signin");
+      return;
+    }
+
+    const parseJwt = (token) => {
+      try {
+        return JSON.parse(atob(token.split(".")[1]));
+      } catch (e) {
+        console.error("Invalid token", e);
+        return null;
+      }
+    };
+
+    const payload = parseJwt(token);
+    if (!payload) {
+      navigate("/login/signin");
+      return;
+    }
+
+    const role =
+      payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+
+    if (role !== "Professor") {
+      navigate("/login/signin");
+    }
+  }, [navigate]);
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -290,7 +321,7 @@ const CoursePage = () => {
     const formData = new FormData();
     formData.append("PostId", postId.toString());
     formData.append("Content", content);
-    formData.append("CommenterId", "1"); 
+    formData.append("CommenterId", "1");
 
     try {
       const response = await fetch(

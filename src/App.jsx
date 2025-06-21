@@ -18,7 +18,6 @@ import EditAccount from "./Pages/Admin/EditAccount/EditAccount";
 import News from "./Pages/Student/News/News";
 import NewsCRUD from "./Pages/Admin/NewsCRUD/NewsCRUD";
 import AddPost from "./Pages/Professor/AddPost/AddPost";
-import Posts from "./Pages/Student/Posts/Posts";
 import AddSubjects from "./Pages/Admin/AddSubjects/AddSubjects";
 import Profile from "./Pages/Student/Profile/Profile";
 import AddDepartmentPage from "./Pages/Admin/AddDepartment/AddDepartment";
@@ -86,7 +85,6 @@ function App() {
           element={<ProfessorScheduler />}
         />
         <Route path="/NewsCRUD" element={<NewsCRUD />} />
-        <Route path="/Posts" element={<Posts />} />
         <Route path="/Profile" element={<Profile />} />
 
         <Route path="/Professor" element={<Professor />} />

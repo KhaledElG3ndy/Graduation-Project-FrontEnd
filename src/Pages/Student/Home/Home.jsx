@@ -16,15 +16,35 @@ import regulation from "../../../assets/images/regulation.svg";
 const Home = () => {
   const { isDarkMode } = useDarkMode();
   const navigate = useNavigate();
+  useEffect(() => {
+    const token = sessionStorage.getItem("Token");
 
-  // useEffect(() => {
-  //   const isLogged = JSON.parse(sessionStorage.getItem("isLogged"));
-  //   const userType = JSON.parse(sessionStorage.getItem("userType"));
+    if (!token) {
+      return;
+    }
 
-  //   if (!isLogged || userType !== "Student") {
-  //     navigate("/login/signin");
-  //   }
-  // }, [navigate]);
+    const parseJwt = (token) => {
+      try {
+        return JSON.parse(atob(token.split(".")[1]));
+      } catch (e) {
+        console.error("Invalid token", e);
+        return null;
+      }
+    };
+
+    const payload = parseJwt(token);
+    if (!payload) {
+      navigate("/login/signin");
+      return;
+    }
+
+    const role =
+      payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+
+    if (role !== "Student") {
+      navigate("/login/signin");
+    }
+  }, [navigate]);
 
   const sections = [
     {
@@ -38,15 +58,6 @@ const Home = () => {
     },
     {
       id: 2,
-      title: "News",
-      description:
-        "Stay informed with the latest updates from your college, including important announcements, event schedules, policy changes, and achievements. Never miss out on crucial information about campus life.",
-      buttonText: "Read News",
-      image: news,
-      route: "/student/news",
-    },
-    {
-      id: 3,
       title: "Communication",
       description:
         "Effortlessly connect with classmates, professors, and academic staff through chat, forums, and discussion boards. Share ideas, collaborate on projects, and stay engaged with your academic community.",
@@ -54,6 +65,16 @@ const Home = () => {
       image: Communication,
       route: "/student/communication",
     },
+    {
+      id: 3,
+      title: "Regulation",
+      description:
+        "Access college rules, academic regulations, and student conduct guidelines to ensure you're informed and aligned with institutional policies.",
+      buttonText: "View Regulation",
+      image: regulation,
+      route: "/student/regulation",
+    },
+
     {
       id: 4,
       title: "Guidance",
@@ -72,14 +93,15 @@ const Home = () => {
       image: schedule,
       route: "/student/schedules",
     },
+
     {
       id: 6,
-      title: "Regulation",
+      title: "News",
       description:
-        "Access college rules, academic regulations, and student conduct guidelines to ensure you're informed and aligned with institutional policies.",
-      buttonText: "View Regulation",
-      image: regulation,
-      route: "/student/regulation",
+        "Stay informed with the latest updates from your college, including important announcements, event schedules, policy changes, and achievements. Never miss out on crucial information about campus life.",
+      buttonText: "Read News",
+      image: news,
+      route: "/student/news",
     },
   ];
 

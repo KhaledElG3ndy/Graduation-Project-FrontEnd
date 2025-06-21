@@ -1,4 +1,4 @@
-import React from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./Home.module.css";
 import Header from "../../../components/Professor/Header/Header";
@@ -15,7 +15,37 @@ import {
 
 const ProfessorHomePage = () => {
   const { isDarkMode } = useDarkMode();
+
   const navigate = useNavigate();
+  useEffect(() => {
+    const token = sessionStorage.getItem("Token");
+    if (!token) {
+      navigate("/login/signin");
+      return;
+    }
+
+    const parseJwt = (token) => {
+      try {
+        return JSON.parse(atob(token.split(".")[1]));
+      } catch (e) {
+        console.error("Invalid token", e);
+        return null;
+      }
+    };
+
+    const payload = parseJwt(token);
+    if (!payload) {
+      navigate("/login/signin");
+      return;
+    }
+
+    const role =
+      payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+
+    if (role !== "Professor") {
+      navigate("/login/signin");
+    }
+  }, [navigate]);
 
   const handleNavigateToSubjects = () => {
     navigate("/Professor/Subjects");
@@ -70,7 +100,6 @@ const ProfessorHomePage = () => {
               </button>
             </div>
           </div>
-
         </div>
       </div>
       <Footer />

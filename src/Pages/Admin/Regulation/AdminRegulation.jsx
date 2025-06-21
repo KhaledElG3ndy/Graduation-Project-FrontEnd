@@ -1,12 +1,41 @@
-import React, { useState } from "react";
+import React, { useState , useEffect} from "react";
 import ContentsList from "./ContentsList";
 import PdfViewer from "../../../components/pdfView";
 import "./ContentsList.module.css";
 import Header from "../../../components/Admin/Header/Header";
-
+import { useNavigate } from "react-router-dom";
 export default function AdminRegulation() {
   const [selectedItem, setSelectedItem] = useState(null);
+  const navigate = useNavigate();
+  useEffect(() => {
+    const token = sessionStorage.getItem("Token");
+    if (!token) {
+      navigate("/login/signin");
+      return;
+    }
 
+    const parseJwt = (token) => {
+      try {
+        return JSON.parse(atob(token.split(".")[1]));
+      } catch (e) {
+        console.error("Invalid token", e);
+        return null;
+      }
+    };
+
+    const payload = parseJwt(token);
+    if (!payload) {
+      navigate("/login/signin");
+      return;
+    }
+
+    const role =
+      payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+
+    if (role !== "Admin") {
+      navigate("/login/signin");
+    }
+  }, [navigate]);
   const handleItemClick = (item) => {
     setSelectedItem(item);
   };

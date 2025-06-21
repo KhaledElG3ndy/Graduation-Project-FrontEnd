@@ -3,7 +3,7 @@ import Swal from "sweetalert2";
 import styles from "./AddSubjects.module.css";
 import img from "../../../assets/images/AddSubjects.svg";
 import Header from "../../../components/Admin/Header/Header";
-
+import { useNavigate } from "react-router-dom";
 export default function AddSubjects() {
   const [subjects, setSubjects] = useState([]);
   const [departments, setDepartments] = useState([]);
@@ -16,7 +16,36 @@ export default function AddSubjects() {
 
   const api_url = "https://localhost:7072/Subjects";
   const department_url = "https://localhost:7072/Departments";
+  const navigate = useNavigate();
+  useEffect(() => {
+    const token = sessionStorage.getItem("Token");
+    if (!token) {
+      navigate("/login/signin");
+      return;
+    }
 
+    const parseJwt = (token) => {
+      try {
+        return JSON.parse(atob(token.split(".")[1]));
+      } catch (e) {
+        console.error("Invalid token", e);
+        return null;
+      }
+    };
+
+    const payload = parseJwt(token);
+    if (!payload) {
+      navigate("/login/signin");
+      return;
+    }
+
+    const role =
+      payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+
+    if (role !== "Admin") {
+      navigate("/login/signin");
+    }
+  }, [navigate]);
   useEffect(() => {
     fetchSubjects();
     fetchDepartments();
@@ -100,7 +129,6 @@ export default function AddSubjects() {
       <Header />
       <div className={styles.page}>
         <div className={styles.container}>
-          {/* Left Section */}
           <div className={styles.leftSection}>
             <div className={styles.card}>
               <h2 className={styles.title}>Add Subject</h2>

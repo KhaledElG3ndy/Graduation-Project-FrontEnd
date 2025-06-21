@@ -18,8 +18,10 @@ const SectionCard = ({ title, description, buttonText, image, route }) => {
       className={`${styles.card} ${
         isDarkMode ? styles.darkMode : styles.lightMode
       }`}
-      data-aos="zoom-in"
     >
+      <div className={styles.imageContainer}>
+        <img src={image} alt={title} className={styles.image} />
+      </div>
       <div className={styles.textContainer}>
         <div className={styles.topSection}>
           <h3
@@ -42,9 +44,6 @@ const SectionCard = ({ title, description, buttonText, image, route }) => {
             {buttonText}
           </button>
         </div>
-      </div>
-      <div className={styles.imageContainer}>
-        <img src={image} alt={title} className={styles.image} />
       </div>
     </div>
   );

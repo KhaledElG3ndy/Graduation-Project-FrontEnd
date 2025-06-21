@@ -22,7 +22,6 @@ const ExamMain = ({ subjectName, courseId, onSuccess }) => {
 
       const emptyFile = new File([""], "empty.txt");
       const formData = new FormData();
-
       questions.forEach((q, index) => {
         formData.append(`Questions[${index}].Title`, q.question);
         formData.append(`Questions[${index}].Grade`, q.marks);
@@ -31,12 +30,23 @@ const ExamMain = ({ subjectName, courseId, onSuccess }) => {
           q.type === "multiple-choice" ? 0 : q.type === "checkbox" ? 1 : 2
         );
 
-        const correctAns =
-          q.type === "checkbox"
-            ? q.correctAnswers.map((i) => q.options[i]).join(",")
-            : q.type === "multiple-choice"
-            ? q.options[q.correctAnswer]
-            : q.correctAnswer?.toString() || "";
+        let correctAns = "";
+        if (q.type === "checkbox" || q.type === "multiple-choice") {
+          const totalOptions = q.options.length;
+          let binaryArr = Array(totalOptions).fill("0");
+          if (q.type === "multiple-choice") {
+            binaryArr[q.correctAnswer] = "1";
+          } else if (q.type === "checkbox") {
+            q.correctAnswers.forEach((i) => {
+              binaryArr[i] = "1";
+            });
+          }
+          const binaryStr = binaryArr.reverse().join("");
+          correctAns = parseInt(binaryStr, 2).toString();
+
+        } else {
+          correctAns = q.correctAnswer?.toString() || "";
+        }
 
         formData.append(`Questions[${index}].CorrectAns`, correctAns);
 
@@ -75,9 +85,6 @@ const ExamMain = ({ subjectName, courseId, onSuccess }) => {
       console.error("Error submitting questions:", error);
     }
   };
-  
-  
-  
 
   return (
     <>

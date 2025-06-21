@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState , useEffect} from "react";
 import {
   FaCalendarAlt,
   FaUpload,
@@ -10,12 +10,41 @@ import {
 } from "react-icons/fa";
 import styles from "./ProfessorScheduler.module.css";
 import Header from "../../../components/Admin/Header/Header";
-
+import { useNavigate } from "react-router-dom";
 const ProfessorScheduler = () => {
   const [selectedYear, setSelectedYear] = useState("1");
   const [scheduleData, setScheduleData] = useState({});
   const [uploadFile, setUploadFile] = useState(null);
+  const navigate = useNavigate();
+  useEffect(() => {
+    const token = sessionStorage.getItem("Token");
+    if (!token) {
+      navigate("/login/signin");
+      return;
+    }
 
+    const parseJwt = (token) => {
+      try {
+        return JSON.parse(atob(token.split(".")[1]));
+      } catch (e) {
+        console.error("Invalid token", e);
+        return null;
+      }
+    };
+
+    const payload = parseJwt(token);
+    if (!payload) {
+      navigate("/login/signin");
+      return;
+    }
+
+    const role =
+      payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+
+    if (role !== "Admin") {
+      navigate("/login/signin");
+    }
+  }, [navigate]);
   const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"];
   const timeSlots = [
     "8:00 AM - 10:00 AM",

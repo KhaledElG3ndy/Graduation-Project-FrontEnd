@@ -1,14 +1,13 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./Header.module.css";
-import { FiSearch, FiBell, FiSettings } from "react-icons/fi";
-import { FaSun, FaMoon } from "react-icons/fa";
-
-import { useDarkMode } from "../../../contexts/ThemeContext";
+import { FiBell } from "react-icons/fi";
 
 export default function Header() {
   const [greeting, setGreeting] = useState("");
   const [date, setDate] = useState("");
-  const { isDarkMode, toggleTheme } = useDarkMode();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const now = new Date();
@@ -21,49 +20,45 @@ export default function Header() {
     });
 
     let greetingText = "Good Evening";
-    if (hours < 12) {
-      greetingText = "Good Morning";
-    } else if (hours < 18) {
-      greetingText = "Good Afternoon";
-    }
+    if (hours < 12) greetingText = "Good Morning";
+    else if (hours < 18) greetingText = "Good Afternoon";
 
     setGreeting(greetingText);
     setDate(formattedDate);
+
+    const isLogged = sessionStorage.getItem("isLogged");
+    setIsLoggedIn(isLogged === "true");
   }, []);
 
+  const handleLogout = () => {
+    sessionStorage.clear();
+    document.cookie = "token=; path=/; max-age=0";
+    setIsLoggedIn(false);
+    navigate("/Login/signin");
+  };
+
+  const handleLogin = () => {
+    navigate("/Login/signin");
+  };
+
   return (
-    <header className={`${styles.header} ${isDarkMode && styles.darkHeader}`}>
+    <header className={styles.header}>
       <div className={styles.leftSection}>
-        <h2 className={`${styles.greeting} ${isDarkMode && styles.lightText}`}>
-          {greeting}, Admin
-        </h2>
-        <p className={`${styles.date} ${isDarkMode && styles.lightText}`}>
-          {date}
-        </p>
+        <h2 className={styles.greeting}>{greeting}, Admin</h2>
+        <p className={styles.date}>{date}</p>
       </div>
 
       <div className={styles.rightSection}>
-        <div className={styles.searchBox}>
-          <FiSearch className={styles.searchIcon} />
-          <input
-            type="text"
-            placeholder="Enter page title to open ..."
-            className={styles.searchInput}
-          />
-        </div>
         <FiBell className={styles.icon} />
-        <button
-          className={styles.iconButton}
-          onClick={toggleTheme}
-          aria-label="Toggle Theme"
-        >
-          {isDarkMode ? (
-            <FaMoon size={20} className={styles.icon} />
-          ) : (
-            <FaSun size={20} className={styles.icon} />
-          )}
-        </button>
-        {/* <Link  */}
+        {isLoggedIn ? (
+          <button onClick={handleLogout} className={styles.authButton}>
+            Logout
+          </button>
+        ) : (
+          <button onClick={handleLogin} className={styles.authButton}>
+            Login
+          </button>
+        )}
       </div>
     </header>
   );

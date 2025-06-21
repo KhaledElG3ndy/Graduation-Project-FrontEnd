@@ -1,6 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import {
+  FiMail,
+  FiLock,
+  FiEye,
+  FiEyeOff,
+  FiArrowRight,
+  FiCheck,
+} from "react-icons/fi";
 import styles from "./SignInPage.module.css";
 import FormInput from "../../../components/Student/FormInput/FormInput";
 import Button from "../../../components/Student/Button/Button";
@@ -11,7 +19,9 @@ const SignInForm = () => {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+
   const parseJwt = (token) => {
     try {
       return JSON.parse(atob(token.split(".")[1]));
@@ -99,43 +109,97 @@ const SignInForm = () => {
       </div>
 
       <div className={styles.formSection}>
-        <h2>
-          Start Learning <strong>Today!</strong>
-        </h2>
-        <p className={styles.loginP}>
-          Log in to explore your courses and track your progress.
-        </p>
-
-        <form className={styles.form} onSubmit={handleSubmit}>
-          {error && <p className={styles.error}>{error}</p>}
-          <FormInput
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <FormInput
-            type="password"
-            placeholder="Enter your password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <div className={styles.terms}>
-            <input
-              type="checkbox"
-              id="terms"
-              className={styles.check}
-              checked={termsAccepted}
-              onChange={() => setTermsAccepted(!termsAccepted)}
-            />
-            <label htmlFor="terms">
-              I agree to the <Link to="/terms">Terms & Conditions</Link>
-            </label>
+        <div className={styles.formContainer}>
+          <div className={styles.header}>
+            <div className={styles.welcomeIcon}>
+              <FiArrowRight className={styles.iconRotate} />
+            </div>
+            <h2 className={styles.title}>
+              Welcome <span className={styles.highlight}>Back!</span>
+            </h2>
+            <p className={styles.subtitle}>
+              Sign in to access your learning dashboard and continue your
+              educational journey.
+            </p>
           </div>
-          <Button className={styles.login} type="submit" disabled={loading}>
-            {loading ? "Logging in..." : "Login"}
-          </Button>
-        </form>
+
+          <form className={styles.form} onSubmit={handleSubmit}>
+            {error && (
+              <div className={styles.errorMessage}>
+                <span className={styles.errorText}>{error}</span>
+              </div>
+            )}
+
+            <div className={styles.inputGroup}>
+              <div className={styles.inputWrapper}>
+                <FiMail className={styles.inputIcon} />
+                <input
+                  type="email"
+                  placeholder="Enter your email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className={styles.input}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className={styles.inputGroup}>
+              <div className={styles.inputWrapper}>
+                <FiLock className={styles.inputIcon} />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className={styles.input}
+                  required
+                />
+                <button
+                  type="button"
+                  className={styles.passwordToggle}
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <FiEyeOff /> : <FiEye />}
+                </button>
+              </div>
+            </div>
+
+            <div className={styles.checkboxGroup}>
+              <label className={styles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  checked={termsAccepted}
+                  onChange={() => setTermsAccepted(!termsAccepted)}
+                  className={styles.hiddenCheckbox}
+                />
+                <div className={styles.customCheckbox}>
+                  {termsAccepted && <FiCheck className={styles.checkIcon} />}
+                </div>
+                <span className={styles.checkboxText}>
+                  I agree to the{" "}
+                  <Link to="/terms" className={styles.termsLink}>
+                    Terms & Conditions
+                  </Link>
+                </span>
+              </label>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className={`${styles.submitButton} ${
+                loading ? styles.loading : ""
+              }`}
+            >
+              <span className={styles.buttonText}>
+                {loading ? "Signing in..." : "Sign In"}
+              </span>
+              {!loading && <FiArrowRight className={styles.buttonIcon} />}
+              {loading && <div className={styles.spinner}></div>}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

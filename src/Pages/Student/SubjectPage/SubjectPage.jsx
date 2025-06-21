@@ -29,7 +29,36 @@ const SubjectPage = () => {
     { name: "Grades", icon: <File size={18} /> },
     { name: "Chat", icon: <MessageCircle size={18} /> },
   ];
+  useEffect(() => {
+    const token = sessionStorage.getItem("Token");
+    if (!token) {
+      navigate("/login/signin");
+      return;
+    }
 
+    const parseJwt = (token) => {
+      try {
+        return JSON.parse(atob(token.split(".")[1]));
+      } catch (e) {
+        console.error("Invalid token", e);
+        return null;
+      }
+    };
+
+    const payload = parseJwt(token);
+    if (!payload) {
+      navigate("/login/signin");
+      return;
+    }
+
+    const role =
+      payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+
+    if (role !== "Student") {
+      navigate("/login/signin");
+    }
+  }, [navigate]);
+  
   useEffect(() => {
     const fetchSubject = async () => {
       try {

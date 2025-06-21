@@ -1,17 +1,47 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import styles from "./ExamPage.module.css";
-
+import { useNavigate } from "react-router-dom";
 const ExamPage = () => {
   const { examId } = useParams();
   const location = useLocation();
   const passedExamInfo = location.state?.exam;
+  const navigate = useNavigate();
 
   const [examInfo, setExamInfo] = useState(passedExamInfo || null);
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
   const [loading, setLoading] = useState(true);
   const [timeRemaining, setTimeRemaining] = useState(null);
+  useEffect(() => {
+    const token = sessionStorage.getItem("Token");
+    if (!token) {
+      navigate("/login/signin");
+      return;
+    }
+
+    const parseJwt = (token) => {
+      try {
+        return JSON.parse(atob(token.split(".")[1]));
+      } catch (e) {
+        console.error("Invalid token", e);
+        return null;
+      }
+    };
+
+    const payload = parseJwt(token);
+    if (!payload) {
+      navigate("/login/signin");
+      return;
+    }
+
+    const role =
+      payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+
+    if (role !== "Student") {
+      navigate("/login/signin");
+    }
+  }, [navigate]);
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -78,30 +108,34 @@ const ExamPage = () => {
   };
 
   const handleSubmit = async () => {
-    const formattedAnswers = questions.map((q, idx) => {
+    const formattedAnswers = questions.map((q) => {
       const answer = answers[q.id];
       let formattedAnswer = "";
 
       if (q.type === 1) {
-        let bitmask = 0;
+        let bits = Array(q.choices.length).fill("0");
         if (Array.isArray(answer)) {
           answer.forEach((choiceId) => {
             const index = q.choices.findIndex((c) => c.id === choiceId);
             if (index !== -1) {
-              bitmask |= 1 << (q.choices.length - 1 - index);
+              bits[index] = "1";
             }
           });
         }
-        formattedAnswer = bitmask.toString();
+        formattedAnswer = parseInt(bits.reverse().join(""), 2).toString();
       } else if (q.type === 0) {
+        let bits = Array(q.choices.length).fill("0");
         const index = q.choices.findIndex((c) => c.id === answer);
-        formattedAnswer = index !== -1 ? index.toString() : "";
+        if (index !== -1) {
+          bits[index] = "1";
+        }
+        formattedAnswer = parseInt(bits.reverse().join(""), 2).toString();
       } else if (q.type === 2) {
         formattedAnswer = answer || "";
       }
 
       return {
-        studentId: 1, // أو من localStorage حسب حالتك
+        studentId: 1,
         questionId: q.id,
         studentAns: formattedAnswer,
         grade: 0,
@@ -123,7 +157,7 @@ const ExamPage = () => {
       );
 
       if (res.ok) {
-        alert("Your answers were submitted successfully!");
+        navigate(`/student/subject/${examInfo.courseId}`);
       } else {
         const err = await res.json();
         console.error("Submission failed:", err);

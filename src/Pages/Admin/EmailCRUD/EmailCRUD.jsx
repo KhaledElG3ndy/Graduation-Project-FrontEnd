@@ -7,7 +7,7 @@ import img from "../../../assets/images/EmailCRUD.svg";
 import Swal from "sweetalert2";
 import { Link } from "react-router-dom";
 import { AccountContext } from "../../../contexts/AccountContext";
-
+import { useNavigate } from "react-router-dom";
 export default function EmailCRUD() {
   const [accounts, setAccounts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -15,7 +15,36 @@ export default function EmailCRUD() {
   const { setSelectedAccount } = useContext(AccountContext);
 
   const API_URL = "https://localhost:7072/api/Account";
+  const navigate = useNavigate();
+  useEffect(() => {
+    const token = sessionStorage.getItem("Token");
+    if (!token) {
+      navigate("/login/signin");
+      return;
+    }
 
+    const parseJwt = (token) => {
+      try {
+        return JSON.parse(atob(token.split(".")[1]));
+      } catch (e) {
+        console.error("Invalid token", e);
+        return null;
+      }
+    };
+
+    const payload = parseJwt(token);
+    if (!payload) {
+      navigate("/login/signin");
+      return;
+    }
+
+    const role =
+      payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+
+    if (role !== "Admin") {
+      navigate("/login/signin");
+    }
+  }, [navigate]);
   useEffect(() => {
     fetchAccounts();
   }, []);

@@ -3,7 +3,7 @@ import styles from "./CreateAccounts.module.css";
 import { FaUser, FaPhone, FaIdCard, FaCalendar } from "react-icons/fa";
 import Header from "../../../components/Student/Header/Header";
 import { useDarkMode } from "../../../contexts/ThemeContext";
-
+import { useNavigate } from "react-router-dom";
 const CreateStudentAccount = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -17,7 +17,36 @@ const CreateStudentAccount = () => {
   const [excelRole, setExcelRole] = useState("student");
 
   const { isDarkMode } = useDarkMode();
+  const navigate = useNavigate();
+  useEffect(() => {
+    const token = sessionStorage.getItem("Token");
+    if (!token) {
+      navigate("/login/signin");
+      return;
+    }
 
+    const parseJwt = (token) => {
+      try {
+        return JSON.parse(atob(token.split(".")[1]));
+      } catch (e) {
+        console.error("Invalid token", e);
+        return null;
+      }
+    };
+
+    const payload = parseJwt(token);
+    if (!payload) {
+      navigate("/login/signin");
+      return;
+    }
+
+    const role =
+      payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+
+    if (role !== "Admin") {
+      navigate("/login/signin");
+    }
+  }, [navigate]);
   useEffect(() => {
     document.body.style.backgroundColor = isDarkMode ? "#121212" : "#f5f5f5";
   }, [isDarkMode]);
@@ -42,14 +71,13 @@ const CreateStudentAccount = () => {
     formData.append("Name", `${firstName} ${lastName}`);
     formData.append("PhoneNumber", phoneNumber);
     formData.append("NationalId", nationalId);
-    formData.append("Gender", gender); 
+    formData.append("Gender", gender);
 
     if (role === "student") {
       formData.append("Year", year.toString());
       formData.append("DepartmentId", departmentId);
     }
 
-   
     const url = `https://localhost:7072/api/Account/AddAccount?role=${
       role === "student" ? 3 : 1
     }`;
@@ -72,7 +100,6 @@ const CreateStudentAccount = () => {
       alert(`Error: ${error.message}`);
     }
   };
-  
 
   const handleExcelChange = (e) => {
     setExcelFile(e.target.files[0]);

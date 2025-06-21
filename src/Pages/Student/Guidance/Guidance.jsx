@@ -3,6 +3,7 @@ import styles from "./Guidance.module.css";
 import { FaArrowAltCircleLeft } from "react-icons/fa";
 import { FaArrowAltCircleDown } from "react-icons/fa";
 import Header from "../../../components/student/Header/Header";
+import { useNavigate } from "react-router-dom";
 const Guidance = () => {
   const [isLaboratoriesOpen, setIsLaboratoriesOpen] = useState(false);
   const [isDoctorsOfficesOpen, setIsDoctorsOfficesOpen] = useState(false);
@@ -10,7 +11,37 @@ const Guidance = () => {
   const [isOtherOpen, setIsOtherOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState("");
+  const navigate = useNavigate();
+  useEffect(() => {
+    const token = sessionStorage.getItem("Token");
+    if (!token) {
+      navigate("/login/signin");
+      return;
+    }
 
+    const parseJwt = (token) => {
+      try {
+        return JSON.parse(atob(token.split(".")[1]));
+      } catch (e) {
+        console.error("Invalid token", e);
+        return null;
+      }
+    };
+
+    const payload = parseJwt(token);
+    if (!payload) {
+      navigate("/login/signin");
+      return;
+    }
+
+    const role =
+      payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+
+    if (role !== "Student") {
+      navigate("/login/signin");
+    }
+  }, [navigate]);
+  
   const toggleLaboratories = () => setIsLaboratoriesOpen(!isLaboratoriesOpen);
   const toggleDoctorsOffices = () =>
     setIsDoctorsOfficesOpen(!isDoctorsOfficesOpen);

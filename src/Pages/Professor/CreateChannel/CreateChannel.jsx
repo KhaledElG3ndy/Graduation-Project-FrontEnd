@@ -26,8 +26,36 @@ const CreateChannel = () => {
   const location = useLocation();
   const subjectName = new URLSearchParams(location.search).get("subject");
 
-  // Get Departments from API
   useEffect(() => {
+    const token = sessionStorage.getItem("Token");
+    if (!token) {
+      navigate("/login/signin");
+      return;
+    }
+
+    const parseJwt = (token) => {
+      try {
+        return JSON.parse(atob(token.split(".")[1]));
+      } catch (e) {
+        console.error("Invalid token", e);
+        return null;
+      }
+    };
+
+    const payload = parseJwt(token);
+    if (!payload) {
+      navigate("/login/signin");
+      return;
+    }
+
+    const role =
+      payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+
+    if (role !== "Professor") {
+      navigate("/login/signin");
+    }
+  }, [navigate]);
+    useEffect(() => {
     const fetchDepartments = async () => {
       try {
         const res = await fetch(

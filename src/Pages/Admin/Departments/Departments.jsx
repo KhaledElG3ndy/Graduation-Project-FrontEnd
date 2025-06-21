@@ -1,16 +1,44 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import styles from "./Departments.module.css";
 import Header from "../../../components/Admin/Header/Header";
 import img from "../../../assets/images/AddSubjects.svg";
 
 function Departments() {
-  const navigate = useNavigate(); 
   const [departments, setDepartments] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [newName, setNewName] = useState("");
+  const navigate = useNavigate();
+  useEffect(() => {
+    const token = sessionStorage.getItem("Token");
+    if (!token) {
+      navigate("/login/signin");
+      return;
+    }
 
+    const parseJwt = (token) => {
+      try {
+        return JSON.parse(atob(token.split(".")[1]));
+      } catch (e) {
+        console.error("Invalid token", e);
+        return null;
+      }
+    };
+
+    const payload = parseJwt(token);
+    if (!payload) {
+      navigate("/login/signin");
+      return;
+    }
+
+    const role =
+      payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+
+    if (role !== "Admin") {
+      navigate("/login/signin");
+    }
+  }, [navigate]);
   const fetchDepartments = async () => {
     try {
       const res = await fetch(
@@ -28,7 +56,7 @@ function Departments() {
   }, []);
 
   const handleAddDepartment = () => {
-    navigate("/admin/AddDepartment"); 
+    navigate("/admin/AddDepartment");
   };
 
   const handleDelete = async (id) => {
