@@ -1,3 +1,9 @@
+.pageBackground {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  min-height: 100vh;
+  width: 100%;
+}
+
 .homeContainer {
   display: flex;
   justify-content: center;
@@ -7,13 +13,15 @@
   min-height: 60vh;
   transition: background-color 0.3s ease;
 }
+
 .sectionContainer {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 32px;
+  gap: 40px 20px;
   width: 100%;
   margin-top: 40px;
 }
+
 .cardsContainer {
   display: flex;
   justify-content: center;
@@ -98,6 +106,273 @@
   color: #003366;
 }
 
+.aboutSection {
+  padding: 100px 0;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.aboutContainer {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.aboutContent {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+
+.aboutLeft {
+  padding-right: 40px;
+}
+
+.aboutHeader {
+  margin-bottom: 30px;
+}
+
+.aboutBadge {
+  display: inline-block;
+  background: linear-gradient(135deg, #0066cc, #3399ff);
+  color: white;
+  padding: 8px 20px;
+  border-radius: 25px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+}
+
+.aboutTitle {
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 0;
+  color: #1a202c;
+}
+
+.aboutDark .aboutTitle {
+  color: #f7fafc;
+}
+
+.titleHighlight {
+  background: linear-gradient(135deg, #0066cc, #3399ff);
+  -webkit-background-clip: text;
+  color: transparent;
+  display: inline-block;
+  margin-left: 5px;
+}
+
+.aboutDescription {
+  font-size: 1.25rem;
+  line-height: 1.8;
+  color: #4a5568;
+  margin-bottom: 20px;
+  font-weight: 400;
+}
+
+.aboutDark .aboutDescription {
+  color: #cbd5e0;
+}
+
+.aboutSubDescription {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: #718096;
+  margin-bottom: 40px;
+}
+
+.aboutDark .aboutSubDescription {
+  color: #a0aec0;
+}
+
+.aboutStats {
+  display: flex;
+  gap: 40px;
+  margin-top: 40px;
+}
+
+.statItem {
+  text-align: center;
+}
+
+.statNumber {
+  display: block;
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #0066cc, #3399ff);
+  -webkit-background-clip: text;
+  color: transparent;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.statLabel {
+  font-size: 0.875rem;
+  color: #718096;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.aboutDark .statLabel {
+  color: #a0aec0;
+}
+
+.aboutRight {
+  position: relative;
+  padding-left: 40px;
+}
+
+.featuresGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 25px;
+}
+
+.featureCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 25px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.aboutDark .featureCard {
+  background: rgba(45, 55, 72, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.featureCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 40px rgba(0, 102, 204, 0.15);
+}
+
+.featureCard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(135deg, #0066cc, #3399ff);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.featureCard:hover::before {
+  opacity: 1;
+}
+
+.featureIcon {
+  min-width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #0066cc, #3399ff);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.25rem;
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+}
+
+.featureContent {
+  flex: 1;
+}
+
+.featureTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0 0 8px 0;
+}
+
+.aboutDark .featureTitle {
+  color: #f7fafc;
+}
+
+.featureDescription {
+  font-size: 0.95rem;
+  color: #718096;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.aboutDark .featureDescription {
+  color: #a0aec0;
+}
+
+.decorativeElements {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.floatingShape1,
+.floatingShape2,
+.floatingShape3 {
+  position: absolute;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 102, 204, 0.1),
+    rgba(51, 153, 255, 0.1)
+  );
+  animation: float 6s ease-in-out infinite;
+}
+
+.floatingShape1 {
+  width: 120px;
+  height: 120px;
+  top: 20%;
+  right: -10%;
+  animation-delay: 0s;
+}
+
+.floatingShape2 {
+  width: 80px;
+  height: 80px;
+  top: 60%;
+  right: 20%;
+  animation-delay: 2s;
+}
+
+.floatingShape3 {
+  width: 60px;
+  height: 60px;
+  top: 80%;
+  right: -5%;
+  animation-delay: 4s;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(180deg);
+  }
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -106,6 +381,42 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@media (max-width: 1200px) {
+  .aboutContent {
+    gap: 60px;
+  }
+
+  .aboutLeft {
+    padding-right: 20px;
+  }
+
+  .aboutRight {
+    padding-left: 20px;
+  }
+}
+
+@media (max-width: 968px) {
+  .aboutContent {
+    grid-template-columns: 1fr;
+    gap: 60px;
+  }
+
+  .aboutLeft,
+  .aboutRight {
+    padding: 0;
+  }
+
+  .aboutStats {
+    justify-content: center;
+    gap: 60px;
+  }
+
+  .featuresGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
   }
 }
 
@@ -126,6 +437,30 @@
   .secondaryButton {
     width: 100%;
   }
+
+  .aboutSection {
+    padding: 60px 0;
+  }
+
+  .aboutTitle {
+    font-size: 2.5rem;
+  }
+
+  .aboutDescription {
+    font-size: 1.1rem;
+  }
+
+  .aboutStats {
+    gap: 30px;
+  }
+
+  .statNumber {
+    font-size: 2rem;
+  }
+
+  .featuresGrid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 480px) {
@@ -135,5 +470,28 @@
 
   .textContent p {
     font-size: 1rem;
+  }
+
+  .aboutTitle {
+    font-size: 2rem;
+  }
+
+  .aboutDescription {
+    font-size: 1rem;
+  }
+
+  .aboutStats {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .featureCard {
+    padding: 20px;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .featureIcon {
+    margin: 0 auto;
   }
 }

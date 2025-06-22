@@ -6,16 +6,25 @@ import SectionCard from "../../../components/Student/SectionCard/SectionCard";
 import Footer from "../../../components/Student/Footer/Footer";
 import { useDarkMode } from "../../../contexts/ThemeContext";
 
-import { FaRocket, FaInfoCircle } from "react-icons/fa";
+import {
+  FaRocket,
+  FaInfoCircle,
+  FaGraduationCap,
+  FaUsers,
+  FaBullseye,
+  FaLightbulb,
+} from "react-icons/fa";
 import news from "../../../assets/images/news.svg";
 import schedule from "../../../assets/images/Schedules.svg";
 import guide from "../../../assets/images/guidance.svg";
 import Communication from "../../../assets/images/Communication.svg";
 import study from "../../../assets/images/study.svg";
 import regulation from "../../../assets/images/regulation.svg";
+
 const Home = () => {
   const { isDarkMode } = useDarkMode();
   const navigate = useNavigate();
+
   useEffect(() => {
     const token = sessionStorage.getItem("Token");
 
@@ -74,7 +83,6 @@ const Home = () => {
       image: regulation,
       route: "/student/regulation",
     },
-
     {
       id: 4,
       title: "Guidance",
@@ -93,7 +101,6 @@ const Home = () => {
       image: schedule,
       route: "/student/schedules",
     },
-
     {
       id: 6,
       title: "News",
@@ -105,8 +112,35 @@ const Home = () => {
     },
   ];
 
+  const features = [
+    {
+      icon: <FaGraduationCap />,
+      title: "Academic Excellence",
+      description:
+        "Comprehensive study materials and resources to boost your academic performance",
+    },
+    {
+      icon: <FaUsers />,
+      title: "Community Connection",
+      description:
+        "Connect with peers, faculty, and mentors in a collaborative environment",
+    },
+    {
+      icon: <FaBullseye />,
+      title: "Goal Achievement",
+      description:
+        "Track your progress and achieve your academic and career objectives",
+    },
+    {
+      icon: <FaLightbulb />,
+      title: "Innovation Hub",
+      description:
+        "Access cutting-edge tools and resources for modern learning",
+    },
+  ];
+
   return (
-    <div>
+    <div className={styles.pageBackground}>
       <Header />
       <div
         className={`${styles.homeContainer} ${
@@ -131,11 +165,7 @@ const Home = () => {
         </div>
       </div>
 
-      <div
-        className={`${styles.cardsContainer} ${
-          isDarkMode ? styles.darkMode : styles.lightMode
-        }`}
-      >
+      <div className={styles.cardsContainer}>
         <div
           className={`${styles.sectionContainer} ${
             isDarkMode ? styles.darkMode : styles.lightMode
@@ -146,6 +176,64 @@ const Home = () => {
           ))}
         </div>
       </div>
+
+      <section
+        id="about"
+        className={`${styles.aboutSection} ${
+          isDarkMode ? styles.aboutDark : styles.aboutLight
+        }`}
+      >
+        <div className={styles.aboutContainer}>
+          <div className={styles.aboutContent}>
+            <div className={styles.aboutLeft}>
+              <div className={styles.aboutHeader}>
+                <span className={styles.aboutBadge}>About Us</span>
+                <h2 className={styles.aboutTitle}>
+                  Transforming Education Through 
+                  <span className={styles.titleHighlight}>  Innovation</span>
+                </h2>
+              </div>
+
+              <p className={styles.aboutDescription}>
+                Team Space revolutionizes the academic experience by providing
+                students with a comprehensive digital ecosystem. Our platform
+                seamlessly integrates all aspects of college life, from academic
+                resources to social connections, empowering students to excel in
+                their educational journey.
+              </p>
+
+              <p className={styles.aboutSubDescription}>
+                Built with cutting-edge technology and designed with student
+                needs in mind, Team Space bridges the gap between traditional
+                education and modern digital solutions, creating an environment
+                where learning thrives.
+              </p>
+            </div>
+
+            <div className={styles.aboutRight}>
+              <div className={styles.featuresGrid}>
+                {features.map((feature, index) => (
+                  <div key={index} className={styles.featureCard}>
+                    <div className={styles.featureIcon}>{feature.icon}</div>
+                    <div className={styles.featureContent}>
+                      <h3 className={styles.featureTitle}>{feature.title}</h3>
+                      <p className={styles.featureDescription}>
+                        {feature.description}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className={styles.decorativeElements}>
+                <div className={styles.floatingShape1}></div>
+                <div className={styles.floatingShape2}></div>
+                <div className={styles.floatingShape3}></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <Footer />
     </div>

@@ -40,12 +40,13 @@ const Header = () => {
     >
       <div className={styles.logo}>Team Space</div>
       <nav className={styles.nav}>
-        <Link to="/" className={styles.navLink}>
+        <a href="/" className={styles.navLink}>
           Home
-        </Link>
-        <Link to="/about" className={styles.navLink}>
+        </a>
+        <a href="#about" className={styles.navLink}>
           About
-        </Link>
+        </a>
+
         <Link to="/profile" className={styles.navLink}>
           Profile
         </Link>
