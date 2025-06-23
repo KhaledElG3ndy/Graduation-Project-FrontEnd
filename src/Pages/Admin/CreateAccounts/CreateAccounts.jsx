@@ -1,196 +1,232 @@
 import React, { useState, useEffect } from "react";
 import styles from "./CreateAccounts.module.css";
-import { FaUser, FaPhone, FaIdCard, FaCalendar } from "react-icons/fa";
-import Header from "../../../components/Student/Header/Header";
-import { useDarkMode } from "../../../contexts/ThemeContext";
-import { useNavigate } from "react-router-dom";
+import {
+  FaUserGraduate,
+  FaPhone,
+  FaIdCard,
+  FaTransgender,
+  FaCalendar,
+} from "react-icons/fa";
+import axios from "axios";
+import Swal from "sweetalert2";
+import Header from "../../../components/Admin/Header/Header";
+
 const CreateStudentAccount = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [gender, setGender] = useState("Male");
+  const [year, setYear] = useState(1);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [nationalId, setNationalId] = useState("");
-  const [year, setYear] = useState(1);
   const [departmentId, setDepartmentId] = useState("");
   const [role, setRole] = useState("student");
+  const [departments, setDepartments] = useState([]);
+
   const [excelFile, setExcelFile] = useState(null);
   const [excelRole, setExcelRole] = useState("student");
-
-  const { isDarkMode } = useDarkMode();
-  const navigate = useNavigate();
   useEffect(() => {
-    const token = sessionStorage.getItem("Token");
-    if (!token) {
-      navigate("/login/signin");
-      return;
-    }
-
-    const parseJwt = (token) => {
+    const fetchDepartments = async () => {
       try {
-        return JSON.parse(atob(token.split(".")[1]));
-      } catch (e) {
-        console.error("Invalid token", e);
-        return null;
+        const response = await axios.get(
+          "https://localhost:7072/Departments/GetDepartments"
+        );
+        setDepartments(response.data);
+      } catch (error) {
+        console.error("Error fetching departments:", error);
       }
     };
 
-    const payload = parseJwt(token);
-    if (!payload) {
-      navigate("/login/signin");
-      return;
-    }
-
-    const role =
-      payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
-
-    if (role !== "Admin") {
-      navigate("/login/signin");
-    }
-  }, [navigate]);
-  useEffect(() => {
-    document.body.style.backgroundColor = isDarkMode ? "#121212" : "#f5f5f5";
-  }, [isDarkMode]);
+    fetchDepartments();
+  }, []);
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (
-      !firstName ||
-      !lastName ||
-      !phoneNumber ||
-      !nationalId ||
-      (role === "student" && (!year || !departmentId))
-    ) {
-      alert("Please fill in all required fields.");
+    if (!firstName || !lastName || !phoneNumber || !nationalId) {
+      Swal.fire({
+        icon: "warning",
+        title: "Incomplete Data",
+        text: "Please fill in all required fields.",
+      });
       return;
     }
 
     const formData = new FormData();
+
     formData.append("FirstName", firstName);
     formData.append("LastName", lastName);
     formData.append("Name", `${firstName} ${lastName}`);
     formData.append("PhoneNumber", phoneNumber);
     formData.append("NationalId", nationalId);
-    formData.append("Gender", gender);
+    formData.append("Gender", gender === "Male" ? "true" : "false");
 
     if (role === "student") {
       formData.append("Year", year.toString());
-      formData.append("DepartmentId", departmentId);
+      formData.append("DepartmentId", parseInt(departmentId || "1"));
+    } else {
+      formData.append("Year", "1");
+      formData.append("DepartmentId", "1");
     }
 
-    const url = `https://localhost:7072/api/Account/AddAccount?role=${
-      role === "student" ? 3 : 1
-    }`;
+    const roleMap = {
+      student: 3,
+      professor: 1,
+      ta: 2,
+    };
 
     try {
-      const response = await fetch(url, {
-        method: "POST",
-        body: formData,
+      Swal.fire({
+        title: "Creating account...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
       });
 
-      if (!response.ok) {
-        const errorResponse = await response.text();
-        throw new Error(`Failed to create account: ${errorResponse}`);
-      }
+      await axios.post(
+        `https://localhost:7072/api/Account/AddAccount?role=${roleMap[role]}`,
+        formData
+      );
 
-      const result = await response.json();
-      alert("Account created successfully! Use generated credentials to login");
+      Swal.fire({
+        icon: "success",
+        title: "Success",
+        text: "Account created successfully!",
+      });
+
+      setFirstName("");
+      setLastName("");
+      setGender("Male");
+      setYear(1);
+      setPhoneNumber("");
+      setNationalId("");
+      setDepartmentId("");
+      setRole("student");
     } catch (error) {
-      console.error("Error:", error.message);
-      alert(`Error: ${error.message}`);
+      Swal.fire({
+        icon: "error",
+        title: "Creation Failed",
+        text: "Failed to create account.",
+      });
+      console.error("Error creating account:", error);
     }
   };
 
-  const handleExcelChange = (e) => {
-    setExcelFile(e.target.files[0]);
-  };
-
-  const handleExcelSubmit = async () => {
+  const handleExcelUpload = async () => {
     if (!excelFile) {
-      alert("Please select an Excel file.");
+      Swal.fire({
+        icon: "warning",
+        title: "No File Selected",
+        text: "Please select a file.",
+      });
       return;
     }
 
     const formData = new FormData();
-    formData.append("ExcelFile", excelFile);
-    formData.append("role", excelRole === "student" ? 0 : 1);
+    formData.append("excelFile", excelFile);
+
+    const excelRoleMap = {
+      student: 0,
+      professor: 1,
+      ta: 2,
+    };
+
+    formData.append("role", excelRoleMap[excelRole]);
 
     try {
-      const response = await fetch(
-        "https://localhost:7072/api/Account/AddByExcel",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      Swal.fire({
+        title: "Uploading file...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
 
-      if (!response.ok) {
-        const error = await response.text();
-        throw new Error(`Upload failed: ${error}`);
-      }
+      await axios.post("https://localhost:7072/api/Account/import", formData);
 
-      alert(
-        "Accounts added successfully! Users can login with generated credentials"
-      );
+      Swal.fire({
+        icon: "success",
+        title: "Import Successful",
+        text: "Excel data imported successfully!",
+      });
+
+      setExcelFile(null);
+      setExcelRole("student");
     } catch (error) {
-      console.error("Error uploading Excel file:", error.message);
-      alert("Failed to upload Excel file");
+      Swal.fire({
+        icon: "error",
+        title: "Import Failed",
+        text: "Failed to import Excel data.",
+      });
+      console.error("Error importing Excel file:", error);
     }
   };
+
+  const currentYear = new Date().getFullYear();
+  const yearOptions = [0, 1, 2, 3].map((offset) => currentYear - offset);
 
   return (
     <>
       <Header />
+
       <div className={styles.container}>
-        <h2 className={styles.title}>Create Student & Staff Account</h2>
+        <h1 className={styles.title}>Create Account</h1>
         <p className={styles.subtitle}>
-          Fill out the form below to create a new student or staff account.
+          Fill out the form below to create a new account.
         </p>
+        <div className={styles.roleSelection}>
+          <label>
+            <input
+              type="radio"
+              value="student"
+              checked={role === "student"}
+              onChange={() => setRole("student")}
+            />
+            Student
+          </label>
+          <label>
+            <input
+              type="radio"
+              value="professor"
+              checked={role === "professor"}
+              onChange={() => setRole("professor")}
+            />
+            Professor
+          </label>
+          <label>
+            <input
+              type="radio"
+              value="ta"
+              checked={role === "ta"}
+              onChange={() => setRole("ta")}
+            />
+            TA
+          </label>
+        </div>
 
-        <form className={styles.form} onSubmit={handleSubmit}>
-          <div className={styles.roleSelection}>
-            <label>
-              <input
-                type="radio"
-                value="student"
-                checked={role === "student"}
-                onChange={() => setRole("student")}
-              />
-              Student
-            </label>
-            <label>
-              <input
-                type="radio"
-                value="staff"
-                checked={role === "staff"}
-                onChange={() => setRole("staff")}
-              />
-              Staff
-            </label>
-          </div>
-
-          <div className={styles.inputGroup}>
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.row}>
             <div className={styles.inputWithIcon}>
-              <FaUser className={styles.icon} />
+              <FaUserGraduate className={styles.icon} />
               <input
                 type="text"
                 placeholder="First Name"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 required
-                className={styles.input}
+                className={styles.inputHalfWidth}
               />
             </div>
-
             <div className={styles.inputWithIcon}>
-              <FaUser className={styles.icon} />
+              <FaUserGraduate className={styles.icon} />
               <input
                 type="text"
                 placeholder="Last Name"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 required
-                className={styles.input}
+                className={styles.inputHalfWidth}
               />
             </div>
           </div>
@@ -220,27 +256,16 @@ const CreateStudentAccount = () => {
           </div>
 
           <div className={styles.inputWithIcon}>
-            <label>Gender</label>
-            <div className={styles.radioGroup}>
-              <label>
-                <input
-                  type="radio"
-                  value="Male"
-                  checked={gender === "Male"}
-                  onChange={() => setGender("Male")}
-                />
-                Male
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  value="Female"
-                  checked={gender === "Female"}
-                  onChange={() => setGender("Female")}
-                />
-                Female
-              </label>
-            </div>
+            <FaTransgender className={styles.icon} />
+            <select
+              value={gender}
+              onChange={(e) => setGender(e.target.value)}
+              className={styles.inputFullWidth}
+              required
+            >
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
           </div>
 
           {role === "student" && (
@@ -253,76 +278,53 @@ const CreateStudentAccount = () => {
                   className={styles.inputFullWidth}
                   required
                 >
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                  <option value="4">4</option>
+                  {yearOptions.map((y) => (
+                    <option key={y} value={y}>
+                      {y}
+                    </option>
+                  ))}
                 </select>
               </div>
 
               <div className={styles.inputWithIcon}>
-                <input
-                  type="number"
-                  placeholder="Department ID"
+                <select
                   value={departmentId}
                   onChange={(e) => setDepartmentId(e.target.value)}
                   required
                   className={styles.inputFullWidth}
-                />
+                >
+                  <option value="">Select Department</option>
+                  {departments.map((dep) => (
+                    <option key={dep.id} value={dep.id}>
+                      {dep.name}
+                    </option>
+                  ))}
+                </select>
               </div>
             </>
           )}
 
-          <button type="submit" className={styles.submitButton}>
+          <button type="submit" className={styles.button}>
             Create Account
           </button>
         </form>
 
+        <div className={styles.separator}></div>
         <div className={styles.excelUploadSection}>
-          <h3>Upload Excel File</h3>
-
-          <div className={styles.roleSelection}>
-            <label>
-              <input
-                type="radio"
-                value="student"
-                checked={excelRole === "student"}
-                onChange={() => setExcelRole("student")}
-              />
-              Student Accounts
-            </label>
-            <label>
-              <input
-                type="radio"
-                value="staff"
-                checked={excelRole === "staff"}
-                onChange={() => setExcelRole("staff")}
-              />
-              Staff Accounts
-            </label>
-          </div>
+          <h2>Import Accounts from Excel</h2>
 
           <div className={styles.fileInputRow}>
-            <div className={styles.fileInputWrapper}>
-              <label htmlFor="excelUpload" className={styles.fileLabel}>
-                {excelFile ? excelFile.name : "Choose Excel File"}
-              </label>
+            <label className={styles.fileLabel}>
               <input
-                id="excelUpload"
                 type="file"
-                accept=".xlsx, .xls"
-                onChange={handleExcelChange}
+                accept=".xlsx,.xls"
+                onChange={(e) => setExcelFile(e.target.files[0])}
                 className={styles.fileInput}
               />
-            </div>
-
-            <button
-              type="button"
-              onClick={handleExcelSubmit}
-              className={styles.uploadButton}
-              disabled={!excelFile}
-            >
-              Upload
+              {excelFile ? excelFile.name : "Choose Excel File"}
+            </label>
+            <button onClick={handleExcelUpload} className={styles.uploadButton}>
+              Upload Excel
             </button>
           </div>
         </div>

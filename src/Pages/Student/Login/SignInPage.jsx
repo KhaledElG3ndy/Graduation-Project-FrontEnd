@@ -82,7 +82,7 @@ const SignInForm = () => {
       }
     } catch (error) {
       console.error("Error:", error);
-      setError(error.message);
+      setError("Server Not Found");
     } finally {
       setLoading(false);
     }

@@ -1,6 +1,6 @@
 .container {
   max-width: 800px;
-  margin: 60px auto;
+  margin: 10px auto;
   padding: 40px;
   text-align: center;
   background: #ffffff;
@@ -26,6 +26,29 @@
   color: #64748b;
   font-weight: 400;
   line-height: 1.6;
+}
+.button {
+  padding: 16px 32px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: linear-gradient(135deg, #003366, #0066cc, #3399ff);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 12px;
+  letter-spacing: 0.025em;
+  box-shadow: 0 4px 12px rgba(0, 51, 102, 0.25);
+}
+
+.button:hover {
+  background: linear-gradient(135deg, #002244, #0052a3, #2d8cdb);
+  box-shadow: 0 6px 20px rgba(0, 51, 102, 0.35);
+}
+
+.button:active {
+  box-shadow: 0 2px 8px rgba(0, 51, 102, 0.3);
 }
 
 .form {
@@ -75,7 +98,8 @@
 }
 
 .input,
-.inputFullWidth {
+.inputFullWidth,
+.inputHalfWidth {
   flex: 1;
   border: none;
   outline: none;
@@ -290,7 +314,7 @@
     background: #ffffff;
     border-color: rgba(0, 51, 102, 0.1);
   }
-  
+
   .inputWithIcon,
   .genderSelection,
   .roleSelection {
@@ -298,30 +322,30 @@
     border-color: #e2e8f0;
     color: #1e293b;
   }
-  
+
   .input,
   .inputFullWidth,
   .select {
     color: #1e293b;
   }
-  
+
   .icon {
     color: #64748b;
   }
-  
+
   .roleSelection label,
   .genderSelection label {
     color: #1e293b;
   }
-  
+
   .subtitle {
     color: #64748b;
   }
-  
+
   .excelUploadSection h3 {
     color: #1e293b;
   }
-  
+
   .fileLabel {
     background: linear-gradient(135deg, #f8fafc, #e2e8f0);
     color: #475569;
@@ -334,23 +358,49 @@
     margin: 20px;
     padding: 24px;
   }
-  
+
   .title {
     font-size: 1.875rem;
   }
-  
+
   .inputGroup {
     flex-direction: column;
     gap: 0;
   }
-  
+
   .roleSelection {
     flex-direction: column;
     gap: 16px;
   }
-  
+
   .fileInputRow {
     flex-direction: column;
     gap: 12px;
   }
+}
+
+.row {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.inputWithIconHalf {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  padding: 0.5rem;
+  border-radius: 8px;
+  flex: 1;
+  background-color: #fff;
+}
+
+.inputWithIconHalf input {
+  border: none;
+  outline: none;
+  width: 100%;
+  margin-left: 0.5rem;
+  font-size: 1rem;
+  background: transparent;
 }
