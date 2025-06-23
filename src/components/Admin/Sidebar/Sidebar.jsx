@@ -16,49 +16,81 @@ export default function Sidebar({ isOpen }) {
     <aside
       className={`${styles.sidebar} ${isOpen ? styles.open : styles.closed}`}
     >
-      <h1 className={styles.title}>Team Space</h1>
-      <ul className={styles.navList}>
-        <li className={styles.navItem}>
-          <Link to="/admin">
-            <FaClipboardList /> Dashboard
-          </Link>
-        </li>
-        <li className={styles.navItem}>
-          <Link to="/admin/regulation">
-            <FaRegCalendarAlt /> Regulation
-          </Link>
-        </li>
-        <li className={styles.navItem}>
-          <Link to="/admin/lectureScheduler">
-            <FaChalkboardTeacher /> Lecture Scheduler
-          </Link>
-        </li>
-        <li className={styles.navItem}>
-          <Link to="/admin/professorScheduler">
-            <FaUniversity /> Professor Scheduler
-          </Link>
-        </li>
-        <li className={styles.navItem}>
-          <Link to="/campus-map">
-            <FaMapMarkedAlt /> Campus Map
-          </Link>
-        </li>
-        <li className={styles.navItem}>
-          <Link to="/Admin/CreateAccounts">
-            <FaUserPlus /> Create Accounts
-          </Link>
-        </li>
-        <li className={styles.navItem}>
-          <Link to="/Admin/EmailCRUD">
-            <FaUserCog /> Account Management
-          </Link>
-        </li>
-        <li className={styles.navItem}>
-          <Link to="/Admin/Departments">
-            <FaBuilding /> Departments
-          </Link>
-        </li>
-      </ul>
+      <div className={styles.header}>
+        <div className={styles.logo}>
+          <div className={styles.logoIcon}>TS</div>
+        </div>
+        <h1 className={styles.title}>Team Space</h1>
+      </div>
+
+      <nav className={styles.navigation}>
+        <ul className={styles.navList}>
+          <li className={styles.navItem}>
+            <Link to="/admin" className={styles.navLink}>
+              <div className={styles.iconWrapper}>
+                <FaClipboardList />
+              </div>
+              <span className={styles.linkText}>Dashboard</span>
+            </Link>
+          </li>
+          <li className={styles.navItem}>
+            <Link to="/admin/regulation" className={styles.navLink}>
+              <div className={styles.iconWrapper}>
+                <FaRegCalendarAlt />
+              </div>
+              <span className={styles.linkText}>Regulation</span>
+            </Link>
+          </li>
+          <li className={styles.navItem}>
+            <Link to="/admin/lectureScheduler" className={styles.navLink}>
+              <div className={styles.iconWrapper}>
+                <FaChalkboardTeacher />
+              </div>
+              <span className={styles.linkText}>Lecture Scheduler</span>
+            </Link>
+          </li>
+          <li className={styles.navItem}>
+            <Link to="/admin/professorScheduler" className={styles.navLink}>
+              <div className={styles.iconWrapper}>
+                <FaUniversity />
+              </div>
+              <span className={styles.linkText}>Professor Scheduler</span>
+            </Link>
+          </li>
+          <li className={styles.navItem}>
+            <Link to="/Admin/guidance" className={styles.navLink}>
+              <div className={styles.iconWrapper}>
+                <FaMapMarkedAlt />
+              </div>
+              <span className={styles.linkText}>Campus Map</span>
+            </Link>
+          </li>
+          <li className={styles.navItem}>
+            <Link to="/Admin/CreateAccounts" className={styles.navLink}>
+              <div className={styles.iconWrapper}>
+                <FaUserPlus />
+              </div>
+              <span className={styles.linkText}>Create Accounts</span>
+            </Link>
+          </li>
+          <li className={styles.navItem}>
+            <Link to="/Admin/EmailCRUD" className={styles.navLink}>
+              <div className={styles.iconWrapper}>
+                <FaUserCog />
+              </div>
+              <span className={styles.linkText}>Account Management</span>
+            </Link>
+          </li>
+          <li className={styles.navItem}>
+            <Link to="/Admin/Departments" className={styles.navLink}>
+              <div className={styles.iconWrapper}>
+                <FaBuilding />
+              </div>
+              <span className={styles.linkText}>Departments</span>
+            </Link>
+          </li>
+        </ul>
+      </nav>
     </aside>
   );
 }

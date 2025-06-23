@@ -36,7 +36,7 @@ import StudentRegulation from "./Pages/Student/Regulation/StudentRegulation";
 import AdminRegulation from "./Pages/Admin/Regulation/AdminRegulation";
 import ExamPage from "./Pages/Student/Exam/ExamPage";
 import Guidance from "./Pages/Student/Guidance/Guidance";
-
+import AdminGuidance from "./Pages/Admin/Guidance/AdminGuidance";
 function App() {
   const { isDarkMode, toggleTheme } = useDarkMode();
 
@@ -72,6 +72,7 @@ function App() {
         <Route path="/Admin/AddSubjects" element={<AddSubjects />} />
         <Route path="/Admin/UpdateNews" element={<UpdateNews />} />
         <Route path="/Admin/regulation" element={<AdminRegulation />} />
+        <Route path="/Admin/guidance" element={<AdminGuidance />} />
 
         <Route
           path="/Admin/UpdateNews/UpdateForm/:id"
