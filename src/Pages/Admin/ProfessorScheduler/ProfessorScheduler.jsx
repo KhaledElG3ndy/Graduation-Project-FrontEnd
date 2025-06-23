@@ -1,4 +1,4 @@
-import React, { useState , useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import {
   FaCalendarAlt,
   FaUpload,
@@ -12,9 +12,10 @@ import styles from "./ProfessorScheduler.module.css";
 import Header from "../../../components/Admin/Header/Header";
 import { useNavigate } from "react-router-dom";
 const ProfessorScheduler = () => {
-  const [selectedYear, setSelectedYear] = useState("1");
+  const [selectedProfessor, setSelectedProfessor] = useState("1");
   const [scheduleData, setScheduleData] = useState({});
   const [uploadFile, setUploadFile] = useState(null);
+  const [accounts, setAccounts] = useState([]);
   const navigate = useNavigate();
   useEffect(() => {
     const token = sessionStorage.getItem("Token");
@@ -54,9 +55,35 @@ const ProfessorScheduler = () => {
     "4:00 PM - 6:00 PM",
     "6:00 PM - 8:00 PM",
   ];
+  useEffect(() => {
+    fetchAccounts();
+  }, []);
+  const fetchAccounts = async () => {
+    try {
+      const staffResponse = await fetch(
+        `https://localhost:7072/api/Account/GetAllByRole?role=1`
+      );
+
+      if (!staffResponse.ok) throw new Error("Failed to fetch accounts");
+
+      const staffData = await staffResponse.json();
+      const staffList = staffData.staffs || [];
+
+      setAccounts([
+        ...staffList.map((account) => ({
+          ...account,
+          Type: "Professor",
+          role: 1,
+        })),
+      ]);
+    } catch (error) {
+      toast.error("Error loading accounts");
+      console.error("Fetch Error:", error);
+    }
+  };
 
   const handleSubjectChange = (day, timeSlot, value) => {
-    const key = `${selectedYear}-${day}-${timeSlot}`;
+    const key = `${selectedProfessor}-${day}-${timeSlot}`;
     setScheduleData((prev) => ({
       ...prev,
       [key]: value,
@@ -64,14 +91,14 @@ const ProfessorScheduler = () => {
   };
 
   const getSubjectValue = (day, timeSlot) => {
-    const key = `${selectedYear}-${day}-${timeSlot}`;
+    const key = `${selectedProfessor}-${day}-${timeSlot}`;
     return scheduleData[key] || "";
   };
 
   const clearSchedule = () => {
     const updated = { ...scheduleData };
     Object.keys(updated).forEach((key) => {
-      if (key.startsWith(`${selectedYear}-`)) delete updated[key];
+      if (key.startsWith(`${selectedProfessor}-`)) delete updated[key];
     });
     setScheduleData(updated);
   };
@@ -82,18 +109,32 @@ const ProfessorScheduler = () => {
       payload[idx] = days.map((day) => getSubjectValue(day, ts));
     });
 
-    console.log("Sending Data (by row):", payload);
+    console.log("Formatted schedule payload:", payload);
 
     try {
-      const response = await fetch("https://localhost:7072/LectureSchedule", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const result = await response.json();
-      console.log("LectureSchedule API response:", result);
+      const response = await fetch(
+        `https://localhost:7072/api/Schedule/DoctorSchedule/${selectedProfessor}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (response.ok) {
+        console.log("Schedule updated successfully.");
+        console.log(selectedProfessor);
+
+        alert("Schedule saved!");
+      } else {
+        console.error("Failed to update schedule:", await response.text());
+        alert("Failed to save schedule.");
+      }
     } catch (error) {
-      console.error("Error sending schedule:", error);
+      console.error("Error while saving schedule:", error);
+      alert("An error occurred while saving the schedule.");
     }
   };
 
@@ -106,13 +147,13 @@ const ProfessorScheduler = () => {
 
     const formData = new FormData();
     formData.append("file", uploadFile);
-    formData.append("year", selectedYear);
+    formData.append("year", selectedProfessor);
 
     console.log(
       "Uploading Excel to API:",
       uploadFile.name,
-      "for Year:",
-      selectedYear
+      "for :",
+      selectedProfessor
     );
 
     try {
@@ -160,14 +201,21 @@ const ProfessorScheduler = () => {
               <h3 className={styles.cardTitle}>Professor Selection</h3>
             </div>
             <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(e.target.value)}
+              value={selectedProfessor}
+              onChange={(e) => setSelectedProfessor(e.target.value)}
               className={styles.select}
             >
-              <option value="1">Year 1 - First Year</option>
-              <option value="2">Year 2 - Second Year</option>
-              <option value="3">Year 3 - Third Year</option>
-              <option value="4">Year 4 - Final Year</option>
+              {accounts.length > 0 ? (
+                accounts.map((sd) => (
+                  <option value={sd.id} key={sd.id}>
+                    {sd.name}
+                  </option>
+                ))
+              ) : (
+                <option value="" disabled>
+                  No professors available
+                </option>
+              )}
             </select>
           </div>
 
@@ -207,7 +255,10 @@ const ProfessorScheduler = () => {
                 <FaClock className={styles.sectionIcon} />
               </div>
               <h2 className={styles.sectionTitle}>
-                Schedule for Year {selectedYear}
+                Schedule for Dr.{" "}
+                {accounts.find(
+                  (prof) => prof.id === parseInt(selectedProfessor)
+                )?.name || "Professor"}
               </h2>
             </div>
             <div className={styles.headerActions}>

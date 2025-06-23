@@ -51,25 +51,31 @@ export default function EmailCRUD() {
 
   const fetchAccounts = async () => {
     try {
-      const studentsResponse = await fetch(`${API_URL}/GetAllByRole?role=0`);
-      const staffResponse = await fetch(`${API_URL}/GetAllByRole?role=1`);
+      const studentsResponse = await fetch(`${API_URL}/GetAllByRole?role=3`);
+      const staffResponse1 = await fetch(`${API_URL}/GetAllByRole?role=1`);
+      const staffResponse2 = await fetch(`${API_URL}/GetAllByRole?role=2`);
 
-      if (!studentsResponse.ok || !staffResponse.ok)
+      if (!studentsResponse.ok || !staffResponse1.ok || !staffResponse2.ok)
         throw new Error("Failed to fetch accounts");
 
       const studentsData = await studentsResponse.json();
-      const staffData = await staffResponse.json();
+      const staffData1 = await staffResponse1.json();
+      const staffData2 = await staffResponse2.json();
+
+      const studentList = studentsData.students || [];
+      const staffList1 = staffData1.staffs || [];
+      const staffList2 = staffData2.staffs || [];
 
       setAccounts([
-        ...studentsData.map((account) => ({
+        ...studentList.map((account) => ({
           ...account,
           Type: "Student",
-          role: 0,
+          role: 3,
         })),
-        ...staffData.map((account) => ({
+        ...[...staffList1, ...staffList2].map((account) => ({
           ...account,
           Type: "Staff",
-          role: 1,
+          role: account.role,
         })),
       ]);
     } catch (error) {
@@ -77,7 +83,7 @@ export default function EmailCRUD() {
       console.error("Fetch Error:", error);
     }
   };
-
+  
   const handleSearch = async () => {
     if (!searchTerm.trim()) return;
     try {
@@ -91,7 +97,7 @@ export default function EmailCRUD() {
       }
 
       const data = await response.json();
-      setAccounts([{ ...data, Type: data.role === 0 ? "Student" : "Staff" }]);
+      setAccounts([{ ...data, Type: data.role === 3 ? "Student" : "Staff" }]);
     } catch (error) {
       toast.error("Search error");
       console.error("Search Error:", error);
@@ -100,7 +106,7 @@ export default function EmailCRUD() {
 
   const handleEdit = async (account) => {
     try {
-      const role = account.Type === "Staff" ? 1 : 0;
+      const role = account.Type === "Student" ? 3 : 1;
       const response = await fetch(`${API_URL}/Update?role=${role}`, {
         method: "PUT",
         headers: {
