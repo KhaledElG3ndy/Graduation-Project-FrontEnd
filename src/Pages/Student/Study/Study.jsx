@@ -6,13 +6,12 @@ import { useNavigate } from "react-router-dom";
 
 const Study = () => {
   const [subjects, setSubjects] = useState([]);
-  const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-  
+
   useEffect(() => {
-    const token = sessionStorage.getItem("Token");
+    const token = localStorage.getItem("Token");
     if (!token) {
       navigate("/login/signin");
       return;
@@ -20,7 +19,8 @@ const Study = () => {
 
     const parseJwt = (token) => {
       try {
-        return JSON.parse(atob(token.split(".")[1]));
+        const decoded = JSON.parse(atob(token.split(".")[1]));
+        return decoded;
       } catch (e) {
         console.error("Invalid token", e);
         return null;
@@ -29,6 +29,14 @@ const Study = () => {
 
     const payload = parseJwt(token);
     if (!payload) {
+      localStorage.removeItem("Token");
+      navigate("/login/signin");
+      return;
+    }
+
+    if (payload.exp * 1000 < Date.now()) {
+      console.warn("Token expired");
+      localStorage.removeItem("Token");
       navigate("/login/signin");
       return;
     }
@@ -37,36 +45,21 @@ const Study = () => {
       payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
 
     if (role !== "Student") {
+      localStorage.removeItem("Token");
       navigate("/login/signin");
     }
   }, [navigate]);
-
+  
   useEffect(() => {
-    const fetchAll = async () => {
+    const fetchSubjects = async () => {
       try {
-        const [subjectRes, departmentRes] = await Promise.all([
-          fetch("https://localhost:7072/Subjects/GetSubjects"),
-          fetch("https://localhost:7072/Departments/GetDepartments"),
-        ]);
+        const res = await fetch("https://localhost:7072/Subjects/GetSubjects");
+        if (!res.ok) throw new Error("Failed to fetch subjects");
+        const data = await res.json();
 
-        if (!subjectRes.ok || !departmentRes.ok)
-          throw new Error("Failed to fetch data");
+        console.log("Fetched subjects:", data);
 
-        const subjectsData = await subjectRes.json();
-        const departmentsData = await departmentRes.json();
-
-        const subjectsWithDepartments = subjectsData.map((subject) => {
-          const dep = departmentsData.find(
-            (d) => d.id === subject.departmentId
-          );
-          return {
-            ...subject,
-            departmentName: dep ? dep.name : "Unknown",
-          };
-        });
-
-        setSubjects(subjectsWithDepartments);
-        setDepartments(departmentsData);
+        setSubjects(data);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -74,7 +67,7 @@ const Study = () => {
       }
     };
 
-    fetchAll();
+    fetchSubjects();
   }, []);
 
   const handleSubjectRegistration = () => {
@@ -87,7 +80,7 @@ const Study = () => {
       <div className={styles.content}>
         <div className={styles.titleSection}>
           <h2 className={styles.title}>Your Subjects</h2>
-          <button 
+          <button
             className={styles.registerButton}
             onClick={handleSubjectRegistration}
           >
@@ -123,7 +116,8 @@ const Study = () => {
 
                 <div className={styles.body}>
                   <div className={styles.row}>
-                    <strong>Department:</strong> {subject.departmentName}
+                    <strong>Department:</strong>{" "}
+                    {subject.departmentName || "Unknown"}
                   </div>
                   <div className={styles.row}>
                     <FaClock className={styles.icon} />

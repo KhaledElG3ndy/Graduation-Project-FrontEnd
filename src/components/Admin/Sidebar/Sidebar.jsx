@@ -9,9 +9,11 @@ import {
   FaUserPlus,
   FaUserCog,
   FaBuilding,
+  FaChevronLeft,
+  FaChevronRight,
 } from "react-icons/fa";
 
-export default function Sidebar({ isOpen }) {
+export default function Sidebar({ isOpen, toggleSidebar }) {
   return (
     <aside
       className={`${styles.sidebar} ${isOpen ? styles.open : styles.closed}`}
@@ -91,6 +93,10 @@ export default function Sidebar({ isOpen }) {
           </li>
         </ul>
       </nav>
+
+      <button className={styles.toggleButton} onClick={toggleSidebar}>
+        {isOpen ? <FaChevronLeft /> : <FaChevronRight />}
+      </button>
     </aside>
   );
 }

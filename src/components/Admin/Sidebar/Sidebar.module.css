@@ -1,19 +1,21 @@
 .sidebar {
+  position: relative;
   background: linear-gradient(135deg, #003366, #0066cc, #3399ff);
   color: white;
-  width: 310px;
   height: 100vh;
   box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.3s ease, transform 0.3s ease;
   z-index: 1000;
-}
-
-.open {
-  transform: translateX(0);
+  width: 310px;
+  overflow: hidden;
 }
 
 .closed {
-  transform: translateX(-100%);
+  width: 90px;
+}
+
+.open {
+  width: 310px;
 }
 
 .header {
@@ -54,7 +56,6 @@
   -webkit-text-fill-color: transparent;
   letter-spacing: -0.5px;
 }
-
 
 .navigation {
   padding: 24px 0;
@@ -178,4 +179,64 @@
 
 .sidebar::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.5);
+}
+
+.toggleButton {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+}
+
+.toggleButton:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+.sidebar.closed .linkText {
+  display: none;
+}
+.sidebar.closed .title {
+  display: none;
+}
+.sidebar.closed .navItem {
+  margin: 0;
+}
+.sidebar.closed .logo {
+  margin-bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.sidebar.closed .logoIcon {
+  width: 30px;
+  height: 35px;
+  font-size: 18px;
+  margin: 0;
+}
+
+.sidebar.closed .title {
+  display: none;
+}
+.sidebar.closed .navLink:hover {
+  transform: translateX(1px);
+  box-shadow: none;
+}
+
+.sidebar.closed .navLink:hover .iconWrapper {
+  transform: none;
+  background: rgba(255, 255, 255, 0.1);
 }

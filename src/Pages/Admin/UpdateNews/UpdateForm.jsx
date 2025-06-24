@@ -12,7 +12,7 @@ const UpdateForm = () => {
   const [existingImageFile, setExistingImageFile] = useState(null);
   const navigate = useNavigate();
   useEffect(() => {
-    const token = sessionStorage.getItem("Token");
+    const token = localStorage.getItem("Token");
     if (!token) {
       navigate("/login/signin");
       return;
@@ -87,40 +87,40 @@ const UpdateForm = () => {
     }
   };
 
-    return (
-      <>
-        <Header />
+  return (
+    <>
+      <Header />
 
-        <div className={styles.container}>
-          <form onSubmit={handleSubmit} className={styles.formWrapper}>
-            <h1 className={styles.title}>Update News</h1>
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              rows="5"
-              placeholder="Leave empty to use old content"
-              className={styles.textarea}
+      <div className={styles.container}>
+        <form onSubmit={handleSubmit} className={styles.formWrapper}>
+          <h1 className={styles.title}>Update News</h1>
+          <textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            rows="5"
+            placeholder="Leave empty to use old content"
+            className={styles.textarea}
+          />
+          {existingImageBase64 && (
+            <img
+              src={existingImageBase64}
+              alt="Current"
+              className={styles.image}
             />
-            {existingImageBase64 && (
-              <img
-                src={existingImageBase64}
-                alt="Current"
-                className={styles.image}
-              />
-            )}
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setImage(e.target.files[0])}
-              className={styles.input}
-            />
-            <button type="submit" className={styles.button}>
-              Submit
-            </button>
-          </form>
-        </div>
-      </>
-    );
+          )}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setImage(e.target.files[0])}
+            className={styles.input}
+          />
+          <button type="submit" className={styles.button}>
+            Submit
+          </button>
+        </form>
+      </div>
+    </>
+  );
 };
 
 export default UpdateForm;

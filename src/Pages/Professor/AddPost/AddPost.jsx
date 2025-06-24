@@ -14,7 +14,7 @@ export default function AddPost() {
   const maxChars = 500;
   const navigate = useNavigate();
   useEffect(() => {
-    const token = sessionStorage.getItem("Token");
+    const token = localStorage.getItem("Token");
     if (!token) {
       navigate("/login/signin");
       return;
@@ -42,7 +42,7 @@ export default function AddPost() {
       navigate("/login/signin");
     }
   }, [navigate]);
-  
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {

@@ -59,7 +59,7 @@ const SignInForm = () => {
       document.cookie = `token=${data.token}; path=/; max-age=1800`;
 
       sessionStorage.setItem("isLogged", JSON.stringify(true));
-      sessionStorage.setItem("Token", data.token);
+      localStorage.setItem("Token", data.token);
 
       const payload = parseJwt(data.token);
       console.log("Decoded JWT Payload:", payload);
@@ -70,13 +70,13 @@ const SignInForm = () => {
           ];
 
         if (role === "Admin") {
-          sessionStorage.setItem("userType", JSON.stringify("Admin"));
+          localStorage.setItem("userType", JSON.stringify("Admin"));
           navigate("/Admin");
         } else if (role === "Professor") {
-          sessionStorage.setItem("userType", JSON.stringify("Professor"));
+          localStorage.setItem("userType", JSON.stringify("Professor"));
           navigate("/Professor");
         } else {
-          sessionStorage.setItem("userType", JSON.stringify("Student"));
+          localStorage.setItem("userType", JSON.stringify("Student"));
           navigate("/");
         }
       }

@@ -25,9 +25,9 @@ const Header = () => {
       console.warn("Not Logged");
     }
   }, []);
-
   const handleLogout = () => {
-    sessionStorage.removeItem("user");
+    localStorage.removeItem("Token");
+    sessionStorage.removeItem("isLogged");
     setUser(null);
     navigate("/Login/signin");
   };

@@ -26,7 +26,7 @@ const Home = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = sessionStorage.getItem("Token");
+    const token = localStorage.getItem("Token");
 
     if (!token) {
       return;
@@ -189,8 +189,8 @@ const Home = () => {
               <div className={styles.aboutHeader}>
                 <span className={styles.aboutBadge}>About Us</span>
                 <h2 className={styles.aboutTitle}>
-                  Transforming Education Through 
-                  <span className={styles.titleHighlight}>  Innovation</span>
+                  Transforming Education Through
+                  <span className={styles.titleHighlight}> Innovation</span>
                 </h2>
               </div>
 

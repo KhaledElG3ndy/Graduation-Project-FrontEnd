@@ -1,4 +1,4 @@
-import React, { useState , useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import ContentsList from "./ContentsList";
 import PdfViewer from "../../../components/pdfView";
 import "./ContentsList.module.css";
@@ -8,7 +8,7 @@ export default function AdminRegulation() {
   const [selectedItem, setSelectedItem] = useState(null);
   const navigate = useNavigate();
   useEffect(() => {
-    const token = sessionStorage.getItem("Token");
+    const token = localStorage.getItem("Token");
     if (!token) {
       navigate("/login/signin");
       return;

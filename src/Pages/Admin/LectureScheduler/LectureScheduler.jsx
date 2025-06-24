@@ -14,7 +14,7 @@ import { useNavigate } from "react-router-dom";
 const LectureScheduler = () => {
   const navigate = useNavigate();
   useEffect(() => {
-    const token = sessionStorage.getItem("Token");
+    const token = localStorage.getItem("Token");
     if (!token) {
       navigate("/login/signin");
       return;

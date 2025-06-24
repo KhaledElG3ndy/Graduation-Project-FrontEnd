@@ -9,7 +9,7 @@ const News = () => {
   const navigate = useNavigate();
   const api_url = "https://localhost:7072/api/News";
   useEffect(() => {
-    const token = sessionStorage.getItem("Token");
+    const token = localStorage.getItem("Token");
     if (!token) {
       navigate("/login/signin");
       return;

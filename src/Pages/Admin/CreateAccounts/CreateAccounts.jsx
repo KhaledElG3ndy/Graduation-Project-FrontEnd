@@ -38,7 +38,6 @@ const CreateStudentAccount = () => {
 
     fetchDepartments();
   }, []);
-  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -83,10 +82,16 @@ const CreateStudentAccount = () => {
           Swal.showLoading();
         },
       });
+      console.log(`Bearer ${localStorage.getItem("Token")}`);
 
       await axios.post(
         `https://localhost:7072/api/Account/AddAccount?role=${roleMap[role]}`,
-        formData
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Token")}`,
+          },
+        }
       );
 
       Swal.fire({
@@ -107,7 +112,7 @@ const CreateStudentAccount = () => {
       Swal.fire({
         icon: "error",
         title: "Creation Failed",
-        text: "Failed to create account.",
+        text: `${error.message}`,
       });
       console.error("Error creating account:", error);
     }

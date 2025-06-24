@@ -27,7 +27,7 @@ const CreateChannel = () => {
   const subjectName = new URLSearchParams(location.search).get("subject");
 
   useEffect(() => {
-    const token = sessionStorage.getItem("Token");
+    const token = localStorage.getItem("Token");
     if (!token) {
       navigate("/login/signin");
       return;
@@ -55,7 +55,7 @@ const CreateChannel = () => {
       navigate("/login/signin");
     }
   }, [navigate]);
-    useEffect(() => {
+  useEffect(() => {
     const fetchDepartments = async () => {
       try {
         const res = await fetch(

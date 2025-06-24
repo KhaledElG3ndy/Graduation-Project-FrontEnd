@@ -10,7 +10,7 @@ const Subjects = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
   useEffect(() => {
-    const token = sessionStorage.getItem("Token");
+    const token = localStorage.getItem("Token");
     if (!token) {
       navigate("/login/signin");
       return;
@@ -48,7 +48,7 @@ const Subjects = () => {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${sessionStorage.getItem("Token")}`,
+              Authorization: `Bearer ${localStorage.getItem("Token")}`,
             },
           }
         );

@@ -17,7 +17,7 @@ export default function EmailCRUD() {
   const API_URL = "https://localhost:7072/api/Account";
   const navigate = useNavigate();
   useEffect(() => {
-    const token = sessionStorage.getItem("Token");
+    const token = localStorage.getItem("Token");
     if (!token) {
       navigate("/login/signin");
       return;
@@ -83,7 +83,7 @@ export default function EmailCRUD() {
       console.error("Fetch Error:", error);
     }
   };
-  
+
   const handleSearch = async () => {
     if (!searchTerm.trim()) return;
     try {

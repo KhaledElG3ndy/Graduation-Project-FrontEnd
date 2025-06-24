@@ -11,7 +11,7 @@ export default function AdminHomePage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = sessionStorage.getItem("Token");
+    const token = localStorage.getItem("Token");
     if (!token) {
       navigate("/login/signin");
       return;
@@ -39,15 +39,19 @@ export default function AdminHomePage() {
       navigate("/login/signin");
     }
   }, [navigate]);
-  
 
   return (
     <div className={styles.container}>
-      <div className={styles.sidebar}>
-        <Sidebar isOpen={isSidebarOpen} />
-      </div>
+      <Sidebar
+        isOpen={isSidebarOpen}
+        toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+      />
 
-      <div className={styles.mainContent}>
+      <div
+        className={`${styles.mainContent} ${
+          isSidebarOpen ? styles.sidebarOpen : styles.sidebarClosed
+        }`}
+      >
         <Header toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
         <main className={styles.content}>
           <AdminHero />
@@ -56,4 +60,5 @@ export default function AdminHomePage() {
       </div>
     </div>
   );
+  
 }

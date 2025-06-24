@@ -11,7 +11,7 @@ export default function StudentRegulation() {
     setSelectedItem(item);
   };
   useEffect(() => {
-    const token = sessionStorage.getItem("Token");
+    const token = localStorage.getItem("Token");
     if (!token) {
       navigate("/login/signin");
       return;

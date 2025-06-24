@@ -253,27 +253,6 @@
   max-width: 800px;
 }
 
-.postCard::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 6px;
-  background: linear-gradient(
-    90deg,
-    #3b82f6,
-    #8b5cf6,
-    #06b6d4,
-    #10b981,
-    #f59e0b
-  );
-  background-size: 400% 100%;
-  animation: gradientShift 8s ease infinite;
-  transform: translateX(-100%);
-  transition: transform 0.6s ease;
-}
-
 @keyframes gradientShift {
   0%,
   100% {
@@ -282,6 +261,11 @@
   50% {
     background-position: 100% 50%;
   }
+}
+.gradeStatus {
+  font-size: 0.85rem;
+  margin-top: 5px;
+  color: #555;
 }
 
 .postCard:hover::before {
@@ -450,8 +434,6 @@
     padding: 1.5rem 1rem;
   }
 }
-
-
 
 .examItem {
   display: flex;

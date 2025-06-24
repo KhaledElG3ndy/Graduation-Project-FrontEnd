@@ -13,7 +13,7 @@ const Guidance = () => {
   const [selectedImage, setSelectedImage] = useState("");
   const navigate = useNavigate();
   useEffect(() => {
-    const token = sessionStorage.getItem("Token");
+    const token = localStorage.getItem("Token");
     if (!token) {
       navigate("/login/signin");
       return;
@@ -41,7 +41,7 @@ const Guidance = () => {
       navigate("/login/signin");
     }
   }, [navigate]);
-  
+
   const toggleLaboratories = () => setIsLaboratoriesOpen(!isLaboratoriesOpen);
   const toggleDoctorsOffices = () =>
     setIsDoctorsOfficesOpen(!isDoctorsOfficesOpen);

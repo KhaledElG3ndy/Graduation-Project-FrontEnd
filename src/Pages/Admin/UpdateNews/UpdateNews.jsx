@@ -10,7 +10,7 @@ const UpdateNews = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   useEffect(() => {
-    const token = sessionStorage.getItem("Token");
+    const token = localStorage.getItem("Token");
     if (!token) {
       navigate("/login/signin");
       return;
