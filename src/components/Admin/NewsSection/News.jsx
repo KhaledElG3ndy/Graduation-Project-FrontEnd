@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./News.module.css";
 import { MdOutlinePostAdd, MdEditNote, MdLibraryBooks } from "react-icons/md";
@@ -6,16 +6,30 @@ import { useDarkMode } from "../../../contexts/ThemeContext";
 
 const NewsSection = () => {
   const navigate = useNavigate();
-  const [newsList] = useState([
-    { id: 1, title: "News Title 1", description: "Latest university updates." },
-    {
-      id: 2,
-      title: "News Title 2",
-      description: "Upcoming events and changes.",
-    },
-  ]);
-
   const { isDarkMode } = useDarkMode();
+
+  const [newsList, setNewsList] = useState([]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("Token");
+
+    fetch("https://localhost:7072/api/News", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch news");
+        return res.json();
+      })
+      .then((data) => {
+        const sorted = [...data].sort((a, b) => b.id - a.id);
+        setNewsList(sorted.slice(0, 2));
+      })
+      .catch((err) => {
+        console.error("Error fetching news:", err);
+      });
+  }, []);
 
   return (
     <div
@@ -27,7 +41,7 @@ const NewsSection = () => {
         }`}
       >
         <h1 className={`${styles.title} ${isDarkMode && styles.darkText}`}>
-          Added News
+          Latest News
         </h1>
         <div className={styles.newsList}>
           {newsList.map((news) => (
@@ -38,10 +52,12 @@ const NewsSection = () => {
               }`}
             >
               <h2 className={`${isDarkMode && styles.darkText}`}>
-                {news.title}
+                {news.title || "News Title Here"}
               </h2>
               <p className={`${isDarkMode && styles.darkText}`}>
-                {news.description}
+                {news.content.length > 50
+                  ? news.content.slice(0, 50) + "..."
+                  : news.content}
               </p>
             </div>
           ))}

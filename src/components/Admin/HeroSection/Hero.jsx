@@ -4,7 +4,7 @@ import { FaNewspaper, FaUserGraduate, FaEdit } from "react-icons/fa";
 import adminImage from "../../../assets/images/admin.png";
 import { useDarkMode } from "../../../contexts/ThemeContext";
 
-const AdminHero = () => {
+const AdminHero = ({ newsCount = 0 }) => {
   const { isDarkMode } = useDarkMode();
 
   return (
@@ -24,7 +24,7 @@ const AdminHero = () => {
               className={`${styles.icon} ${isDarkMode && styles.darkIcon}`}
             />
             <span>Total News</span>
-            <strong>125</strong>
+            <strong>{newsCount}</strong>
           </div>
 
           <div className={styles.statBox}>
@@ -32,14 +32,7 @@ const AdminHero = () => {
               className={`${styles.icon} ${isDarkMode && styles.darkIcon}`}
             />
             <span>Total Students</span>
-            <strong>
-              1,230{" "}
-              <FaEdit
-                className={`${styles.editIcon} ${
-                  isDarkMode && styles.darkIcon
-                }`}
-              />
-            </strong>
+            <strong>1,230 </strong>
           </div>
         </div>
       </div>

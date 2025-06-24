@@ -8,6 +8,7 @@ import NewsSection from "../../../components/Admin/NewsSection/News";
 
 export default function AdminHomePage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [newsCount, setNewsCount] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,7 +38,24 @@ export default function AdminHomePage() {
 
     if (roleClaim !== "Admin" && roleClaim !== 0) {
       navigate("/login/signin");
+      return;
     }
+
+    fetch("https://localhost:7072/api/News", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch news");
+        return res.json();
+      })
+      .then((data) => {
+        setNewsCount(Array.isArray(data) ? data.length : 0);
+      })
+      .catch((err) => {
+        console.error("Error fetching news:", err);
+      });
   }, [navigate]);
 
   return (
@@ -46,7 +64,6 @@ export default function AdminHomePage() {
         isOpen={isSidebarOpen}
         toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
       />
-
       <div
         className={`${styles.mainContent} ${
           isSidebarOpen ? styles.sidebarOpen : styles.sidebarClosed
@@ -54,11 +71,10 @@ export default function AdminHomePage() {
       >
         <Header toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
         <main className={styles.content}>
-          <AdminHero />
+          <AdminHero newsCount={newsCount} />
           <NewsSection />
         </main>
       </div>
     </div>
   );
-  
 }

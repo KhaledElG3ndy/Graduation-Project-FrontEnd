@@ -14,7 +14,7 @@
   flex: 1;
   background: #f9fafb;
   color: #333;
-  padding: 0 20px;
+  padding: 5px 20px;
   border-radius: 12px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
@@ -153,4 +153,7 @@
 
 .darkText {
   color: #ffffff;
+}
+.title {
+  margin-top: -5px;
 }
