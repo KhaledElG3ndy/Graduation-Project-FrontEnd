@@ -57,15 +57,17 @@ const Chat = () => {
         };
       }
 
-      const updatedMap = {
-        ...messagesMap,
-        [fromUserId]: [
-          ...(messagesMap[fromUserId] || []),
-          { from: fromUserId, ...message },
-        ],
-      };
-      setMessagesMap(updatedMap);
-      saveMessagesToStorage(updatedMap);
+      setMessagesMap((prevMap) => {
+        const updated = {
+          ...prevMap,
+          [fromUserId]: [
+            ...(prevMap[fromUserId] || []),
+            { from: fromUserId, ...message },
+          ],
+        };
+        saveMessagesToStorage(updated);
+        return updated;
+      });
     });
 
     try {
@@ -139,13 +141,14 @@ const Chat = () => {
         timestamp: new Date().toLocaleTimeString(),
       };
 
-      const updatedMap = {
-        ...messagesMap,
-        [toUserId]: [...(messagesMap[toUserId] || []), newMsg],
-      };
-
-      setMessagesMap(updatedMap);
-      saveMessagesToStorage(updatedMap);
+      setMessagesMap((prevMap) => {
+        const updated = {
+          ...prevMap,
+          [toUserId]: [...(prevMap[toUserId] || []), newMsg],
+        };
+        saveMessagesToStorage(updated);
+        return updated;
+      });
 
       setMessageText("");
       setImageFile(null);
@@ -191,37 +194,23 @@ const Chat = () => {
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <path
-                    d="M8 12C8 10.8954 8.89543 10 10 10H18C19.1046 10 20 10.8954 20 12V16C20 17.1046 19.1046 18 18 18H14L10 20V18C8.89543 18 8 17.1046 8 16V12Z"
-                    fill="url(#chatGradient1)"
-                  />
-                  <path
-                    d="M4 6C4 4.89543 4.89543 4 6 4H14C15.1046 4 16 4.89543 16 6V10C16 11.1046 15.1046 12 14 12H10L6 14V12C4.89543 12 4 11.1046 4 10V6Z"
-                    fill="url(#chatGradient2)"
-                  />
-
-                  <path
-                    d="M17 13L19 11L17 9"
-                    stroke="white"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-
-                  <path
-                    d="M11 7L9 9L11 11"
-                    stroke="white"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-
-                  <circle cx="10" cy="8" r="1" fill="white" opacity="0.8" />
-                  <circle cx="12" cy="8" r="1" fill="white" opacity="0.8" />
-                  <circle cx="14" cy="14" r="1" fill="white" opacity="0.8" />
-                  <circle cx="16" cy="14" r="1" fill="white" opacity="0.8" />
-
                   <defs>
+                    <filter
+                      id="chatShadow"
+                      x="-20%"
+                      y="-20%"
+                      width="140%"
+                      height="140%"
+                    >
+                      <feDropShadow
+                        dx="0"
+                        dy="2"
+                        stdDeviation="2"
+                        flood-color="#000000"
+                        flood-opacity="0.3"
+                      />
+                    </filter>
+
                     <linearGradient
                       id="chatGradient1"
                       x1="0%"
@@ -229,10 +218,11 @@ const Chat = () => {
                       x2="100%"
                       y2="100%"
                     >
-                      <stop offset="0%" stopColor="#003366" />
-                      <stop offset="50%" stopColor="#0066cc" />
-                      <stop offset="100%" stopColor="#3399ff" />
+                      <stop offset="0%" stop-color="#002244" />
+                      <stop offset="50%" stop-color="#0066cc" />
+                      <stop offset="100%" stop-color="#33ccff" />
                     </linearGradient>
+
                     <linearGradient
                       id="chatGradient2"
                       x1="0%"
@@ -240,11 +230,75 @@ const Chat = () => {
                       x2="100%"
                       y2="100%"
                     >
-                      <stop offset="0%" stopColor="#0066cc" />
-                      <stop offset="50%" stopColor="#3399ff" />
-                      <stop offset="100%" stopColor="#66b3ff" />
+                      <stop offset="0%" stop-color="#0066cc" />
+                      <stop offset="50%" stop-color="#33ccff" />
+                      <stop offset="100%" stop-color="#66e0ff" />
                     </linearGradient>
                   </defs>
+
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="11"
+                    fill="#f0f4f8"
+                    stroke="#d9e2ec"
+                    stroke-width="1"
+                  />
+
+                  <g filter="url(#chatShadow)">
+                    <path
+                      d="M8 12C8 10.8954 8.89543 10 10 10H18C19.1046 10 20 10.8954 20 12V16C20 17.1046 19.1046 18 18 18H14L10 20V18C8.89543 18 8 17.1046 8 16V12Z"
+                      fill="url(#chatGradient1)"
+                    />
+
+                    <path
+                      d="M4 6C4 4.89543 4.89543 4 6 4H14C15.1046 4 16 4.89543 16 6V10C16 11.1046 15.1046 12 14 12H10L6 14V12C4.89543 12 4 11.1046 4 10V6Z"
+                      fill="url(#chatGradient2)"
+                    />
+
+                    <path
+                      d="M17 13L19 11L17 9"
+                      stroke="white"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M10 7 L8 9 L10 11"
+                      stroke="white"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+
+                    <circle cx="10" cy="8" r="1" fill="white" opacity="0.8">
+                      <animate
+                        attributeName="opacity"
+                        values="0;1;0"
+                        dur="1.5s"
+                        repeatCount="indefinite"
+                        begin="0s"
+                      />
+                    </circle>
+                    <circle cx="12" cy="8" r="1" fill="white" opacity="0.8">
+                      <animate
+                        attributeName="opacity"
+                        values="0;1;0"
+                        dur="1.5s"
+                        repeatCount="indefinite"
+                        begin="0.2s"
+                      />
+                    </circle>
+                    <circle cx="14" cy="14" r="1" fill="white" opacity="0.8">
+                      <animate
+                        attributeName="opacity"
+                        values="0;1;0"
+                        dur="1.5s"
+                        repeatCount="indefinite"
+                        begin="0.4s"
+                      />
+                    </circle>
+                  </g>
                 </svg>
               </div>
             </div>
