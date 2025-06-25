@@ -135,6 +135,7 @@
   color: #003366;
   cursor: pointer;
   transition: all 0.3s ease;
+  margin-top: 10px;
 }
 
 .select:focus {

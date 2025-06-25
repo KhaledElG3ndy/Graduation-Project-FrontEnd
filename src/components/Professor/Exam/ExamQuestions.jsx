@@ -232,6 +232,11 @@ const ExamQuestions = ({ subjectName, examData, onBack, onSubmit }) => {
         newErrors.correctAnswers =
           "Please ensure all selected correct answers have text";
     }
+    if (currentQuestion.type === "essay") {
+      if (!currentQuestion.correctAnswer?.trim()) {
+        newErrors.correctAnswer = "Correct answer is required for essay type";
+      }
+    }
 
     if (currentQuestion.marks <= 0)
       newErrors.marks = "Marks must be greater than 0";
@@ -484,6 +489,27 @@ const ExamQuestions = ({ subjectName, examData, onBack, onSubmit }) => {
           )}
           {errors.correctAnswers && (
             <span className={styles.errorText}>{errors.correctAnswers}</span>
+          )}
+        </div>
+      )}
+      {currentQuestion.type === "essay" && (
+        <div className={styles.inputGroup}>
+          <label className={styles.label}>
+            Correct Answer <span className={styles.required}>*</span>
+          </label>
+          <textarea
+            value={currentQuestion.correctAnswer || ""}
+            onChange={(e) =>
+              handleQuestionChange("correctAnswer", e.target.value)
+            }
+            className={`${styles.textarea} ${
+              errors.correctAnswer ? styles.error : ""
+            }`}
+            rows="4"
+            placeholder="Enter the correct answer for evaluation"
+          />
+          {errors.correctAnswer && (
+            <span className={styles.errorText}>{errors.correctAnswer}</span>
           )}
         </div>
       )}

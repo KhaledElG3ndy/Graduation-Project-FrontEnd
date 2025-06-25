@@ -51,9 +51,21 @@ export default function EmailCRUD() {
 
   const fetchAccounts = async () => {
     try {
-      const studentsResponse = await fetch(`${API_URL}/GetAllByRole?role=3`);
-      const staffResponse1 = await fetch(`${API_URL}/GetAllByRole?role=1`);
-      const staffResponse2 = await fetch(`${API_URL}/GetAllByRole?role=2`);
+      const studentsResponse = await fetch(`${API_URL}/GetAllByRole?role=3`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("Token")}`,
+        },
+      });
+      const staffResponse1 = await fetch(`${API_URL}/GetAllByRole?role=1`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("Token")}`,
+        },
+      });
+      const staffResponse2 = await fetch(`${API_URL}/GetAllByRole?role=2`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("Token")}`,
+        },
+      });
 
       if (!studentsResponse.ok || !staffResponse1.ok || !staffResponse2.ok)
         throw new Error("Failed to fetch accounts");

@@ -5,9 +5,12 @@ import Header from "../../../components/student/Header/Header";
 
 const Schedules = () => {
   const [selectedYear, setSelectedYear] = useState("");
+  const [selectedDepartmentId, setSelectedDepartmentId] = useState("");
   const [selectedProfessor, setSelectedProfessor] = useState("");
   const [accounts, setAccounts] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [professorSchedule, setProfessorSchedule] = useState([]);
+  const [lectureSchedule, setLectureSchedule] = useState({});
 
   const years = [
     { label: "First Year", value: "1" },
@@ -29,6 +32,7 @@ const Schedules = () => {
 
   useEffect(() => {
     fetchProfessors();
+    fetchDepartments();
   }, []);
 
   useEffect(() => {
@@ -36,6 +40,10 @@ const Schedules = () => {
       fetchProfessorSchedule(selectedProfessor);
     }
   }, [selectedProfessor]);
+
+  useEffect(() => {
+    fetchLectureSchedule();
+  }, [selectedYear, selectedDepartmentId]);
 
   const fetchProfessors = async () => {
     try {
@@ -46,6 +54,18 @@ const Schedules = () => {
       setAccounts(data.staffs || []);
     } catch (err) {
       console.error("Failed to fetch professors", err);
+    }
+  };
+
+  const fetchDepartments = async () => {
+    try {
+      const res = await fetch(
+        "https://localhost:7072/Departments/GetDepartments"
+      );
+      const data = await res.json();
+      setDepartments(data || []);
+    } catch (err) {
+      console.error("Failed to fetch departments", err);
     }
   };
 
@@ -66,9 +86,38 @@ const Schedules = () => {
     }
   };
 
+  const fetchLectureSchedule = async () => {
+    if (!selectedYear || !selectedDepartmentId) {
+      setLectureSchedule({});
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        `https://localhost:7072/api/Schedule/${selectedDepartmentId}/${selectedYear}`
+      );
+      if (!res.ok) {
+        setLectureSchedule({});
+        return;
+      }
+
+      const data = await res.json();
+      const parsed = JSON.parse(data.scheduleData || "{}");
+      setLectureSchedule(parsed);
+    } catch (err) {
+      console.error("Error fetching lecture schedule:", err);
+      setLectureSchedule({});
+    }
+  };
+
   const selectedProfessorObject = accounts.find(
     (p) => p.id === parseInt(selectedProfessor)
   );
+
+  const getLectureSubject = (day, timeSlot) => {
+    const key = `${day}-${timeSlot}`;
+    return lectureSchedule[key] || "-";
+  };
 
   return (
     <>
@@ -96,6 +145,7 @@ const Schedules = () => {
               </div>
               <h3 className={styles.cardTitle}>Lecture Schedule</h3>
             </div>
+
             <select
               className={styles.select}
               value={selectedYear}
@@ -105,6 +155,19 @@ const Schedules = () => {
               {years.map((year) => (
                 <option key={year.value} value={year.value}>
                   {year.label}
+                </option>
+              ))}
+            </select>
+
+            <select
+              className={styles.select}
+              value={selectedDepartmentId}
+              onChange={(e) => setSelectedDepartmentId(e.target.value)}
+            >
+              <option value="">Select Department</option>
+              {departments.map((dep) => (
+                <option key={dep.id} value={dep.id}>
+                  {dep.name}
                 </option>
               ))}
             </select>
@@ -132,7 +195,7 @@ const Schedules = () => {
           </div>
         </div>
 
-        {selectedYear && (
+        {selectedYear && selectedDepartmentId && (
           <div className={styles.scheduleSection}>
             <div className={styles.sectionHeader}>
               <div className={styles.sectionTitleWrapper}>
@@ -140,7 +203,7 @@ const Schedules = () => {
                   <FaBookOpen className={styles.sectionIcon} />
                 </div>
                 <h2 className={styles.sectionTitle}>
-                  Lecture Schedule -{" "}
+                  Lecture Schedule –{" "}
                   {years.find((y) => y.value === selectedYear)?.label}
                 </h2>
               </div>
@@ -168,9 +231,12 @@ const Schedules = () => {
                           <span>{slot}</span>
                         </div>
                       </td>
-                      {days.map((_, j) => (
-                        <td key={`${i}-${j}`} className={styles.scheduleCell}>
-                          -
+                      {days.map((day) => (
+                        <td
+                          key={`${day}-${slot}`}
+                          className={styles.scheduleCell}
+                        >
+                          {getLectureSubject(day, slot)}
                         </td>
                       ))}
                     </tr>

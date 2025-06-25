@@ -53,7 +53,7 @@ const ExamForm = ({ subjectName, courseId, onNext }) => {
     if (!examForm.passingMarks)
       newErrors.passingMarks = "Passing marks is required";
     if (!examForm.instructions.trim())
-      newErrors.instructions = "Instructions are required";
+      newErrors.instructions = "Description are required";
 
     if (examForm.totalMarks && examForm.passingMarks) {
       if (parseInt(examForm.passingMarks) > parseInt(examForm.totalMarks)) {
@@ -76,9 +76,9 @@ const ExamForm = ({ subjectName, courseId, onNext }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     if (!validateForm()) return;
-  
+
     const formData = new FormData();
     formData.append("StartDate", examForm.startDate);
     formData.append("Duration", examForm.duration);
@@ -89,21 +89,21 @@ const ExamForm = ({ subjectName, courseId, onNext }) => {
     formData.append("IsShuffled", examForm.shuffleQuestions ? 1 : 0);
     formData.append("GradeIsSeen", examForm.showResults ? 1 : 0);
     formData.append("CourseId", courseId);
-  
+
     try {
       const response = await fetch("https://localhost:7072/Exams/PostExam/0", {
         method: "POST",
         body: formData,
       });
-  
+
       if (!response.ok) {
         const errText = await response.text();
         throw new Error(`Failed to create exam: ${errText}`);
       }
-  
+
       const data = await response.json();
       console.log("Exam created:", data);
-  
+
       if (onNext) {
         console.log("Exam data to pass to next step:", data);
         onNext(data);
@@ -113,7 +113,6 @@ const ExamForm = ({ subjectName, courseId, onNext }) => {
       alert("Failed to submit exam. Please try again.");
     }
   };
-  
 
   const getPassRate = () => {
     if (examForm.totalMarks && examForm.passingMarks) {
@@ -357,12 +356,12 @@ const ExamForm = ({ subjectName, courseId, onNext }) => {
                 <div className={styles.sectionIconPurple}>
                   <BookOpen className={styles.sectionIconSvg} />
                 </div>
-                <h3 className={styles.sectionTitle}>Instructions</h3>
+                <h3 className={styles.sectionTitle}>Description</h3>
               </div>
 
               <div className={styles.inputGroup}>
                 <label className={styles.label}>
-                  Exam Instructions <span className={styles.required}>*</span>
+                  Exam Description <span className={styles.required}>*</span>
                 </label>
                 <textarea
                   name="instructions"

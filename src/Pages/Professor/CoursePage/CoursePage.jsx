@@ -148,7 +148,7 @@ const CoursePage = () => {
   const fetchMaterials = async () => {
     try {
       const res = await fetch(
-        `https://localhost:7072/api/Materials/getAllMaterials/${id}`
+        `https://localhost:7072/api/Materials/getAllMaterials/1?p=1`
       );
       const data = await res.json();
       setMaterials(
@@ -446,10 +446,11 @@ const CoursePage = () => {
       formData.append("StaffId", "1");
       formData.append("CourseId", course.id);
 
-      const file = materialForm.files[0];
-      if (file) {
-        formData.append("File", file);
+      const files = materialForm.files;
+      for (let i = 0; i < files.length; i++) {
+        formData.append("Files", files[i]);
       }
+      
 
       const response = await fetch("https://localhost:7072/api/Materials", {
         method: "POST",

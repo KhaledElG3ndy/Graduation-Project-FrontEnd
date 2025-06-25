@@ -111,7 +111,12 @@ const SubjectPage = () => {
 
       console.log("Fetching all students from GetAllByRole (role=3)...");
       const usersRes = await fetch(
-        `https://localhost:7072/api/Account/GetAllByRole?role=3`
+        `https://localhost:7072/api/Account/GetAllByRole?role=3`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Token")}`,
+          },
+        }
       );
       const usersData = await usersRes.json();
       console.log(`Students fetched:`, usersData.students);
