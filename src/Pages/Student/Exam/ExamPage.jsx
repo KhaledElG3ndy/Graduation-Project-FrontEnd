@@ -116,7 +116,6 @@ const ExamPage = () => {
       }
     });
   };
-
   const handleSubmit = async () => {
     const formattedAnswers = questions.map((q) => {
       const answer = answers[q.id];
@@ -148,14 +147,11 @@ const ExamPage = () => {
         studentId: studentId || 1,
         questionId: q.id,
         studentAns: formattedAnswer,
-        grade: 0,
       };
     });
 
-    console.log("Submitting answers:", formattedAnswers);
-
     try {
-      const res = await fetch(`https://localhost:7072/Answer/PutQuestionAns`, {
+      const res = await fetch(`https://localhost:7072/Answer/PutQuestionAns/1`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -164,6 +160,11 @@ const ExamPage = () => {
       });
 
       if (res.ok) {
+        await fetch(
+          `https://localhost:7072/Answer/EvaluateExam?examId=${examId}&studentId=${studentId}`,
+          { method: "POST" }
+        );
+
         navigate(`/student/subject/${examInfo.courseId}`);
       } else {
         const errText = await res.text();
@@ -175,6 +176,7 @@ const ExamPage = () => {
       alert("Error submitting exam!");
     }
   };
+  
 
   const getAnsweredCount = () =>
     Object.values(answers).filter(

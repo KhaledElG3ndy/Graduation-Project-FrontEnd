@@ -5,7 +5,7 @@ import styles from "./Study.module.css";
 import { useNavigate } from "react-router-dom";
 
 const Study = () => {
-  const [subjects, setSubjects] = useState([]);
+  const [courses, setCourses] = useState([]); 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -19,8 +19,7 @@ const Study = () => {
 
     const parseJwt = (token) => {
       try {
-        const decoded = JSON.parse(atob(token.split(".")[1]));
-        return decoded;
+        return JSON.parse(atob(token.split(".")[1]));
       } catch (e) {
         console.error("Invalid token", e);
         return null;
@@ -35,7 +34,6 @@ const Study = () => {
     }
 
     if (payload.exp * 1000 < Date.now()) {
-      console.warn("Token expired");
       localStorage.removeItem("Token");
       navigate("/login/signin");
       return;
@@ -43,23 +41,71 @@ const Study = () => {
 
     const role =
       payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
-
     if (role !== "Student") {
       localStorage.removeItem("Token");
       navigate("/login/signin");
     }
   }, [navigate]);
-  
+
   useEffect(() => {
-    const fetchSubjects = async () => {
+    const fetchRegisteredCourses = async () => {
       try {
-        const res = await fetch("https://localhost:7072/Subjects/GetSubjects");
-        if (!res.ok) throw new Error("Failed to fetch subjects");
-        const data = await res.json();
+        const token = localStorage.getItem("Token");
+        if (!token) {
+          navigate("/login/signin");
+          return;
+        }
 
-        console.log("Fetched subjects:", data);
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        const studentId =
+          payload[
+            "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
+          ];
+        if (!studentId) {
+          setError("Student ID not found in token");
+          setLoading(false);
+          return;
+        }
 
-        setSubjects(data);
+        const coursesRes = await fetch(
+          `https://localhost:7072/Registeration/GetStudentCourses?id=${studentId}`
+        );
+        if (!coursesRes.ok)
+          throw new Error("Failed to fetch registered courses");
+        const registeredCourses = await coursesRes.json();
+
+        const subjectIds = [
+          ...new Set(
+            registeredCourses.map(
+              (course) => course.subject?.id || course.subjectId
+            )
+          ),
+        ].filter((id) => id);
+
+        const subjectsRes = await fetch(
+          `https://localhost:7072/Subjects/GetSubjects`
+        );
+        if (!subjectsRes.ok) throw new Error("Failed to fetch subjects");
+        const allSubjects = await subjectsRes.json();
+
+        const combinedData = registeredCourses.map((course) => {
+          const subject = allSubjects.find(
+            (s) => s.id === (course.subject?.id || course.subjectId)
+          );
+
+          return {
+            courseId: course.id,
+            subjectId: subject?.id,
+            name: subject?.name || "Unnamed Subject",
+            departmentName: subject?.departmentName || "Unknown",
+            hours: subject?.hours || "N/A",
+            imageUrl: subject?.imageUrl || "",
+            year: course.year,
+            semester: course.semester,
+          };
+        });
+
+        setCourses(combinedData);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -67,8 +113,8 @@ const Study = () => {
       }
     };
 
-    fetchSubjects();
-  }, []);
+    fetchRegisteredCourses();
+  }, [navigate]);
 
   const handleSubjectRegistration = () => {
     navigate("/student/subjectRegistration");
@@ -79,7 +125,7 @@ const Study = () => {
       <Header />
       <div className={styles.content}>
         <div className={styles.titleSection}>
-          <h2 className={styles.title}>Your Subjects</h2>
+          <h2 className={styles.title}>Your Courses</h2> 
           <button
             className={styles.registerButton}
             onClick={handleSubjectRegistration}
@@ -90,45 +136,57 @@ const Study = () => {
         </div>
 
         {loading ? (
-          <p className={styles.message}>Loading...</p>
+          <p className={styles.message}>Loading courses...</p>
         ) : error ? (
           <p className={styles.error}>Error: {error}</p>
+        ) : courses.length === 0 ? (
+          <p className={styles.message}>No courses registered yet</p>
         ) : (
           <div className={styles.cardGrid}>
-            {subjects.map((subject) => (
-              <div key={subject.id} className={styles.card}>
-                {subject.imageUrl && (
+            {courses.map((course) => (
+              <div
+                key={`${course.courseId}-${course.subjectId}`}
+                className={styles.card}
+              >
+                {course.imageUrl && (
                   <img
                     src={
-                      subject.imageUrl.startsWith("http")
-                        ? subject.imageUrl
-                        : `https://localhost:7072${subject.imageUrl}`
+                      course.imageUrl.startsWith("http")
+                        ? course.imageUrl
+                        : `https://localhost:7072${course.imageUrl}`
                     }
-                    alt={subject.name}
+                    alt={course.name}
                     className={styles.subjectImage}
                   />
                 )}
 
                 <div className={styles.header}>
                   <FaBookOpen className={styles.headerIcon} />
-                  <span className={styles.subjectTitle}>{subject.name}</span>
+                  <span className={styles.subjectTitle}>{course.name}</span>
                 </div>
 
                 <div className={styles.body}>
                   <div className={styles.row}>
-                    <strong>Department:</strong>{" "}
-                    {subject.departmentName || "Unknown"}
+                    <strong>Department:</strong> {course.departmentName}
                   </div>
                   <div className={styles.row}>
                     <FaClock className={styles.icon} />
-                    <strong>Hours:</strong> {subject.hours}
+                    <strong>Hours:</strong> {course.hours}
+                  </div>
+                  <div className={styles.row}>
+                    <strong>Year:</strong> {course.year}
+                  </div>
+                  <div className={styles.row}>
+                    <strong>Semester:</strong> {course.semester}
                   </div>
                 </div>
 
                 <div className={styles.footer}>
                   <button
                     className={styles.button}
-                    onClick={() => navigate(`/student/subject/${subject.id}`)}
+                    onClick={() =>
+                      navigate(`/student/subject/${course.courseId}`)
+                    }
                   >
                     Start Learning
                   </button>

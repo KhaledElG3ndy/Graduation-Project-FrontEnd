@@ -1,0 +1,77 @@
+.reviewContainer {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: auto;
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  margin-top: 10px;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #2e2e2e;
+}
+
+.questionCard {
+  background-color: #f9f9f9;
+  border-left: 5px solid #007bff;
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+h4 {
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.imageWrapper {
+  margin: 1rem 0;
+  text-align: center;
+}
+
+.questionImage {
+  max-width: 80%;
+  height: auto;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.choiceList {
+  list-style-type: none;
+  padding: 0;
+  margin-bottom: 1rem;
+}
+
+.choiceList li {
+  padding: 0.5rem 1rem;
+  margin-bottom: 0.4rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+  transition: all 0.3s ease;
+}
+
+.correct {
+  border-color: #28a745;
+  background-color: #d4edda;
+  color: #155724;
+  font-weight: bold;
+}
+
+.studentAnswer {
+  border-color: #17a2b8;
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+p {
+  margin: 0.5rem 0;
+  color: #444;
+}
+
+strong {
+  color: #000;
+}

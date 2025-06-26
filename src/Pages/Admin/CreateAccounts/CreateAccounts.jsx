@@ -60,6 +60,7 @@ const CreateStudentAccount = () => {
     formData.append("NationalId", nationalId);
     formData.append("Gender", gender === "Male" ? "true" : "false");
 
+
     if (role === "student") {
       formData.append("Year", year.toString());
       formData.append("DepartmentId", parseInt(departmentId || "1"));

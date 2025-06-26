@@ -1,0 +1,355 @@
+.container {
+    margin: 0 auto;
+    padding: 2rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+  }
+  
+  .header {
+    text-align: center;
+    padding: 2rem 0;
+  }
+  
+  .title {
+    font-size: 3rem;
+    font-weight: 800;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #0056b3 0%, #003d82 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .subtitle {
+    font-size: 1.2rem;
+    color: #718096;
+    margin-bottom: 2rem;
+    font-weight: 400;
+  }
+
+  
+  .statItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    backdrop-filter: blur(10px);
+  }
+  
+  .statNumber {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0056b3;
+  }
+  
+  .statLabel {
+    font-size: 0.9rem;
+    color: #718096;
+    font-weight: 500;
+  }
+  
+  .loadingContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 50vh;
+    gap: 1rem;
+  }
+  
+  .spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #f3f4f6;
+    border-top: 4px solid #0056b3;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  .loadingText {
+    font-size: 1.1rem;
+    color: #718096;
+    font-weight: 500;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  .emptyState {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+  }
+  
+  .emptyIcon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+  }
+  
+  .emptyTitle {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 1rem;
+  }
+  
+  .emptyMessage {
+    font-size: 1.1rem;
+    color: #718096;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+  
+  .coursesGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+  }
+  
+  .courseCard {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  .courseCard:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  }
+  
+  .cardHeader {
+    display: flex;
+    align-items: center;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #0056b3 0%, #003d82 100%);
+    color: white;
+  }
+  
+  .subjectIcon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-right: 1rem;
+    backdrop-filter: blur(10px);
+  }
+  
+  .courseInfo {
+    flex: 1;
+  }
+  
+  .subjectName {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    color: white;
+  }
+  
+  .courseMeta {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+  
+  .year {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+  }
+  
+  .semesterBadge {
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .semesterFall {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    color: white;
+  }
+  
+  .semesterSpring {
+    background: linear-gradient(135deg, #4ecdc4, #44a08d);
+    color: white;
+  }
+  
+  .semesterSummer {
+    background: linear-gradient(135deg, #f093fb, #f5576c);
+    color: white;
+  }
+  
+  .semesterDefault {
+    background: linear-gradient(135deg, #a8a8a8, #8e8e8e);
+    color: white;
+  }
+  
+  .cardBody {
+    padding: 1.5rem;
+  }
+  
+  .courseDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .detailItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: #f8fafc;
+    border-radius: 10px;
+    border-left: 4px solid #0056b3;
+  }
+  
+  .detailLabel {
+    font-weight: 600;
+    color: #4a5568;
+    font-size: 0.9rem;
+  }
+  
+  .detailValue {
+    font-weight: 500;
+    color: #2d3748;
+    font-size: 0.9rem;
+  }
+  
+  .cardFooter {
+    padding: 1.5rem;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+  }
+  
+  .registerButton {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #0056b3 0%, #003d82 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    box-shadow: 0 4px 15px rgba(0, 86, 179, 0.4);
+  }
+  
+  .registerButton:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 86, 179, 0.6);
+  }
+  
+  .registerButton:active:not(:disabled) {
+    transform: translateY(0);
+  }
+  
+  .registerButton:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+  }
+  
+  .registering {
+    background: linear-gradient(135deg, #a0aec0, #718096);
+  }
+  
+  .buttonIcon {
+    font-size: 1.1rem;
+  }
+  
+  .buttonSpinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  @media (max-width: 768px) {
+    .container {
+      padding: 1rem;
+    }
+    
+    .title {
+      font-size: 2.2rem;
+    }
+    
+    .coursesGrid {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+    
+    .stats {
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .cardHeader {
+      flex-direction: column;
+      text-align: center;
+      gap: 1rem;
+    }
+    
+    .courseInfo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .courseMeta {
+      justify-content: center;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .container {
+      padding: 0.5rem;
+    }
+    
+    .title {
+      font-size: 1.8rem;
+    }
+    
+    .subtitle {
+      font-size: 1rem;
+    }
+    
+    .courseCard {
+      border-radius: 15px;
+    }
+    
+    .cardHeader,
+    .cardBody,
+    .cardFooter {
+      padding: 1rem;
+    }
+  }

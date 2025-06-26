@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import * as signalR from "@microsoft/signalr";
+import { FiFileText, FiDownload } from "react-icons/fi";
 
 import {
   BookOpen,
@@ -11,7 +12,7 @@ import {
 } from "lucide-react";
 import Header from "../../../components/student/Header/Header";
 import styles from "./SubjectPage.module.css";
-
+import Swal from "sweetalert2";
 const SubjectPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -34,7 +35,7 @@ const SubjectPage = () => {
   const [messagesLoaded, setMessagesLoaded] = useState(false);
   const [materials, setMaterials] = useState([]);
   const [materialsLoading, setMaterialsLoading] = useState(false);
-  
+
   const tabs = [
     { name: "Posts", icon: <FileText size={18} /> },
     { name: "Material", icon: <BookOpen size={18} /> },
@@ -59,7 +60,6 @@ const SubjectPage = () => {
     }
   }, [navigate]);
 
-  
   useEffect(() => {
     const fetchExams = async () => {
       const courseId = subject?.id;
@@ -88,6 +88,26 @@ const SubjectPage = () => {
     }
   }, [activeTab, subject]);
   useEffect(() => {
+    const fetchStudentExams = async () => {
+      if (!studentId) return;
+      try {
+        const res = await fetch(
+          `https://localhost:7072/Exams/GetStudentExams?studentId=${studentId}`
+        );
+        const data = await res.json();
+        setExams(data);
+      } catch (err) {
+        console.error("Error fetching student exams:", err);
+        setExams([]);
+      }
+    };
+
+    if (activeTab === "Grades") {
+      fetchStudentExams();
+    }
+  }, [activeTab, studentId]);
+
+  useEffect(() => {
     const token = localStorage.getItem("Token");
     if (!token || !id) return;
 
@@ -104,7 +124,7 @@ const SubjectPage = () => {
       .configureLogging(signalR.LogLevel.Information)
       .build();
 
-    setConnection(newConnection); 
+    setConnection(newConnection);
 
     fetchGroupMessages();
 
@@ -134,31 +154,38 @@ const SubjectPage = () => {
       newConnection.stop();
     };
   }, [id]);
-  
+
   useEffect(() => {
     const fetchMaterials = async () => {
-      if (!subject) return;
-      setMaterialsLoading(true);
+      const courseId = subject?.id;
+      if (!courseId) return;
 
+      setMaterialsLoading(true);
       try {
         const res = await fetch(
-          `https://localhost:7072/api/Materials/getAllMaterials/${subject.id}?p=1`
+          `https://localhost:7072/api/Materials/getAllMaterials/${courseId}?p=${courseId}`
         );
+        if (!res.ok) throw new Error("API returned error");
+
         const data = await res.json();
+        if (!Array.isArray(data)) {
+          console.error("Materials API did not return an array:", data);
+          return;
+        }
+
         setMaterials(data);
       } catch (err) {
-        console.error("Error fetching materials:", err);
-        setMaterials([]);
+        console.error("API Error:", err);
       } finally {
         setMaterialsLoading(false);
       }
     };
 
-    if (activeTab === "Material") {
+    if (activeTab === "Material" && subject) {
       fetchMaterials();
     }
   }, [activeTab, subject]);
-  
+
   const fetchGroupMessages = async () => {
     try {
       const res = await fetch(
@@ -172,15 +199,13 @@ const SubjectPage = () => {
         timestamp: new Date(msg.sentAt).toLocaleTimeString(),
       }));
 
-      setChatMessages(formatted); // ✅ Replaces the full chat log
+      setChatMessages(formatted);
       setMessagesLoaded(true);
     } catch (err) {
-      console.error("❌ Error fetching group messages:", err);
+      console.error("Error fetching group messages:", err);
     }
   };
-  
-  
-  
+
   const sendMessage = () => {
     if (!chatInput.trim()) return alert("Please enter a message.");
     if (!connection) return alert("Not connected yet.");
@@ -431,23 +456,27 @@ const SubjectPage = () => {
             ) : (
               <ul className={styles.materialList}>
                 {materials.map((mat) => (
-                  <li key={mat.id} className={styles.materialItem}>
-                    <FileText size={20} />
-                    <div>
-                      <strong>{mat.title}</strong>
-                      <p>{mat.description}</p>
-                      <p>
-                        <em>Uploaded by: {mat.uploaderName}</em>
-                      </p>{" "}
-                      {/* <-- NEW */}
-                      {mat.filePath && (
+                  <li key={mat.id} className={styles.materialCard}>
+                    <div className={styles.materialHeader}>
+                      <FiFileText size={24} className={styles.materialIcon} />
+                      <div>
+                        <h4 className={styles.materialTitle}>{mat.name}</h4>
+                        <p className={styles.uploadDate}>
+                          Uploaded at:{" "}
+                          {new Date(mat.uploadedAt).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className={styles.materialActions}>
+                      {mat.file && (
                         <a
-                          href={`https://localhost:7072/${mat.filePath}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={styles.downloadLink}
+                          href={`data:application/octet-stream;base64,${mat.file}`}
+                          download={`${mat.name}.zip`}
+                          className={styles.downloadBtn}
                         >
-                          📄 Download
+                          <FiDownload style={{ marginRight: "8px" }} />
+                          Download
                         </a>
                       )}
                     </div>
@@ -498,14 +527,29 @@ const SubjectPage = () => {
 
                           if (res.ok) {
                             navigate(`/exam/${exam.id}`, { state: { exam } });
+                          } else if (res.status === 500) {
+                            Swal.fire({
+                              icon: "error",
+                              title: "Already Attempted",
+                              text: "You have already taken this exam and cannot retake it.",
+                            });
                           } else {
-                            alert("Failed to initialize exam.");
+                            Swal.fire({
+                              icon: "error",
+                              title: "Failed",
+                              text: "Failed to initialize exam.",
+                            });
                           }
                         } catch (err) {
                           console.error(
                             "Error initializing exam answers:",
                             err
                           );
+                          Swal.fire({
+                            icon: "error",
+                            title: "Error",
+                            text: "An unexpected error occurred while starting the exam.",
+                          });
                         }
                       }}
                     >
@@ -562,43 +606,20 @@ const SubjectPage = () => {
         return (
           <div className={styles.tabContent}>
             <h3 className={styles.tabTitle}>Your Grades</h3>
-            {examsLoading ? (
-              <p>Loading grades...</p>
-            ) : exams.length === 0 ? (
+            {exams.length === 0 ? (
               <div className={styles.emptyState}>
                 <File size={48} />
                 <p>No exams graded yet.</p>
               </div>
             ) : (
               <ul className={styles.examList}>
-                {exams
-                  .filter((exam) =>
-                    exam.answers?.some(
-                      (ans) => ans.studentId === parseInt(studentId)
-                    )
-                  )
-                  .map((exam) => {
-                    const studentAnswer = exam.answers.find(
-                      (ans) => ans.studentId === parseInt(studentId)
-                    );
-                    return (
-                      <li key={exam.id} className={styles.examItem}>
-                        <File size={20} />
-                        <div>
-                          <strong>{exam.description}</strong>
-                          <div>Type: {examTypeLabel(exam.type)}</div>
-                          <div>Grade: {studentAnswer?.grade ?? "N/A"}</div>
-                          {studentAnswer?.gradeIsSeen ? (
-                            <div className={styles.gradeStatus}>
-                              ✓ Grade Available
-                            </div>
-                          ) : (
-                            <div className={styles.gradeStatus}>Pending</div>
-                          )}
-                        </div>
-                      </li>
-                    );
-                  })}
+                {exams.map((exam) => (
+                  <ExamGradeItem
+                    key={exam.id}
+                    exam={exam}
+                    studentId={studentId}
+                  />
+                ))}
               </ul>
             )}
           </div>
@@ -649,5 +670,54 @@ const SubjectPage = () => {
     </div>
   );
 };
-
 export default SubjectPage;
+const ExamGradeItem = ({ exam, studentId }) => {
+  const [grade, setGrade] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchStudentAnswers = async () => {
+      try {
+        const res = await fetch(
+          `https://localhost:7072/Exams/GetStudentExam?studentId=${studentId}&examId=${exam.id}`
+        );
+        const data = await res.json();
+        const total = data.reduce((sum, ans) => sum + ans.grade, 0);
+        setGrade(total);
+      } catch (err) {
+        console.error("Error fetching exam answers:", err);
+        setGrade(null);
+      }
+    };
+
+    fetchStudentAnswers();
+  }, [exam.id, studentId]);
+
+  const examTypeLabel = (type) =>
+    ["Final", "Midterm", "Practical", "Quiz"][type] || "Unknown";
+
+  return (
+    <li className={styles.examItem}>
+      <File size={20} />
+      <div>
+        <strong>{exam.description}</strong>
+        <div>Type: {examTypeLabel(exam.type)}</div>
+        <div>Grade: {grade !== null ? grade : "Loading..."}</div>
+        <div className={styles.gradeStatus}>
+          {exam.gradeIsSeen ? "✓ Grade Available" : "Pending"}
+        </div>
+
+        <button
+          className={styles.reviewButton}
+          onClick={() =>
+            navigate(`/exam-review/${exam.id}`, {
+              state: { examId: exam.id, studentId: studentId },
+            })
+          }
+        >
+          Review Answers
+        </button>
+      </div>
+    </li>
+  );
+};

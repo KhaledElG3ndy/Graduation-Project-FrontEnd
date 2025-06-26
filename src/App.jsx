@@ -41,6 +41,7 @@ import Schedules from "./Pages/Student/Schedules/Schedules";
 import SubjectRegistration from "./Pages/Student/SubjectRegistration/SubjectRegistration";
 import Chat from "./Pages/Student/Chat/Chat";
 import CroupChat from "./Pages/Student/GroupChat";
+import ExamReview from "./components/Student/ExamReview/ExamReview";
 function App() {
   const { isDarkMode, toggleTheme } = useDarkMode();
 
@@ -75,6 +76,7 @@ function App() {
 
         <Route path="/student/subject/:id" element={<SubjectPage />} />
         <Route path="/exam/:examId" element={<ExamPage />} />
+        <Route path="/exam-review/:id" element={<ExamReview />} />
 
         <Route path="/Admin" element={<AdminHomePage />} />
         <Route path="/Admin/AddNews" element={<AddNews />} />
