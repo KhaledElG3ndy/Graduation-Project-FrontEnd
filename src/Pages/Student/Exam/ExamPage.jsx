@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import styles from "./ExamPage.module.css";
-import { useNavigate } from "react-router-dom";
+
 const ExamPage = () => {
   const { examId } = useParams();
   const location = useLocation();
@@ -13,6 +13,8 @@ const ExamPage = () => {
   const [answers, setAnswers] = useState({});
   const [loading, setLoading] = useState(true);
   const [timeRemaining, setTimeRemaining] = useState(null);
+  const [studentId, setStudentId] = useState(null);
+
   useEffect(() => {
     const token = localStorage.getItem("Token");
     if (!token) {
@@ -37,10 +39,18 @@ const ExamPage = () => {
 
     const role =
       payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+    const userId =
+      payload["nameidentifier"] ||
+      payload[
+        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
+      ];
 
     if (role !== "Student") {
       navigate("/login/signin");
+      return;
     }
+
+    setStudentId(userId || 1);
   }, [navigate]);
 
   useEffect(() => {
@@ -135,7 +145,7 @@ const ExamPage = () => {
       }
 
       return {
-        studentId: 1,
+        studentId: studentId || 1,
         questionId: q.id,
         studentAns: formattedAnswer,
         grade: 0,
@@ -145,22 +155,19 @@ const ExamPage = () => {
     console.log("Submitting answers:", formattedAnswers);
 
     try {
-      const res = await fetch(
-        `https://localhost:7072/Answer/PutQuestionAns/${examId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formattedAnswers),
-        }
-      );
+      const res = await fetch(`https://localhost:7072/Answer/PutQuestionAns`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formattedAnswers),
+      });
 
       if (res.ok) {
         navigate(`/student/subject/${examInfo.courseId}`);
       } else {
-        const err = await res.json();
-        console.error("Submission failed:", err);
+        const errText = await res.text();
+        console.error("Submission failed:", errText);
         alert("Submission failed!");
       }
     } catch (error) {
@@ -211,7 +218,7 @@ const ExamPage = () => {
               </div>
               <div className={styles.timerRow}>
                 <div className={styles.timerCard}>
-                  <span className={styles.infoLabel}>Time Remaining </span>
+                  <span className={styles.infoLabel}>Time Remaining</span>
                   <span
                     className={`${styles.timerValue} ${
                       timeRemaining <= 300 ? styles.timerWarning : ""

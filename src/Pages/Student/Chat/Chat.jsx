@@ -19,9 +19,18 @@ const Chat = () => {
       return null;
     }
   };
-
   const saveMessagesToStorage = (updatedMap) => {
-    localStorage.setItem("chatMessages", JSON.stringify(updatedMap));
+    const filteredMap = {};
+
+    for (const userId in updatedMap) {
+      filteredMap[userId] = updatedMap[userId].map((msg) => ({
+        from: msg.from,
+        text: msg.text,
+        timestamp: msg.timestamp,
+      }));
+    }
+
+    localStorage.setItem("chatMessages", JSON.stringify(filteredMap));
   };
 
   const loadMessagesFromStorage = () => {
@@ -43,10 +52,36 @@ const Chat = () => {
       try {
         const parsed = JSON.parse(messageJson);
         if (typeof parsed === "object" && parsed !== null) {
+          let image = null;
+
+          if (
+            parsed.file &&
+            parsed.mimeType &&
+            parsed.mimeType.startsWith("image/")
+          ) {
+            image = `data:${parsed.mimeType};base64,${parsed.file}`;
+          }
+
+          let file = null;
+
+          if (parsed.file && parsed.mimeType) {
+            const dataUrl = `data:${parsed.mimeType};base64,${parsed.file}`;
+
+            if (parsed.mimeType.startsWith("image/")) {
+              image = dataUrl;
+            } else {
+              file = {
+                fileName: parsed.fileName,
+                dataUrl: dataUrl,
+              };
+            }
+          }
+
           message = {
             text: parsed.text || parsed.message || "",
-            image: parsed.image || parsed.file || null,
-            timestamp: new Date().toLocaleTimeString(),
+            image,
+            file,
+            timestamp: parsed.timestamp || new Date().toLocaleTimeString(),
           };
         }
       } catch {
@@ -105,10 +140,9 @@ const Chat = () => {
     const filtered = all.filter((user) => user.email !== email);
     setUsers(filtered);
   };
-
   const sendMessage = async () => {
     if (!toUserId || (!messageText && !imageFile)) {
-      alert("📭 Please enter a message or choose an image");
+      alert("📭 Please enter a message or choose an image/file");
       return;
     }
 
@@ -119,6 +153,7 @@ const Chat = () => {
     if (imageFile) formData.append("File", imageFile);
 
     const token = localStorage.getItem("Token");
+    const fileSnapshot = imageFile;
 
     try {
       const response = await fetch(
@@ -134,24 +169,63 @@ const Chat = () => {
 
       if (!response.ok) throw new Error("Failed to send");
 
-      const newMsg = {
-        from: userId,
-        text: messageText || null,
-        image: imageFile ? URL.createObjectURL(imageFile) : null,
-        timestamp: new Date().toLocaleTimeString(),
-      };
+      const timestamp = new Date().toLocaleTimeString();
 
-      setMessagesMap((prevMap) => {
-        const updated = {
-          ...prevMap,
-          [toUserId]: [...(prevMap[toUserId] || []), newMsg],
+      if (fileSnapshot) {
+        const reader = new FileReader();
+        let handled = false;
+
+        reader.onload = () => {
+          if (handled) return; 
+          handled = true;
+
+          const fileDataUrl = reader.result;
+
+          const newMessage = {
+            from: userId,
+            text: messageText?.trim() || "",
+            image: fileSnapshot.type.startsWith("image/") ? fileDataUrl : null,
+            file: !fileSnapshot.type.startsWith("image/")
+              ? {
+                  fileName: fileSnapshot.name,
+                  dataUrl: fileDataUrl,
+                }
+              : null,
+            timestamp,
+          };
+
+          setMessagesMap((prevMap) => {
+            const updated = {
+              ...prevMap,
+              [toUserId]: [...(prevMap[toUserId] || []), newMessage],
+            };
+            saveMessagesToStorage(updated);
+            return updated;
+          });
+
+          setMessageText("");
+          setImageFile(null);
         };
-        saveMessagesToStorage(updated);
-        return updated;
-      });
 
-      setMessageText("");
-      setImageFile(null);
+        reader.readAsDataURL(fileSnapshot);
+      } else {
+        const newMessage = {
+          from: userId,
+          text: messageText?.trim(),
+          timestamp,
+        };
+
+        setMessagesMap((prevMap) => {
+          const updated = {
+            ...prevMap,
+            [toUserId]: [...(prevMap[toUserId] || []), newMessage],
+          };
+          saveMessagesToStorage(updated);
+          return updated;
+        });
+
+        setMessageText("");
+      }
     } catch (err) {
       console.error("Send error:", err);
       alert("Send failed");
@@ -372,7 +446,6 @@ const Chat = () => {
                               {msg.timestamp}
                             </span>
                           </div>
-
                           {msg.text &&
                             msg.text.trim() !== "" &&
                             msg.text.trim().toUpperCase() !== "N/A" && (
@@ -380,14 +453,25 @@ const Chat = () => {
                                 {msg.text}
                               </div>
                             )}
-
                           {msg.image && (
                             <div className={styles.imageContainer}>
                               <img
                                 src={msg.image}
-                                alt="sent-img"
+                                alt=""
                                 className={styles.messageImage}
                               />
+                            </div>
+                          )}
+                          {msg.file && (
+                            <div className={styles.fileLink}>
+                              <a
+                                href={msg.file.dataUrl}
+                                download={msg.file.fileName}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                📎 {msg.file.fileName}
+                              </a>
                             </div>
                           )}
                         </div>
@@ -412,11 +496,16 @@ const Chat = () => {
                   onChange={(e) => setMessageText(e.target.value)}
                   placeholder="Type your message..."
                   className={styles.messageInput}
-                  onKeyPress={(e) => e.key === "Enter" && sendMessage()}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      sendMessage();
+                    }
+                  }}
                 />
+
                 <input
                   type="file"
-                  accept="image/*"
                   onChange={(e) => setImageFile(e.target.files[0])}
                   className={styles.hiddenFileInput}
                   id="fileInput"

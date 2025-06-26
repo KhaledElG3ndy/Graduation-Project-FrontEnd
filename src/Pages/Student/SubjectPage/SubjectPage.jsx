@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import * as signalR from "@microsoft/signalr";
+
 import {
   BookOpen,
   FileText,
@@ -25,6 +27,14 @@ const SubjectPage = () => {
   const [newComment, setNewComment] = useState({});
   const [userCache, setUserCache] = useState({});
   const [studentId, setStudentId] = useState(null);
+  const [connection, setConnection] = useState(null);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatInput, setChatInput] = useState("");
+  const [connected, setConnected] = useState(false);
+  const [messagesLoaded, setMessagesLoaded] = useState(false);
+  const [materials, setMaterials] = useState([]);
+  const [materialsLoading, setMaterialsLoading] = useState(false);
+  
   const tabs = [
     { name: "Posts", icon: <FileText size={18} /> },
     { name: "Material", icon: <BookOpen size={18} /> },
@@ -48,6 +58,8 @@ const SubjectPage = () => {
       return;
     }
   }, [navigate]);
+
+  
   useEffect(() => {
     const fetchExams = async () => {
       const courseId = subject?.id;
@@ -75,6 +87,119 @@ const SubjectPage = () => {
       fetchExams();
     }
   }, [activeTab, subject]);
+  useEffect(() => {
+    const token = localStorage.getItem("Token");
+    if (!token || !id) return;
+
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    const userEmail =
+      payload[
+        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
+      ];
+
+    const newConnection = new signalR.HubConnectionBuilder()
+      .withUrl(
+        `https://localhost:7072/chathub?userId=${encodeURIComponent(userEmail)}`
+      )
+      .configureLogging(signalR.LogLevel.Information)
+      .build();
+
+    setConnection(newConnection); 
+
+    fetchGroupMessages();
+
+    newConnection
+      .start()
+      .then(() => {
+        console.log("Connected to chat");
+        setConnected(true);
+        return newConnection.invoke("JoinCourseGroup", parseInt(id));
+      })
+      .then(() => {
+        console.log("Joined group", id);
+      })
+      .catch((err) => console.error("Connection error:", err));
+
+    newConnection.on(
+      "ReceiveGroupMessage",
+      (senderEmail, message, timestamp) => {
+        setChatMessages((prev) => [
+          ...prev,
+          { senderEmail, message, timestamp },
+        ]);
+      }
+    );
+
+    return () => {
+      newConnection.stop();
+    };
+  }, [id]);
+  
+  useEffect(() => {
+    const fetchMaterials = async () => {
+      if (!subject) return;
+      setMaterialsLoading(true);
+
+      try {
+        const res = await fetch(
+          `https://localhost:7072/api/Materials/getAllMaterials/${subject.id}?p=1`
+        );
+        const data = await res.json();
+        setMaterials(data);
+      } catch (err) {
+        console.error("Error fetching materials:", err);
+        setMaterials([]);
+      } finally {
+        setMaterialsLoading(false);
+      }
+    };
+
+    if (activeTab === "Material") {
+      fetchMaterials();
+    }
+  }, [activeTab, subject]);
+  
+  const fetchGroupMessages = async () => {
+    try {
+      const res = await fetch(
+        `https://localhost:7072/Chat/GetGroupConversation?courseId=${id}`
+      );
+      const data = await res.json();
+
+      const formatted = data.map((msg) => ({
+        senderEmail: msg.senderEmail,
+        message: msg.message,
+        timestamp: new Date(msg.sentAt).toLocaleTimeString(),
+      }));
+
+      setChatMessages(formatted); // ✅ Replaces the full chat log
+      setMessagesLoaded(true);
+    } catch (err) {
+      console.error("❌ Error fetching group messages:", err);
+    }
+  };
+  
+  
+  
+  const sendMessage = () => {
+    if (!chatInput.trim()) return alert("Please enter a message.");
+    if (!connection) return alert("Not connected yet.");
+
+    const token = localStorage.getItem("Token");
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    const userEmail =
+      payload[
+        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
+      ];
+
+    connection
+      .invoke("SendMessageToCourse", parseInt(id), userEmail, chatInput)
+      .then(() => setChatInput(""))
+      .catch((err) => {
+        console.error("Send error:", err);
+        alert("Error sending message.");
+      });
+  };
 
   const getUserFromToken = () => {
     const token = localStorage.getItem("Token");
@@ -295,10 +420,41 @@ const SubjectPage = () => {
         return (
           <div className={styles.tabContent}>
             <h3 className={styles.tabTitle}>Course Materials</h3>
-            <div className={styles.emptyState}>
-              <BookOpen size={48} />
-              <p>Course materials will be available here.</p>
-            </div>
+
+            {materialsLoading ? (
+              <p>Loading materials...</p>
+            ) : materials.length === 0 ? (
+              <div className={styles.emptyState}>
+                <BookOpen size={48} />
+                <p>No materials uploaded for this course yet.</p>
+              </div>
+            ) : (
+              <ul className={styles.materialList}>
+                {materials.map((mat) => (
+                  <li key={mat.id} className={styles.materialItem}>
+                    <FileText size={20} />
+                    <div>
+                      <strong>{mat.title}</strong>
+                      <p>{mat.description}</p>
+                      <p>
+                        <em>Uploaded by: {mat.uploaderName}</em>
+                      </p>{" "}
+                      {/* <-- NEW */}
+                      {mat.filePath && (
+                        <a
+                          href={`https://localhost:7072/${mat.filePath}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={styles.downloadLink}
+                        >
+                          📄 Download
+                        </a>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         );
 
@@ -365,13 +521,43 @@ const SubjectPage = () => {
       case "Chat":
         return (
           <div className={styles.tabContent}>
-            <h3 className={styles.tabTitle}>Class Discussion</h3>
-            <div className={styles.emptyState}>
-              <MessageCircle size={48} />
-              <p>Join the class discussion here.</p>
-            </div>
+            <h3 className={styles.tabTitle}>Class Chat</h3>
+            {!connected ? (
+              <p>Connecting to chat...</p>
+            ) : (
+              <>
+                <div className={styles.chatBox}>
+                  <ul className={styles.chatMessages}>
+                    {chatMessages.map((msg, idx) => (
+                      <li key={idx}>
+                        <strong>{msg.senderEmail}</strong>: {msg.message}{" "}
+                        <span className={styles.chatTime}>
+                          [{msg.timestamp}]
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className={styles.chatInputArea}>
+                    <input
+                      type="text"
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      placeholder="Write a message..."
+                      className={styles.chatInput}
+                    />
+                    <button
+                      onClick={sendMessage}
+                      className={styles.chatSendButton}
+                    >
+                      Send
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         );
+
       case "Grades":
         return (
           <div className={styles.tabContent}>
