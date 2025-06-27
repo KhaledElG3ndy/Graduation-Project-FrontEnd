@@ -28,7 +28,7 @@ const SubjectRegistration = () => {
         }
       );
 
-      const courseIds = await res.json(); // Array of { courseId }
+      const courseIds = await res.json();
 
       const coursePromises = courseIds.map(({ courseId }) =>
         fetch(`https://localhost:7072/Courses/GetCourse/${courseId}`).then(
@@ -155,7 +155,6 @@ const SubjectRegistration = () => {
 
         {courses.length === 0 ? (
           <div className={styles.emptyState}>
-            <div className={styles.emptyIcon}>📚</div>
             <h3 className={styles.emptyTitle}>No Courses Available</h3>
             <p className={styles.emptyMessage}>
               There are currently no courses available for registration. Please

@@ -42,6 +42,7 @@ import SubjectRegistration from "./Pages/Student/SubjectRegistration/SubjectRegi
 import Chat from "./Pages/Student/Chat/Chat";
 import CroupChat from "./Pages/Student/GroupChat";
 import ExamReview from "./components/Student/ExamReview/ExamReview";
+import Map from "./Pages/Student/Map/Map";
 function App() {
   const { isDarkMode, toggleTheme } = useDarkMode();
 
@@ -65,7 +66,8 @@ function App() {
         <Route path="/student/study" element={<Study />} />
         <Route path="/student/regulation" element={<StudentRegulation />} />
         <Route path="/student/News" element={<News />} />
-        <Route path="/student/guidance" element={<Guidance />} />
+        <Route path="/student/guidance" element={<Map />} />
+        <Route path="/student/explorePlaces" element={<Guidance />} />
         <Route path="/student/Schedules" element={<Schedules />} />
         <Route
           path="/student/subjectRegistration"

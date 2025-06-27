@@ -59,7 +59,12 @@ const ExamPage = () => {
         const res = await fetch(
           `https://localhost:7072/api/Question/GetAll?examId=${examId}`
         );
-        const data = await res.json();
+        let data = await res.json();
+
+        if (examInfo?.isShuffled) {
+          data = shuffleArray(data);
+        }
+
         setQuestions(data);
       } catch (error) {
         console.error("Error fetching questions:", error);
@@ -68,8 +73,10 @@ const ExamPage = () => {
       }
     };
 
-    fetchQuestions();
-  }, [examId]);
+    if (examInfo !== null) {
+      fetchQuestions();
+    }
+  }, [examId, examInfo]);
 
   useEffect(() => {
     if (examInfo?.duration) {
@@ -88,6 +95,10 @@ const ExamPage = () => {
       handleSubmit();
     }
   }, [timeRemaining]);
+
+  const shuffleArray = (array) => {
+    return [...array].sort(() => Math.random() - 0.5);
+  };
 
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
@@ -116,6 +127,7 @@ const ExamPage = () => {
       }
     });
   };
+
   const handleSubmit = async () => {
     const formattedAnswers = questions.map((q) => {
       const answer = answers[q.id];
@@ -151,13 +163,16 @@ const ExamPage = () => {
     });
 
     try {
-      const res = await fetch(`https://localhost:7072/Answer/PutQuestionAns/1`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formattedAnswers),
-      });
+      const res = await fetch(
+        `https://localhost:7072/Answer/PutQuestionAns/1`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formattedAnswers),
+        }
+      );
 
       if (res.ok) {
         await fetch(
@@ -176,7 +191,6 @@ const ExamPage = () => {
       alert("Error submitting exam!");
     }
   };
-  
 
   const getAnsweredCount = () =>
     Object.values(answers).filter(

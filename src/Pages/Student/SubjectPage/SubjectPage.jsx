@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import * as signalR from "@microsoft/signalr";
-import { FiFileText, FiDownload } from "react-icons/fi";
-
+import { FiFileText, FiDownload, FiPaperclip, FiSend } from "react-icons/fi";
 import {
   BookOpen,
   FileText,
@@ -16,6 +15,7 @@ import Swal from "sweetalert2";
 const SubjectPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [userEmail, setUserEmail] = useState(null);
 
   const [activeTab, setActiveTab] = useState("Posts");
   const [subject, setSubject] = useState(null);
@@ -35,6 +35,11 @@ const SubjectPage = () => {
   const [messagesLoaded, setMessagesLoaded] = useState(false);
   const [materials, setMaterials] = useState([]);
   const [materialsLoading, setMaterialsLoading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [filePreview, setFilePreview] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const messagesEndRef = useRef(null);
+  const connectionRef = useRef(null);
 
   const tabs = [
     { name: "Posts", icon: <FileText size={18} /> },
@@ -46,6 +51,10 @@ const SubjectPage = () => {
 
   useEffect(() => {
     const token = localStorage.getItem("Token");
+    if (!token) {
+      navigate("/login/signin");
+      return;
+    }
 
     const base64Payload = token.split(".")[1];
     const decodedPayload = JSON.parse(atob(base64Payload));
@@ -53,12 +62,42 @@ const SubjectPage = () => {
       decodedPayload[
         "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
       ];
+    const email =
+      decodedPayload[
+        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
+      ];
+
     setStudentId(studentId);
-    if (!token) {
-      navigate("/login/signin");
-      return;
-    }
+    setUserEmail(email);
   }, [navigate]);
+  useEffect(() => {
+    scrollToBottom();
+  }, [chatMessages]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setSelectedFile(file);
+
+    if (file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFilePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setFilePreview(null);
+    }
+  };
+
+  const removeFile = () => {
+    setSelectedFile(null);
+    setFilePreview(null);
+  };
 
   useEffect(() => {
     const fetchExams = async () => {
@@ -106,54 +145,11 @@ const SubjectPage = () => {
       fetchStudentExams();
     }
   }, [activeTab, studentId]);
-
   useEffect(() => {
-    const token = localStorage.getItem("Token");
-    if (!token || !id) return;
-
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    const userEmail =
-      payload[
-        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
-      ];
-
-    const newConnection = new signalR.HubConnectionBuilder()
-      .withUrl(
-        `https://localhost:7072/chathub?userId=${encodeURIComponent(userEmail)}`
-      )
-      .configureLogging(signalR.LogLevel.Information)
-      .build();
-
-    setConnection(newConnection);
-
-    fetchGroupMessages();
-
-    newConnection
-      .start()
-      .then(() => {
-        console.log("Connected to chat");
-        setConnected(true);
-        return newConnection.invoke("JoinCourseGroup", parseInt(id));
-      })
-      .then(() => {
-        console.log("Joined group", id);
-      })
-      .catch((err) => console.error("Connection error:", err));
-
-    newConnection.on(
-      "ReceiveGroupMessage",
-      (senderEmail, message, timestamp) => {
-        setChatMessages((prev) => [
-          ...prev,
-          { senderEmail, message, timestamp },
-        ]);
-      }
-    );
-
-    return () => {
-      newConnection.stop();
-    };
-  }, [id]);
+    if (activeTab === "Chat" && connection && !messagesLoaded && connected) {
+      fetchGroupMessages();
+    }
+  }, [activeTab, connection, messagesLoaded, connected]);
 
   useEffect(() => {
     const fetchMaterials = async () => {
@@ -196,19 +192,94 @@ const SubjectPage = () => {
       const formatted = data.map((msg) => ({
         senderEmail: msg.senderEmail,
         message: msg.message,
-        timestamp: new Date(msg.sentAt).toLocaleTimeString(),
+        timestamp: new Date(msg.sentAt).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
       }));
 
       setChatMessages(formatted);
       setMessagesLoaded(true);
     } catch (err) {
-      console.error("Error fetching group messages:", err);
+      console.error("Error fetching messages:", err);
     }
   };
 
-  const sendMessage = () => {
-    if (!chatInput.trim()) return alert("Please enter a message.");
-    if (!connection) return alert("Not connected yet.");
+  useEffect(() => {
+    if (activeTab === "Chat") {
+      const setupChatConnection = async () => {
+        const token = localStorage.getItem("Token");
+        if (!token || !id) return;
+
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        const userEmail =
+          payload[
+            "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
+          ];
+
+        const newConnection = new signalR.HubConnectionBuilder()
+          .withUrl(
+            `https://localhost:7072/chathub?userId=${encodeURIComponent(
+              userEmail
+            )}`
+          )
+          .configureLogging(signalR.LogLevel.Information)
+          .build();
+
+        try {
+          await newConnection.start();
+          console.log("Connected to chat");
+          setConnected(true);
+
+          await newConnection.invoke("JoinCourseGroup", parseInt(id));
+          console.log("Joined group", id);
+
+          await fetchGroupMessages();
+
+          newConnection.on("ReceiveGroupMessage", (senderEmail, payload) => {
+            try {
+              const parsed = JSON.parse(payload);
+              setChatMessages((prev) => [
+                ...prev,
+                {
+                  senderEmail,
+                  message: parsed.text || "[No message]",
+                  timestamp:
+                    parsed.timestamp ||
+                    new Date().toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    }),
+                },
+              ]);
+            } catch (e) {
+              console.error("Failed to parse message:", e);
+            }
+          });
+
+          connectionRef.current = newConnection;
+          setConnection(newConnection);
+        } catch (err) {
+          console.error("Connection error:", err);
+        }
+      };
+
+      setupChatConnection();
+
+      return () => {
+        if (connectionRef.current) {
+          connectionRef.current.off("ReceiveGroupMessage");
+          connectionRef.current.stop();
+          console.log("Connection stopped");
+        }
+        setConnected(false);
+        setMessagesLoaded(false);
+      };
+    }
+  }, [activeTab, id]);
+
+  const sendMessage = async () => {
+    if (!chatInput.trim() && !selectedFile) return;
 
     const token = localStorage.getItem("Token");
     const payload = JSON.parse(atob(token.split(".")[1]));
@@ -217,13 +288,45 @@ const SubjectPage = () => {
         "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
       ];
 
-    connection
-      .invoke("SendMessageToCourse", parseInt(id), userEmail, chatInput)
-      .then(() => setChatInput(""))
-      .catch((err) => {
-        console.error("Send error:", err);
-        alert("Error sending message.");
+    try {
+      setIsUploading(true);
+      const formData = new FormData();
+      formData.append("CourseId", parseInt(id));
+      formData.append("SenderEmail", userEmail);
+      formData.append("Message", chatInput);
+
+      if (selectedFile) {
+        formData.append("File", selectedFile);
+      }
+
+      const response = await fetch(
+        "https://localhost:7072/Chat/SendGroupMessage/send-group",
+        {
+          method: "POST",
+          body: formData,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      setChatInput("");
+      setSelectedFile(null);
+      setFilePreview(null);
+    } catch (err) {
+      console.error("Error sending message:", err);
+      Swal.fire({
+        icon: "error",
+        title: "Send Failed",
+        text: "Could not send message. Please try again.",
       });
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const getUserFromToken = () => {
@@ -569,35 +672,140 @@ const SubjectPage = () => {
             {!connected ? (
               <p>Connecting to chat...</p>
             ) : (
-              <>
-                <div className={styles.chatBox}>
-                  <ul className={styles.chatMessages}>
-                    {chatMessages.map((msg, idx) => (
-                      <li key={idx}>
-                        <strong>{msg.senderEmail}</strong>: {msg.message}{" "}
-                        <span className={styles.chatTime}>
-                          [{msg.timestamp}]
+              <div className={styles.chatContainer}>
+                <div className={styles.chatHeader}>
+                  <div className={styles.chatSubjectInfo}>
+                    <BookOpen size={20} />
+                    <span>{subject?.name || "Subject Chat"}</span>
+                  </div>
+                  <div className={styles.onlineIndicator}>
+                    <div className={styles.onlineDot} />
+                    <span>Online</span>
+                  </div>
+                </div>
+
+                <div className={styles.chatMessages} ref={messagesEndRef}>
+                  {chatMessages.map((msg, idx) => (
+                    <div
+                      key={idx}
+                      className={`${styles.message} ${
+                        msg.senderEmail === userEmail
+                          ? styles.sent
+                          : styles.received
+                      }`}
+                    >
+                      <div className={styles.messageHeader}>
+                        <span className={styles.senderName}>
+                          {msg.senderEmail === userEmail
+                            ? "You"
+                            : msg.senderEmail.split("@")[0]}
                         </span>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className={styles.chatInputArea}>
+                        <span className={styles.messageTime}>
+                          {msg.timestamp}
+                        </span>
+                      </div>
+
+                      {msg.message && (
+                        <div className={styles.messageText}>{msg.message}</div>
+                      )}
+
+                      {msg.fileUrl && (
+                        <div className={styles.fileAttachment}>
+                          {msg.fileType?.startsWith("image/") ? (
+                            <img
+                              src={msg.fileUrl}
+                              alt="Attached content"
+                              className={styles.attachmentImage}
+                            />
+                          ) : (
+                            <a
+                              href={msg.fileUrl}
+                              download
+                              className={styles.fileDownload}
+                            >
+                              <FiFileText className={styles.fileIcon} />
+                              <span>{msg.fileName}</span>
+                            </a>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  <div ref={messagesEndRef} />
+                </div>
+
+                <div className={styles.chatInputArea}>
+                  {filePreview && (
+                    <div className={styles.filePreview}>
+                      <img
+                        src={filePreview}
+                        alt="Preview"
+                        className={styles.previewImage}
+                      />
+                      <button
+                        onClick={removeFile}
+                        className={styles.removePreview}
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  )}
+
+                  {selectedFile && !filePreview && (
+                    <div className={styles.filePreview}>
+                      <FiFileText className={styles.fileIconLarge} />
+                      <span className={styles.fileName}>
+                        {selectedFile.name}
+                      </span>
+                      <button
+                        onClick={removeFile}
+                        className={styles.removePreview}
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  )}
+
+                  <div className={styles.inputContainer}>
                     <input
                       type="text"
                       value={chatInput}
                       onChange={(e) => setChatInput(e.target.value)}
-                      placeholder="Write a message..."
+                      placeholder="Type a message..."
                       className={styles.chatInput}
+                      onKeyPress={(e) => e.key === "Enter" && sendMessage()}
                     />
-                    <button
-                      onClick={sendMessage}
-                      className={styles.chatSendButton}
-                    >
-                      Send
-                    </button>
+
+                    <div className={styles.chatActions}>
+                      <label
+                        htmlFor="file-upload"
+                        className={styles.attachButton}
+                      >
+                        <FiPaperclip size={20} />
+                        <input
+                          id="file-upload"
+                          type="file"
+                          onChange={handleFileChange}
+                          className={styles.fileInput}
+                          accept="image/*, .pdf, .doc, .docx, .txt"
+                        />
+                      </label>
+
+                      <button
+                        onClick={sendMessage}
+                        disabled={isUploading}
+                        className={styles.sendButton}
+                      >
+                        {isUploading ? (
+                          <div className={styles.spinner} />
+                        ) : (
+                          <FiSend size={20} />
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </>
+              </div>
             )}
           </div>
         );
@@ -699,7 +907,7 @@ const ExamGradeItem = ({ exam, studentId }) => {
   return (
     <li className={styles.examItem}>
       <File size={20} />
-      <div>
+      <div className={styles.examContent}>
         <strong>{exam.description}</strong>
         <div>Type: {examTypeLabel(exam.type)}</div>
         <div>Grade: {grade !== null ? grade : "Loading..."}</div>
@@ -707,16 +915,18 @@ const ExamGradeItem = ({ exam, studentId }) => {
           {exam.gradeIsSeen ? "✓ Grade Available" : "Pending"}
         </div>
 
-        <button
-          className={styles.reviewButton}
-          onClick={() =>
-            navigate(`/exam-review/${exam.id}`, {
-              state: { examId: exam.id, studentId: studentId },
-            })
-          }
-        >
-          Review Answers
-        </button>
+        <div className={styles.buttonRow}>
+          <button
+            className={styles.reviewButton}
+            onClick={() =>
+              navigate(`/exam-review/${exam.id}`, {
+                state: { examId: exam.id, studentId: studentId },
+              })
+            }
+          >
+            Review Answers
+          </button>
+        </div>
       </div>
     </li>
   );

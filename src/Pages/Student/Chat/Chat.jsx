@@ -19,26 +19,10 @@ const Chat = () => {
       return null;
     }
   };
-  const saveMessagesToStorage = (updatedMap) => {
-    const filteredMap = {};
-
-    for (const userId in updatedMap) {
-      filteredMap[userId] = updatedMap[userId].map((msg) => ({
-        from: msg.from,
-        text: msg.text,
-        timestamp: msg.timestamp,
-      }));
-    }
-
-    localStorage.setItem("chatMessages", JSON.stringify(filteredMap));
-  };
-
-  const loadMessagesFromStorage = () => {
-    const stored = localStorage.getItem("chatMessages");
-    return stored ? JSON.parse(stored) : {};
-  };
 
   const connect = async (email) => {
+    if (connectionRef.current) return; // prevent reconnecting
+
     const connection = new signalR.HubConnectionBuilder()
       .withUrl(
         `https://localhost:7072/chathub?userId=${encodeURIComponent(email)}`
@@ -46,63 +30,41 @@ const Chat = () => {
       .configureLogging(signalR.LogLevel.Information)
       .build();
 
+    // ❗ Clear old handlers before setting new one
+    connection.off("ReceiveMessage");
+
     connection.on("ReceiveMessage", (fromUserId, messageJson) => {
-      let message = { text: messageJson };
-
       try {
-        const parsed = JSON.parse(messageJson);
-        if (typeof parsed === "object" && parsed !== null) {
-          let image = null;
+        const payload = JSON.parse(messageJson);
+        const isImage = payload.mimeType?.startsWith("image/");
 
-          if (
-            parsed.file &&
-            parsed.mimeType &&
-            parsed.mimeType.startsWith("image/")
-          ) {
-            image = `data:${parsed.mimeType};base64,${parsed.file}`;
-          }
+        const newMessage = {
+          from: fromUserId,
+          text: payload.text,
+          timestamp: payload.timestamp,
+          image: isImage
+            ? `data:${payload.mimeType};base64,${payload.file}`
+            : null,
+          file:
+            !isImage && payload.file
+              ? {
+                  fileName: payload.fileName,
+                  dataUrl: `data:${payload.mimeType};base64,${payload.file}`,
+                }
+              : null,
+        };
 
-          let file = null;
-
-          if (parsed.file && parsed.mimeType) {
-            const dataUrl = `data:${parsed.mimeType};base64,${parsed.file}`;
-
-            if (parsed.mimeType.startsWith("image/")) {
-              image = dataUrl;
-            } else {
-              file = {
-                fileName: parsed.fileName,
-                dataUrl: dataUrl,
-              };
-            }
-          }
-
-          message = {
-            text: parsed.text || parsed.message || "",
-            image,
-            file,
-            timestamp: parsed.timestamp || new Date().toLocaleTimeString(),
+        // update messagesMap
+        setMessagesMap((prevMap) => {
+          const existing = prevMap[fromUserId] || [];
+          return {
+            ...prevMap,
+            [fromUserId]: [...existing, newMessage],
           };
-        }
-      } catch {
-        message = {
-          text: messageJson,
-          image: null,
-          timestamp: new Date().toLocaleTimeString(),
-        };
+        });
+      } catch (e) {
+        console.error("Error handling incoming message", e);
       }
-
-      setMessagesMap((prevMap) => {
-        const updated = {
-          ...prevMap,
-          [fromUserId]: [
-            ...(prevMap[fromUserId] || []),
-            { from: fromUserId, ...message },
-          ],
-        };
-        saveMessagesToStorage(updated);
-        return updated;
-      });
     });
 
     try {
@@ -140,6 +102,67 @@ const Chat = () => {
     const filtered = all.filter((user) => user.email !== email);
     setUsers(filtered);
   };
+
+  const fetchConversation = async (user1Email, user2Email) => {
+    const token = localStorage.getItem("Token");
+    if (!token) return;
+
+    try {
+      const response = await fetch(
+        `https://localhost:7072/Chat/GetConversation/conversation/${encodeURIComponent(
+          user1Email
+        )}/${encodeURIComponent(user2Email)}?user1Email=${encodeURIComponent(
+          user1Email
+        )}&user2Email=${encodeURIComponent(user2Email)}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch conversation");
+      }
+
+      const messages = await response.json();
+
+      const formattedMessages = messages.map((message) => {
+        const isCurrentUser = message.fromUserEmail === user1Email;
+
+        let fileData = null;
+        if (message.file) {
+          const base64String = btoa(
+            new Uint8Array(message.file).reduce(
+              (data, byte) => data + String.fromCharCode(byte),
+              ""
+            )
+          );
+          const dataUrl = `data:application/octet-stream;base64,${base64String}`;
+          fileData = {
+            fileName: "file",
+            dataUrl: dataUrl,
+          };
+        }
+
+        return {
+          from: message.fromUserEmail,
+          text: message.message,
+          timestamp: new Date(message.sentAt).toLocaleTimeString(),
+          file: fileData,
+        };
+      });
+
+      setMessagesMap((prevMap) => ({
+        ...prevMap,
+        [user2Email]: formattedMessages,
+      }));
+    } catch (error) {
+      console.error("Error fetching conversation:", error);
+      alert("Failed to load conversation history");
+    }
+  };
+
   const sendMessage = async () => {
     if (!toUserId || (!messageText && !imageFile)) {
       alert("📭 Please enter a message or choose an image/file");
@@ -176,7 +199,7 @@ const Chat = () => {
         let handled = false;
 
         reader.onload = () => {
-          if (handled) return; 
+          if (handled) return;
           handled = true;
 
           const fileDataUrl = reader.result;
@@ -194,14 +217,10 @@ const Chat = () => {
             timestamp,
           };
 
-          setMessagesMap((prevMap) => {
-            const updated = {
-              ...prevMap,
-              [toUserId]: [...(prevMap[toUserId] || []), newMessage],
-            };
-            saveMessagesToStorage(updated);
-            return updated;
-          });
+          setMessagesMap((prevMap) => ({
+            ...prevMap,
+            [toUserId]: [...(prevMap[toUserId] || []), newMessage],
+          }));
 
           setMessageText("");
           setImageFile(null);
@@ -215,14 +234,10 @@ const Chat = () => {
           timestamp,
         };
 
-        setMessagesMap((prevMap) => {
-          const updated = {
-            ...prevMap,
-            [toUserId]: [...(prevMap[toUserId] || []), newMessage],
-          };
-          saveMessagesToStorage(updated);
-          return updated;
-        });
+        setMessagesMap((prevMap) => ({
+          ...prevMap,
+          [toUserId]: [...(prevMap[toUserId] || []), newMessage],
+        }));
 
         setMessageText("");
       }
@@ -246,10 +261,14 @@ const Chat = () => {
       setUserId(email);
       connect(email);
       fetchAllUsers(email);
-      const storedMessages = loadMessagesFromStorage();
-      setMessagesMap(storedMessages);
     }
   }, []);
+
+  useEffect(() => {
+    if (toUserId && userId) {
+      fetchConversation(userId, toUserId);
+    }
+  }, [toUserId, userId]);
 
   const currentMessages = toUserId ? messagesMap[toUserId] || [] : [];
 
