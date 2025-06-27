@@ -76,7 +76,6 @@
   transform: translateY(-2px);
 }
 
-/* Enhanced Select Styling */
 .input[name="departmentName"] {
   background: linear-gradient(135deg, #fafbfc 0%, #f8f9fa 100%);
   background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
@@ -107,7 +106,6 @@
   transform: translateY(-2px);
 }
 
-/* Custom option styling for modern browsers */
 .input[name="departmentName"] option {
   padding: 12px 16px;
   background: white;
@@ -128,7 +126,6 @@
   background: #f8f9fa;
 }
 
-/* Input group styling for better visual hierarchy */
 .inputGroup {
   position: relative;
   margin-bottom: 8px;
@@ -223,8 +220,6 @@
   transform: none;
   box-shadow: none;
 }
-
-/* Loading state animation */
 .button:disabled::after {
   content: '';
   position: absolute;
@@ -259,7 +254,6 @@
   line-height: 1.6;
 }
 
-/* Responsive design */
 @media (max-width: 768px) {
   .container {
     flex-direction: column;

@@ -21,7 +21,7 @@ const Chat = () => {
   };
 
   const connect = async (email) => {
-    if (connectionRef.current) return; // prevent reconnecting
+    if (connectionRef.current) return; 
 
     const connection = new signalR.HubConnectionBuilder()
       .withUrl(
@@ -30,7 +30,6 @@ const Chat = () => {
       .configureLogging(signalR.LogLevel.Information)
       .build();
 
-    // ❗ Clear old handlers before setting new one
     connection.off("ReceiveMessage");
 
     connection.on("ReceiveMessage", (fromUserId, messageJson) => {
@@ -54,7 +53,6 @@ const Chat = () => {
               : null,
         };
 
-        // update messagesMap
         setMessagesMap((prevMap) => {
           const existing = prevMap[fromUserId] || [];
           return {

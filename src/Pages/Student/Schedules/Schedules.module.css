@@ -213,7 +213,6 @@
   background: linear-gradient(135deg, #fafbfc 0%, #f8fafc 100%);
 }
 
-/* Enhanced Table Styles */
 .scheduleTable {
   width: 100%;
   border-collapse: separate;
@@ -359,7 +358,6 @@
   border-bottom: none;
 }
 
-/* Empty cell styling */
 .scheduleCell:empty::before,
 .scheduleCell:has(:empty)::before {
   content: "—";
@@ -368,7 +366,6 @@
   opacity: 0.6;
 }
 
-/* Class/Subject cell styling */
 .scheduleCell:not(:empty):not(:has(:empty)) {
   background: linear-gradient(135deg, #dbeafe, #bfdbfe);
   color: #1e40af;
@@ -409,7 +406,6 @@
   font-size: 1.1rem;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .container {
     padding: 16px;

@@ -917,7 +917,6 @@
   }
 }
 
-/* Enhanced Chat Section Styles */
 
 .chatBox {
   display: flex;
@@ -1298,7 +1297,6 @@
   border-color: rgba(30, 64, 175, 0.2);
 }
 
-/* Typing indicator */
 .typingIndicator {
   display: flex;
   align-items: center;
@@ -1332,7 +1330,6 @@
   animation-delay: 0.4s;
 }
 
-/* Animations */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -1376,7 +1373,6 @@
   }
 }
 
-/* Chat status indicators */
 .messageStatus {
   font-size: 0.7rem;
   color: #94a3b8;
@@ -1404,7 +1400,6 @@
   background: #8b5cf6;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .chatBox {
     margin: 2rem 1rem;
