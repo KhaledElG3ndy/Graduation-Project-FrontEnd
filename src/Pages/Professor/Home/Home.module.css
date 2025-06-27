@@ -75,12 +75,13 @@
 }
 
 .lightText {
-  color: #1f2937;
+  color: #0f172a; 
 }
 
 .darkText {
-  color: #f9fafb;
+  color: #526877; 
 }
+
 
 .buttons {
   display: flex;

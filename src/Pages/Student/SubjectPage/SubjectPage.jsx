@@ -12,6 +12,7 @@ import {
 import Header from "../../../components/student/Header/Header";
 import styles from "./SubjectPage.module.css";
 import Swal from "sweetalert2";
+
 const SubjectPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -70,6 +71,34 @@ const SubjectPage = () => {
     setStudentId(studentId);
     setUserEmail(email);
   }, [navigate]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await fetch(
+          "https://localhost:7072/api/Account/GetAllByRole?role=3",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("Token")}`,
+            },
+          }
+        );
+        const data = await res.json();
+
+        const userMap = {};
+        for (const user of data.students || []) {
+          userMap[user.id] = user.name;
+        }
+
+        setUserCache(userMap);
+      } catch (err) {
+        console.error("Error fetching users:", err);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
   useEffect(() => {
     scrollToBottom();
   }, [chatMessages]);
@@ -77,6 +106,7 @@ const SubjectPage = () => {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -126,6 +156,7 @@ const SubjectPage = () => {
       fetchExams();
     }
   }, [activeTab, subject]);
+
   useEffect(() => {
     const fetchStudentExams = async () => {
       if (!studentId) return;
@@ -145,6 +176,7 @@ const SubjectPage = () => {
       fetchStudentExams();
     }
   }, [activeTab, studentId]);
+
   useEffect(() => {
     if (activeTab === "Chat" && connection && !messagesLoaded && connected) {
       fetchGroupMessages();
@@ -353,45 +385,22 @@ const SubjectPage = () => {
       return null;
     }
   };
-  const fetchCommentsWithUsers = async (postId) => {
+
+  const fetchComments = async (postId) => {
     try {
-      console.log(`Fetching comments for postId: ${postId}...`);
       const res = await fetch(
         `https://localhost:7072/api/Post/getAllComments?postId=${postId}`
       );
       const data = await res.json();
-      console.log(`Comments fetched:`, data);
-
-      console.log("Fetching all students from GetAllByRole (role=3)...");
-      const usersRes = await fetch(
-        `https://localhost:7072/api/Account/GetAllByRole?role=3`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("Token")}`,
-          },
-        }
-      );
-      const usersData = await usersRes.json();
-      console.log(`Students fetched:`, usersData.students);
-
-      const userMap = {};
-      for (const user of usersData.students || []) {
-        userMap[user.id] = user.name;
-      }
-
-      console.log("Built user cache:", userMap);
-
-      setUserCache(userMap);
       setComments((prev) => ({ ...prev, [postId]: data }));
-      console.log(`Comments + userCache updated for postId: ${postId}`);
     } catch (err) {
-      console.error("yError loading comments or users:", err);
+      console.error("Error loading comments:", err);
     }
   };
 
   const toggleComments = async (postId) => {
     setCommentBoxes((prev) => ({ ...prev, [postId]: !prev[postId] }));
-    if (!comments[postId]) await fetchCommentsWithUsers(postId);
+    if (!comments[postId]) await fetchComments(postId);
   };
 
   const handleAddComment = async (postId) => {
@@ -422,7 +431,7 @@ const SubjectPage = () => {
       }
 
       setNewComment((prev) => ({ ...prev, [postId]: "" }));
-      await fetchCommentsWithUsers(postId);
+      await fetchComments(postId);
     } catch (err) {
       console.error("Error adding comment:", err);
       alert("An error occurred while adding the comment.");
@@ -520,23 +529,59 @@ const SubjectPage = () => {
                         <span>Comment</span>
                       </button>
                     </div>
-                    {comments[post.id]?.map((cmt) => (
-                      <div key={cmt.id} className={styles.comment}>
-                        <img
-                          src="/default-user.png"
-                          alt="User"
-                          className={styles.commentUserImg}
-                        />
-                        <div>
-                          <strong>
-                            {(() => {
-                              return userCache[cmt.id] || "Unknown";
-                            })()}
-                          </strong>
-                          <p>{cmt.content}</p>
+                    {commentBoxes[post.id] && (
+                      <div className={styles.commentsContainer}>
+                        <div className={styles.commentsList}>
+                          {comments[post.id]?.map((cmt) => (
+                            <div key={cmt.id} className={styles.commentCard}>
+                              <div className={styles.commentHeader}>
+                                <div className={styles.userAvatar}>
+                                  {userCache[cmt.commenterId]?.charAt(0) || "U"}
+                                </div>
+                                <div>
+                                  <strong className={styles.userName}>
+                                    {userCache[cmt.commenterId] ||
+                                      "Unknown User"}
+                                  </strong>
+                                  <div className={styles.commentTime}>
+                                    {new Date(cmt.sentAt).toLocaleString([], {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                      month: "short",
+                                      day: "numeric",
+                                    })}
+                                  </div>
+                                </div>
+                              </div>
+                              <p className={styles.commentContent}>
+                                {cmt.content}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className={styles.addCommentContainer}>
+                          <input
+                            type="text"
+                            placeholder="Add a comment..."
+                            value={newComment[post.id] || ""}
+                            onChange={(e) =>
+                              setNewComment((prev) => ({
+                                ...prev,
+                                [post.id]: e.target.value,
+                              }))
+                            }
+                            className={styles.commentInput}
+                          />
+                          <button
+                            onClick={() => handleAddComment(post.id)}
+                            className={styles.commentSubmitBtn}
+                          >
+                            Post
+                          </button>
                         </div>
                       </div>
-                    ))}
+                    )}
                   </article>
                 ))
               )}
@@ -814,25 +859,26 @@ const SubjectPage = () => {
         return (
           <div className={styles.tabContent}>
             <h3 className={styles.tabTitle}>Your Grades</h3>
-            {exams.length === 0 ? (
+            {exams.filter((exam) => exam.gradeIsSeen).length === 0 ? (
               <div className={styles.emptyState}>
                 <File size={48} />
                 <p>No exams graded yet.</p>
               </div>
             ) : (
               <ul className={styles.examList}>
-                {exams.map((exam) => (
-                  <ExamGradeItem
-                    key={exam.id}
-                    exam={exam}
-                    studentId={studentId}
-                  />
-                ))}
+                {exams
+                  .filter((exam) => exam.gradeIsSeen)
+                  .map((exam) => (
+                    <ExamGradeItem
+                      key={exam.id}
+                      exam={exam}
+                      studentId={studentId}
+                    />
+                  ))}
               </ul>
             )}
           </div>
         );
-
       default:
         return (
           <div className={styles.tabContent}>
@@ -878,8 +924,12 @@ const SubjectPage = () => {
     </div>
   );
 };
+
 export default SubjectPage;
+
 const ExamGradeItem = ({ exam, studentId }) => {
+  if (!exam.gradeIsSeen) return null;
+
   const [grade, setGrade] = useState(null);
   const navigate = useNavigate();
 

@@ -1,5 +1,11 @@
 import React from "react";
-import { FiEdit3, FiBook, FiFileText, FiClipboard } from "react-icons/fi";
+import {
+  FiEdit3,
+  FiBook,
+  FiFileText,
+  FiClipboard,
+  FiMessageCircle,
+} from "react-icons/fi";
 import styles from "./CoursePage.module.css";
 
 const Sidebar = ({ subjectName, activeTab, handleTabChange }) => {
@@ -35,6 +41,13 @@ const Sidebar = ({ subjectName, activeTab, handleTabChange }) => {
       >
         <FiClipboard className={styles.buttonIcon} />
         Create Exam
+      </button>
+      <button
+        onClick={() => handleTabChange("chat")}
+        className={activeTab === "chat" ? styles.active : ""}
+      >
+        <FiMessageCircle className={styles.buttonIcon} />
+        Chat
       </button>
     </aside>
   );

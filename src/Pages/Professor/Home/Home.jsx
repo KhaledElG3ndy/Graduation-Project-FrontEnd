@@ -76,9 +76,9 @@ const ProfessorHomePage = () => {
                 isDarkMode ? styles.lightText : styles.darkText
               }`}
             >
-              Online education empowers professors to connect with students
-              seamlessly, leveraging cutting-edge technology for an engaging and
-              efficient learning environment.
+              Empower your teaching journey with a modern, intuitive platform
+              that makes it easy to manage subjects, share resources, and
+              communicate with students—all in one place.
             </p>
 
             <div className={styles.buttons}>

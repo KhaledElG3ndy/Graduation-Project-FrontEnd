@@ -54,17 +54,6 @@ const Header = () => {
         <button className={styles.iconButton} aria-label="Notifications">
           <FiBell className={styles.icon} />
         </button>
-        <button
-          className={styles.iconButton}
-          onClick={toggleTheme}
-          aria-label="Toggle Theme"
-        >
-          {isDarkMode ? (
-            <FaMoon size={20} className={styles.icon} />
-          ) : (
-            <FaSun size={20} className={styles.icon} />
-          )}
-        </button>
 
         {user ? (
           <button onClick={handleLogout} className={styles.joinNow}>

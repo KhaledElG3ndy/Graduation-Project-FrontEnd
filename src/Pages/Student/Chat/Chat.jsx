@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import * as signalR from "@microsoft/signalr";
 import Header from "../../../components/Student/Header/Header";
 import styles from "./Chat.module.css";
-
+import { useNavigate } from "react-router-dom";
 const Chat = () => {
   const [userId, setUserId] = useState("");
   const [toUserId, setToUserId] = useState("");
@@ -11,7 +11,46 @@ const Chat = () => {
   const [imageFile, setImageFile] = useState(null);
   const [messagesMap, setMessagesMap] = useState({});
   const connectionRef = useRef(null);
+  const bottomRef = useRef(null);
+  const navigate = useNavigate();
 
+  useEffect(() => {
+    const token = localStorage.getItem("Token");
+    if (!token) {
+      navigate("/login/signin");
+      return;
+    }
+
+    const parseJwt = (token) => {
+      try {
+        return JSON.parse(atob(token.split(".")[1]));
+      } catch (e) {
+        console.error("Invalid token", e);
+        return null;
+      }
+    };
+
+    const payload = parseJwt(token);
+    if (!payload) {
+      navigate("/login/signin");
+      return;
+    }
+
+    const role =
+      payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+    const userId =
+      payload["nameidentifier"] ||
+      payload[
+        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
+      ];
+
+    if (role !== "Student") {
+      navigate("/login/signin");
+      return;
+    }
+
+    setStudentId(userId || 1);
+  }, [navigate]);
   const parseJwt = (token) => {
     try {
       return JSON.parse(atob(token.split(".")[1]));
@@ -21,7 +60,7 @@ const Chat = () => {
   };
 
   const connect = async (email) => {
-    if (connectionRef.current) return; 
+    if (connectionRef.current) return;
 
     const connection = new signalR.HubConnectionBuilder()
       .withUrl(
@@ -261,15 +300,27 @@ const Chat = () => {
       fetchAllUsers(email);
     }
   }, []);
-
   useEffect(() => {
+    const loadAndScroll = async () => {
+      await fetchConversation(userId, toUserId);
+      setTimeout(() => {
+        if (bottomRef.current) {
+          bottomRef.current.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 100);
+    };
+
     if (toUserId && userId) {
-      fetchConversation(userId, toUserId);
+      loadAndScroll();
     }
   }, [toUserId, userId]);
 
   const currentMessages = toUserId ? messagesMap[toUserId] || [] : [];
-
+  useEffect(() => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [currentMessages]);
   return (
     <>
       <Header />
@@ -502,6 +553,7 @@ const Chat = () => {
                     Select user to show messages
                   </div>
                 )}
+                <div ref={bottomRef} />
               </div>
             </div>
 

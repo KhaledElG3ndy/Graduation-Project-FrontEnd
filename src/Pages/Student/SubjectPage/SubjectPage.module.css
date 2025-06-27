@@ -547,7 +547,6 @@
   transition: background 0.2s ease-in-out;
 }
 
-
 .startButton:hover {
   background-color: #1e40af;
 }
@@ -917,7 +916,6 @@
   }
 }
 
-
 .chatBox {
   display: flex;
   flex-direction: column;
@@ -1115,9 +1113,6 @@
   transform: scale(1.1);
   box-shadow: 0 8px 25px rgba(30, 64, 175, 0.4);
 }
-
-
-
 
 .chatInput:focus {
   border-color: #3b82f6;
@@ -1685,7 +1680,7 @@
   backdrop-filter: blur(10px);
   border-radius: 0 0 16px 16px;
   display: flex;
-  justify-content: center; 
+  justify-content: center;
 }
 
 .filePreview {
@@ -1741,11 +1736,11 @@
   display: flex;
   gap: 12px;
   align-items: center;
-  width: 90%; 
-  max-width: 1000px; 
+  width: 90%;
+  max-width: 1000px;
 }
 .chatInput {
-  flex: 1; 
+  flex: 1;
   padding: 12px 18px;
   border: 1px solid #e2e8f0;
   border-radius: 24px;
@@ -1754,7 +1749,7 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   min-height: 50px;
   resize: none;
-  width: 100%; 
+  width: 100%;
 }
 
 .chatInput:focus {
@@ -1908,7 +1903,6 @@
   border-radius: 0 0 16px 16px;
 }
 
-
 .chatInput:focus {
   outline: none;
   border-color: #93c5fd;
@@ -2030,4 +2024,162 @@
 .removePreview:hover {
   background: #fecaca;
   transform: scale(1.1);
+}
+
+.commentsContainer {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(30, 64, 175, 0.08);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.04);
+  animation: slideDown 0.4s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.commentsList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  margin-bottom: 1.5rem;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.commentsList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.commentsList::-webkit-scrollbar-track {
+  background: rgba(30, 64, 175, 0.05);
+  border-radius: 10px;
+}
+
+.commentsList::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  border-radius: 10px;
+}
+
+
+.commentCard {
+  background: white;
+  padding: 1.2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(30, 64, 175, 0.06);
+  transition: transform 0.3s ease;
+}
+
+.commentCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+}
+
+.commentHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 0.8rem;
+}
+
+.userAvatar {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.userName {
+  font-size: 1rem;
+  color: #1e293b;
+}
+
+.commentTime {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 0.1rem;
+}
+
+.commentContent {
+  color: #334155;
+  line-height: 1.5;
+  margin: 0;
+  padding-left: 44px;
+}
+
+.addCommentContainer {
+  display: flex;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+
+.passStatus {
+  color: #28a745; 
+  font-weight: bold;
+  margin-left: 8px;
+}
+
+.failStatus {
+  color: #dc3545; 
+  font-weight: bold;
+  margin-left: 8px;
+}
+.commentInput {
+  flex: 1;
+  padding: 0.9rem 1.2rem;
+  border-radius: 50px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+
+.commentInput:focus {
+  outline: none;
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 3px rgba(147, 197, 253, 0.3);
+}
+
+.commentInput::placeholder {
+  color: #94a3b8;
+}
+
+.commentSubmitBtn {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 50px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.25);
+}
+
+.commentSubmitBtn:hover {
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+}
+
+.commentSubmitBtn:active {
+  transform: translateY(0);
 }
