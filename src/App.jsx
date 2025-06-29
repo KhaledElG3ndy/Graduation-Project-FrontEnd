@@ -43,6 +43,9 @@ import Chat from "./Pages/Student/Chat/Chat";
 import CroupChat from "./Pages/Student/GroupChat";
 import ExamReview from "./components/Student/ExamReview/ExamReview";
 import Map from "./Pages/Student/Map/Map";
+import TAHomePage from "./Pages/TA/Home/Home";
+import AddPostTA from "./Pages/TA/AddPost/AddPost";
+import CoursePageTA from "./Pages/TA/CoursePage/CoursePage";
 function App() {
   const { isDarkMode, toggleTheme } = useDarkMode();
 
@@ -110,6 +113,10 @@ function App() {
         <Route path="/Professor/Subjects" element={<Subjects />} />
         <Route path="/Professor/CreateChannel" element={<CreateChannel />} />
         <Route path="/course/:id" element={<CoursePage />} />
+        <Route path="/TA" element={<TAHomePage />} />
+        <Route path="/TA/Channels" element={<Channels />} />
+        <Route path="/TA/AddPost" element={<AddPostTA />} />
+        <Route path="/TA/course/:id" element={<CoursePageTA />} />
       </Routes>
     </div>
   );

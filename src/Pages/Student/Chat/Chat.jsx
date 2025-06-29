@@ -38,18 +38,10 @@ const Chat = () => {
 
     const role =
       payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
-    const userId =
-      payload["nameidentifier"] ||
-      payload[
-        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
-      ];
 
     if (role !== "Student") {
       navigate("/login/signin");
-      return;
     }
-
-    setStudentId(userId || 1);
   }, [navigate]);
   const parseJwt = (token) => {
     try {

@@ -1,0 +1,108 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 50px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+  flex: 1;
+  font-size: 36px;
+  font-weight: bold;
+  transition: color 0.3s ease;
+  text-align: left;
+}
+
+.nav {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+}
+
+.navLink {
+  text-decoration: none;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  transition: color 0.3s ease;
+}
+
+.navLink:hover {
+  color: #007bff;
+}
+
+.icons {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 20px;
+}
+
+.iconButton {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  transition: transform 0.3s ease;
+}
+
+.iconButton:hover {
+  transform: scale(1.2);
+}
+
+.joinNow {
+  background: linear-gradient(135deg, #003366, #0066cc, #3399ff);
+  color: white;
+  padding: 10px 25px;
+  font-size: 18px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.joinNow:hover {
+  background-color: #0056b3;
+  transform: scale(1.05);
+  text-decoration: none;
+}
+
+.lightHeader {
+  background-color: #f5f5f5;
+}
+
+.lightHeader .iconButton {
+  color: #0033cc;
+}
+.lightHeader .logo,
+.lightHeader .navLink {
+  background: linear-gradient(135deg, #003366, #0066cc, #3399ff);
+  -webkit-background-clip: text;
+  color: transparent;
+  font-weight: bold;
+}
+
+.darkHeader {
+  background-color: #1c1c1c;
+}
+
+.darkHeader .logo,
+.darkHeader .navLink,
+.darkHeader .iconButton {
+  color: #fff;
+}
+.icon {
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

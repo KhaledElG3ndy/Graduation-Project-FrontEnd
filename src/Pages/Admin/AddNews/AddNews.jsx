@@ -87,7 +87,7 @@ export default function AddNews() {
       const response = await fetch(api_url, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${sessionStorage.getItem("Token")}`,
+          Authorization: `Bearer ${localStorage.getItem("Token")}`,
         },
         body: data,
       });
@@ -96,7 +96,6 @@ export default function AddNews() {
         const errorText = await response.text();
         throw new Error(errorText);
       }
-
       await Swal.fire({
         icon: "success",
         title: "Success!",
@@ -105,6 +104,11 @@ export default function AddNews() {
         timer: 3000,
         timerProgressBar: true,
       });
+
+      localStorage.setItem(
+        "latestNews",
+        JSON.stringify({ title, content, date: new Date() })
+      );
 
       setTitle("");
       setContent("");

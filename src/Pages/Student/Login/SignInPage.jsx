@@ -75,6 +75,9 @@ const SignInForm = () => {
         } else if (role === "Professor") {
           localStorage.setItem("userType", JSON.stringify("Professor"));
           navigate("/Professor");
+        } else if (role === "TA") {
+          localStorage.setItem("userType", JSON.stringify("TA"));
+          navigate("/TA");
         } else {
           localStorage.setItem("userType", JSON.stringify("Student"));
           navigate("/");

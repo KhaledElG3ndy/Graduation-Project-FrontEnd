@@ -1,0 +1,633 @@
+.container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    position: relative;
+  }
+  
+  .container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      radial-gradient(circle at 25% 25%, rgba(0, 86, 179, 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 75% 75%, rgba(0, 61, 130, 0.02) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .header {
+    position: relative;
+    background: linear-gradient(135deg, #0056b3 0%, #003d82 100%);
+    padding: 3rem 0 4rem 0;
+    box-shadow: 0 10px 30px rgba(0, 86, 179, 0.3);
+    overflow: hidden;
+    isolation: isolate;
+  }
+  
+  .header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      120deg,
+      rgba(255, 255, 255, 0.07) 20%,
+      transparent 50%
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+  
+  .header::after {
+    content: '';
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 80%);
+    top: -100px;
+    right: -100px;
+    z-index: 0;
+    pointer-events: none;
+    filter: blur(40px);
+    transform: rotate(30deg);
+  }
+  
+  
+  .headerContent {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+  }
+  
+  .headerIcon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 4rem;
+    height: 4rem;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 1rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+  }
+  
+  .headerIcon:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.15);
+  }
+  
+  .headerIconSvg {
+    width: 2rem;
+    height: 2rem;
+    color: white;
+  }
+  
+  .title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: white;
+    margin: 0 0 0.5rem 0;
+    letter-spacing: -0.02em;
+  }
+  
+  .subtitle {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0 0 2rem 0;
+    font-weight: 400;
+  }
+  
+  .subjectName {
+    font-weight: 600;
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.5rem;
+    backdrop-filter: blur(10px);
+  }
+  
+  .progressSteps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+  }
+  
+  .step,
+  .stepActive {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  
+  .stepNumber,
+  .stepNumberActive {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+  }
+  
+  .stepNumber {
+    background: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+  
+  .stepNumberActive {
+    background: white;
+    color: #0056b3;
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+  }
+  
+  .stepLabel,
+  .stepLabelActive {
+    font-weight: 500;
+    font-size: 0.95rem;
+  }
+  
+  .stepLabel {
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  .stepLabelActive {
+    color: white;
+    font-weight: 600;
+  }
+  
+  .stepConnector {
+    width: 3rem;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 1px;
+  }
+  
+  .formWrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem 3rem 2rem;
+    transform: translateY(-2rem);
+    position: relative;
+    z-index: 3;
+  }
+  
+  .formContainer {
+    background: white;
+    border-radius: 1.5rem;
+    box-shadow: 
+      0 20px 25px -5px rgba(0, 0, 0, 0.1),
+      0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+  }
+  
+  .form {
+    padding: 3rem;
+  }
+  
+  .formGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+  
+  .section {
+    background: #fafbfc;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 1rem;
+    padding: 2rem;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+  
+  .section:hover {
+    border-color: #0056b3;
+    box-shadow: 0 4px 12px rgba(0, 86, 179, 0.08);
+    transform: translateY(-2px);
+  }
+  
+  .sectionHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .sectionIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    background: linear-gradient(135deg, #0056b3 0%, #003d82 100%);
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+  }
+  
+  .sectionIcon:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 86, 179, 0.3);
+  }
+  
+  .sectionIconSvg {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: white;
+  }
+  
+  .sectionTitle {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+  }
+  
+  .inputGroup {
+    margin-bottom: 1.5rem;
+  }
+  
+  .label {
+    display: block;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+  }
+  
+  .required {
+    color: #dc2626;
+    margin-left: 0.25rem;
+  }
+  
+  .input,
+  .textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1.5px solid #d1d5db;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    background: white;
+    font-family: inherit;
+    color: #1f2937;
+    box-sizing: border-box;
+  }
+  
+  .input:hover,
+  .textarea:hover {
+    border-color: #9ca3af;
+  }
+  
+  .input:focus,
+  .textarea:focus {
+    outline: none;
+    border-color: #0056b3;
+    box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.1);
+  }
+  
+  .inputError {
+    border-color: #dc2626 !important;
+    background: #fef2f2 !important;
+  }
+  
+  .textarea {
+    resize: vertical;
+    min-height: 120px;
+    line-height: 1.5;
+  }
+  
+  .inputWithIcon {
+    position: relative;
+  }
+  
+  .inputIcon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1rem;
+    height: 1rem;
+    color: #6b7280;
+    pointer-events: none;
+    z-index: 2;
+  }
+  
+  .inputWithIconInput {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    border: 1.5px solid #d1d5db;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    background: white;
+    font-family: inherit;
+    color: #1f2937;
+    box-sizing: border-box;
+  }
+  
+  .inputWithIconInput:hover {
+    border-color: #9ca3af;
+  }
+  
+  .inputWithIconInput:focus {
+    outline: none;
+    border-color: #0056b3;
+    box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.1);
+  }
+  
+  .inputWithIconInput:focus + .inputIcon {
+    color: #0056b3;
+  }
+  
+  .timeGrid,
+  .scoreGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  
+  .errorMessage {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: #fef2f2;
+    color: #dc2626;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 0.375rem;
+    border: 1px solid #fecaca;
+  }
+  
+  .errorIcon {
+    width: 0.875rem;
+    height: 0.875rem;
+    flex-shrink: 0;
+  }
+
+  .datePreview {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, rgba(0, 86, 179, 0.05) 0%, rgba(0, 61, 130, 0.02) 100%);
+    border-radius: 0.5rem;
+    border: 1px solid rgba(0, 86, 179, 0.1);
+  }
+  
+  .datePreview p {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #0056b3;
+    text-align: center;
+  }
+  
+  .passRateIndicator {
+    background: white;
+    border-radius: 0.75rem;
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    margin-bottom: 1.5rem;
+  }
+  
+  .passRateHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+  }
+  
+  .passRateLabel {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  .passRateValue {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0056b3;
+  }
+  
+  .progressBar {
+    width: 100%;
+    height: 0.5rem;
+    background: #e5e7eb;
+    border-radius: 0.25rem;
+    overflow: hidden;
+  }
+  
+  .progressFill {
+    height: 100%;
+    background: linear-gradient(135deg, #0056b3 0%, #003d82 100%);
+    border-radius: 0.25rem;
+    transition: width 0.3s ease;
+  }
+  
+
+  .settingsGroup {
+    margin-top: 1.5rem;
+  }
+  
+  .settingsTitle {
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+  }
+  
+  .checkboxGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .checkboxLabel {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: white;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .checkboxLabel:hover {
+    border-color: #0056b3;
+    background: rgba(0, 86, 179, 0.02);
+  }
+  
+  .checkbox {
+    width: 1rem;
+    height: 1rem;
+    accent-color: #0056b3;
+    cursor: pointer;
+  }
+  
+  .checkboxText {
+    color: #1f2937;
+    font-weight: 500;
+    font-size: 0.875rem;
+  }
+  
+
+  .instructionsSection {
+    background: #fafbfc;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 1rem;
+    padding: 2rem;
+    transition: all 0.3s ease;
+    margin-bottom: 2rem;
+  }
+  
+  .instructionsSection:hover {
+    border-color: #0056b3;
+    box-shadow: 0 4px 12px rgba(0, 86, 179, 0.08);
+    transform: translateY(-2px);
+  }
+  
+  .submitSection {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 2rem;
+    border-top: 1px solid #e5e7eb;
+  }
+  
+  .submitButton {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: linear-gradient(135deg, #0056b3 0%, #003d82 100%);
+    color: white;
+    border: none;
+    padding: 0.875rem 2rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+  
+  .submitButton:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 15px -3px rgba(0, 86, 179, 0.3);
+  }
+  
+  .submitButton:active {
+    transform: translateY(0);
+  }
+  
+  .submitIcon {
+    width: 1rem;
+    height: 1rem;
+    transition: transform 0.2s ease;
+  }
+  
+  .submitButton:hover .submitIcon {
+    transform: translateX(2px);
+  }
+  
+
+  @media (max-width: 1024px) {
+    .formGrid {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .headerContent {
+      padding: 0 1rem;
+    }
+    
+    .title {
+      font-size: 2rem;
+    }
+    
+    .subtitle {
+      font-size: 1rem;
+    }
+    
+    .formWrapper {
+      padding: 0 1rem 2rem 1rem;
+      transform: translateY(-1.5rem);
+    }
+    
+    .form {
+      padding: 2rem;
+    }
+    
+    .section,
+    .instructionsSection {
+      padding: 1.5rem;
+    }
+    
+    .timeGrid,
+    .scoreGrid {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    
+    .progressSteps {
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .stepConnector {
+      width: 2px;
+      height: 1.5rem;
+    }
+    
+    .submitButton {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .title {
+      font-size: 1.75rem;
+    }
+    
+    .form {
+      padding: 1.5rem;
+    }
+    
+    .section,
+    .instructionsSection {
+      padding: 1rem;
+    }
+    
+    .sectionTitle {
+      font-size: 1.125rem;
+    }
+    
+    .headerIcon {
+      width: 3rem;
+      height: 3rem;
+    }
+    
+    .headerIconSvg {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+  }

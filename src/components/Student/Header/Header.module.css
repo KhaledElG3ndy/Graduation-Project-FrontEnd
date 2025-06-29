@@ -8,6 +8,8 @@ html {
   align-items: center;
   padding: 20px 50px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 100;
 }
 
 .logo {
@@ -45,6 +47,10 @@ html {
   gap: 20px;
 }
 
+.notificationContainer {
+  position: relative;
+}
+
 .iconButton {
   background: none;
   border: none;
@@ -54,12 +60,64 @@ html {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 5px;
-  transition: transform 0.3s ease;
+  padding: 8px;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+  border-radius: 50%;
+  position: relative;
 }
 
 .iconButton:hover {
-  transform: scale(1.2);
+  transform: scale(1.1);
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.icon {
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notificationBadge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: linear-gradient(135deg, #ff4757, #ff3742);
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 11px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid;
+  animation: pulse 2s infinite;
+}
+
+.lightHeader .notificationBadge {
+  border-color: #f5f5f5;
+}
+
+.darkHeader .notificationBadge {
+  border-color: #1c1c1c;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7);
+  }
+  70% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 10px rgba(255, 71, 87, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 71, 87, 0);
+  }
 }
 
 .joinNow {
@@ -86,6 +144,11 @@ html {
 .lightHeader .iconButton {
   color: #0033cc;
 }
+
+.lightHeader .iconButton:hover {
+  background-color: rgba(0, 51, 204, 0.1);
+}
+
 .lightHeader .logo,
 .lightHeader .navLink {
   background: linear-gradient(135deg, #003366, #0066cc, #3399ff);
@@ -103,10 +166,260 @@ html {
 .darkHeader .iconButton {
   color: #fff;
 }
-.icon {
-  font-size: 1.5rem;
+
+.darkHeader .iconButton:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.modalBackdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 998;
+  backdrop-filter: blur(4px);
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 20%;
+  right: -3%;
+  transform: translate(-50%, -50%);
+  z-index: 999;
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.modalContent {
+  background: white;
+  color: #333;
+  border-radius: 16px;
+  width: 450px;
+  max-width: 90vw;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.darkHeader ~ .modalBackdrop + .modalOverlay .modalContent {
+  background: #2a2a2a;
+  color: white;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.darkHeader ~ .modalBackdrop + .modalOverlay .modalHeader {
+  background: linear-gradient(135deg, #333, #3a3a3a);
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.modalTitle {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+  color: #333;
+}
+
+.darkHeader ~ .modalBackdrop + .modalOverlay .modalTitle {
+  color: white;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 24px;
   cursor: pointer;
+  color: #666;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.closeButton:hover {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+}
+
+.darkHeader ~ .modalBackdrop + .modalOverlay .closeButton {
+  color: #ccc;
+}
+
+.darkHeader ~ .modalBackdrop + .modalOverlay .closeButton:hover {
+  background-color: rgba(220, 53, 69, 0.2);
+  color: #ff6b6b;
+}
+
+.modalBody {
+  padding: 24px;
+  min-height: 120px;
+}
+
+.newsItem {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.newsIcon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #0066cc, #3399ff);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+}
+
+.newsIconSymbol {
+  font-size: 24px;
+  filter: grayscale(1) brightness(2);
+}
+
+.newsContent {
+  flex: 1;
+}
+
+.modalNewsTitle {
+  font-weight: 600;
+  font-size: 18px;
+  margin: 0 0 12px 0;
+  color: #333;
+  line-height: 1.4;
+}
+
+.darkHeader ~ .modalBackdrop + .modalOverlay .modalNewsTitle {
+  color: white;
+}
+
+.modalNewsContent {
+  margin: 0 0 16px 0;
+  line-height: 1.6;
+  color: #666;
+  font-size: 14px;
+}
+
+.darkHeader ~ .modalBackdrop + .modalOverlay .modalNewsContent {
+  color: #ccc;
+}
+
+.newsFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modalDate {
+  font-size: 12px;
+  color: #999;
+  font-weight: 500;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.darkHeader ~ .modalBackdrop + .modalOverlay .modalDate {
+  color: #aaa;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 48px;
+  color: #ddd;
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
+.darkHeader ~ .modalBackdrop + .modalOverlay .emptyIcon {
+  color: #555;
+}
+
+.modalEmpty {
+  color: #999;
+  font-style: italic;
+  margin: 0;
+  font-size: 16px;
+}
+
+.darkHeader ~ .modalBackdrop + .modalOverlay .modalEmpty {
+  color: #666;
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 15px 20px;
+  }
+  
+  .logo {
+    font-size: 28px;
+  }
+  
+  .navLink {
+    font-size: 20px;
+  }
+  
+  .nav {
+    gap: 20px;
+  }
+  
+  .modalContent {
+    width: 350px;
+  }
+  
+  .modalHeader,
+  .modalBody {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .modalContent {
+    width: 300px;
+    margin: 20px;
+  }
+  
+  .newsItem {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .newsIcon {
+    align-self: center;
+  }
 }

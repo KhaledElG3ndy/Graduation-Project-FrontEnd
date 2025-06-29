@@ -14,6 +14,7 @@ const ExamPage = () => {
   const [loading, setLoading] = useState(true);
   const [timeRemaining, setTimeRemaining] = useState(null);
   const [studentId, setStudentId] = useState(null);
+  const [assignmentFiles, setAssignmentFiles] = useState({});
 
   useEffect(() => {
     const token = localStorage.getItem("Token");
@@ -83,6 +84,9 @@ const ExamPage = () => {
       setTimeRemaining(examInfo.duration * 60);
     }
   }, [examInfo]);
+  const handleFileChange = (questionId, file) => {
+    setAssignmentFiles((prev) => ({ ...prev, [questionId]: file }));
+  };
 
   useEffect(() => {
     if (timeRemaining > 0) {
@@ -161,6 +165,7 @@ const ExamPage = () => {
         studentAns: formattedAnswer,
       };
     });
+    await uploadAssignments();
 
     try {
       const res = await fetch(
@@ -191,14 +196,21 @@ const ExamPage = () => {
       alert("Error submitting exam!");
     }
   };
-
-  const getAnsweredCount = () =>
-    Object.values(answers).filter(
+  const getAnsweredCount = () => {
+    const writtenOrSelected = Object.values(answers).filter(
       (val) =>
         (Array.isArray(val) && val.length > 0) ||
         (typeof val === "string" && val.trim() !== "") ||
         typeof val === "number"
     ).length;
+
+    const uploadedAssignments = Object.values(assignmentFiles).filter(
+      (file) => file instanceof File
+    ).length;
+
+    return writtenOrSelected + uploadedAssignments;
+  };
+  
 
   if (loading) {
     return (
@@ -208,7 +220,44 @@ const ExamPage = () => {
       </div>
     );
   }
+  const uploadAssignments = async () => {
+    const formData = new FormData();
+    let hasFile = false;
 
+    let index = 0;
+    for (const q of questions) {
+      if (q.type === 4 && assignmentFiles[q.id]) {
+        formData.append(`answers[${index}].file`, assignmentFiles[q.id]);
+        formData.append(`answers[${index}].questionId`, q.id);
+        formData.append(`answers[${index}].studentId`, studentId);
+        hasFile = true;
+        index++;
+      }
+    }
+
+    if (hasFile) {
+      try {
+        const res = await fetch(
+          "https://localhost:7072/Answer/AddAssignmentAnswer",
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+
+        if (!res.ok) {
+          const err = await res.text();
+          console.error("Assignment upload failed:", err);
+          alert("Failed to upload assignment answers.");
+        }
+      } catch (error) {
+        console.error("Error uploading assignment:", error);
+        alert("Error uploading assignment answers.");
+      }
+    }
+  };
+  
+  
   return (
     <div className={styles.examLayout}>
       <div className={styles.container}>
@@ -290,8 +339,27 @@ const ExamPage = () => {
                   </button>
                 </div>
               )}
+              {q.type === 2 && examInfo?.type === 4 && (
+                <div className={styles.uploadSection}>
+                  <label className={styles.uploadLabel}>
+                    📎 Upload Assignment
+                    <input
+                      type="file"
+                      onChange={(e) =>
+                        handleFileChange(q.id, e.target.files[0])
+                      }
+                      className={styles.hiddenInput}
+                    />
+                  </label>
+                  {assignmentFiles[q.id] && (
+                    <p className={styles.selectedFile}>
+                      Selected: {assignmentFiles[q.id].name}
+                    </p>
+                  )}
+                </div>
+              )}
 
-              {q.type === 2 ? (
+              {q.type === 2 && examInfo?.type !== 4  ? (
                 <textarea
                   className={styles.writtenAnswer}
                   placeholder="Write your answer here..."

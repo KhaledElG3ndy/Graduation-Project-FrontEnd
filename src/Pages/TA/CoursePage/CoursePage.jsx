@@ -19,23 +19,20 @@ import {
   FaCommentAlt,
   FaChevronDown,
   FaComments,
-  FaTimes,
-  FaEye,
-  FaCheck,
 } from "react-icons/fa";
 import * as signalR from "@microsoft/signalr";
 import { FiSend, FiClipboard, FiBarChart2 } from "react-icons/fi";
 
 import styles from "./CoursePage.module.css";
-import Header from "../../../components/Professor/Header/Header";
-import Sidebar from "../../../components/Professor/channel/Sidebar";
-import PostForm from "../../../components/Professor/channel/PostForm";
-import MaterialForm from "../../../components/Professor/channel/MaterialForm";
-import MaterialGrid from "../../../components/Professor/channel/MaterialGrid";
-import PreviewModal from "../../../components/Professor/channel/PreviewModal";
-import ExamMain from "../../../components/Professor/Exam/ExamMain";
+import Header from "../../../components/TA/Header/Header";
+import Sidebar from "../../../components/TA/channel/Sidebar";
+import PostForm from "../../../components/TA/channel/PostForm";
+import MaterialForm from "../../../components/TA/channel/MaterialForm";
+import MaterialGrid from "../../../components/TA/channel/MaterialGrid";
+import PreviewModal from "../../../components/TA/channel/PreviewModal";
+import ExamMain from "../../../components/TA/Exam/ExamMain";
 
-const CoursePage = () => {
+const CoursePageTA = () => {
   const { id } = useParams();
   const [course, setCourse] = useState(null);
   const [subjectName, setSubjectName] = useState("Loading...");
@@ -47,15 +44,15 @@ const CoursePage = () => {
     image: null,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedAdjustmentQuestionId, setSelectedAdjustmentQuestionId] =
+    useState(null);
 
   const [expandedComments, setExpandedComments] = useState({});
   const [comments, setComments] = useState({});
   const [commentForms, setCommentForms] = useState({});
   const [submittingComments, setSubmittingComments] = useState({});
   const [userCache, setUserCache] = useState({});
-  const [currentStudentId, setCurrentStudentId] = useState(null);
-  const [editedGrades, setEditedGrades] = useState({});
-  const [isSavingGrades, setIsSavingGrades] = useState(false);
+
   const [materials, setMaterials] = useState([]);
   const [materialForm, setMaterialForm] = useState({
     title: "",
@@ -63,6 +60,7 @@ const CoursePage = () => {
   });
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [questions, setQuestions] = useState([]);
 
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState("");
@@ -91,11 +89,9 @@ const CoursePage = () => {
     passingScore: 0,
     description: "",
   });
-  const [studentAnswers, setStudentAnswers] = useState([]);
-  const [examQuestions, setExamQuestions] = useState([]);
-  const [isAnswersModalOpen, setIsAnswersModalOpen] = useState(false);
-  const [currentStudent, setCurrentStudent] = useState(null);
-
+  const [editing, setEditing] = useState({});
+  const [updatedGrades, setUpdatedGrades] = useState({});
+  const [isSaving, setIsSaving] = useState({});
   useEffect(() => {
     const token = localStorage.getItem("Token");
     if (!token) {
@@ -121,7 +117,7 @@ const CoursePage = () => {
     const role =
       payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
 
-    if (role !== "Professor") {
+    if (role !== "TA") {
       navigate("/login/signin");
     }
   }, [navigate]);
@@ -131,6 +127,12 @@ const CoursePage = () => {
       fetchExams();
     }
   }, [activeTab]);
+
+  useEffect(() => {
+    if (selectedExamId) {
+      fetchResults(selectedExamId);
+    }
+  }, [selectedExamId]);
 
   const fetchExams = async () => {
     setLoadingExams(true);
@@ -154,17 +156,158 @@ const CoursePage = () => {
       setLoadingExams(false);
     }
   };
+  const handleEditGrade = (studentId, currentGrade) => {
+    setEditing((prev) => ({ ...prev, [studentId]: true }));
+    setUpdatedGrades((prev) => ({ ...prev, [studentId]: currentGrade }));
+  };
+
+  const handleCancelEdit = (studentId) => {
+    const newEditing = { ...editing };
+    delete newEditing[studentId];
+    setEditing(newEditing);
+
+    const newGrades = { ...updatedGrades };
+    delete newGrades[studentId];
+    setUpdatedGrades(newGrades);
+  };
+  const handleSaveGrade = async (studentId) => {
+    const newGrade = updatedGrades[studentId];
+    const oldGrade =
+      results.find((r) => r.studentId === studentId)?.totalGrade || 0;
+    const diff = parseFloat((newGrade - oldGrade).toFixed(2));
+
+    if (newGrade < 0 || newGrade > examDetails.grade) {
+      Swal.fire({
+        icon: "error",
+        title: "Invalid Grade",
+        text: `Grade must be between 0 and ${examDetails.grade}`,
+      });
+      return;
+    }
+
+    if (diff !== 0 && selectedAdjustmentQuestionId) {
+      try {
+        const ansRes = await fetch(
+          `https://localhost:7072/Answer/GetQuestionAns?questionId=${selectedAdjustmentQuestionId}&studentId=${studentId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("Token")}`,
+            },
+          }
+        );
+
+        if (!ansRes.ok) {
+          throw new Error("Failed to fetch current answer");
+        }
+
+        const currentAnswer = await ansRes.json();
+
+        const updatedAnswer = {
+          studentId,
+          questionId: selectedAdjustmentQuestionId,
+          studentAns: currentAnswer.studentAns || "",
+        };
+
+        const putRes = await fetch("https://localhost:7072/Answer/Put1", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("Token")}`,
+          },
+          body: JSON.stringify(updatedAnswer),
+        });
+
+        if (!putRes.ok) {
+          throw new Error("Failed to update answer");
+        }
+
+        setResults((prev) =>
+          prev.map((result) =>
+            result.studentId === studentId
+              ? { ...result, totalGrade: newGrade }
+              : result
+          )
+        );
+
+        Swal.fire({
+          icon: "success",
+          title: "Grade Updated",
+          text: "Student grade has been updated",
+          timer: 2000,
+        });
+      } catch (err) {
+        console.error("Error submitting adjustment:", err);
+        Swal.fire({
+          icon: "error",
+          title: "Submission Failed",
+          text: err.message,
+        });
+      }
+    }
+
+    setIsSaving((prev) => {
+      const newState = { ...prev };
+      delete newState[studentId];
+      return newState;
+    });
+
+    setEditing((prev) => {
+      const newState = { ...prev };
+      delete newState[studentId];
+      return newState;
+    });
+
+    setUpdatedGrades((prev) => {
+      const newState = { ...prev };
+      delete newState[studentId];
+      return newState;
+    });
+  };
+
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        const res = await fetch(
+          `https://localhost:7072/api/Question/GetAll?examId=${4}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("Token")}`,
+            },
+          }
+        );
+
+        if (!res.ok) throw new Error("Failed to fetch");
+
+        const data = await res.json();
+        setQuestions(data);
+      } catch (err) {
+        console.error("Failed to fetch questions", err);
+        Swal.fire({
+          icon: "error",
+          title: "Fetch Error",
+          text: "Could not load questions for this exam.",
+        });
+      }
+    };
+
+    if (selectedExamId) {
+      fetchQuestions();
+    }
+  }, [selectedExamId]);
 
   const fetchResults = async (examId) => {
     setLoadingResults(true);
     try {
-      const exam = exams.find((e) => e.id == examId);
-      if (!exam) throw new Error("Exam not found");
+      const examRes = await fetch(
+        `https://localhost:7072/Exams/GetStudentGradesForExam?examId=${examId}`
+      );
+      if (!examRes.ok) throw new Error("Failed to fetch exam details");
 
+      const examData = await examRes.json();
       setExamDetails({
-        grade: exam.grade,
-        passingScore: exam.passingScore,
-        description: exam.description,
+        grade: examData.grade,
+        passingScore: examData.passingScore,
+        description: examData.description,
       });
 
       const resultsRes = await fetch(
@@ -173,6 +316,7 @@ const CoursePage = () => {
       if (!resultsRes.ok) throw new Error("Failed to fetch results");
 
       const resultsData = await resultsRes.json();
+
       const enrichedResults = resultsData.map((result) => ({
         ...result,
         studentName: userCache[result.studentId] || "Unknown Student",
@@ -180,171 +324,18 @@ const CoursePage = () => {
 
       setResults(enrichedResults);
     } catch (err) {
+      console.error("Failed to fetch results", err);
+      setResults([]);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to load results. Please try again.",
+      });
     } finally {
       setLoadingResults(false);
     }
   };
-  const decodeAnswer = (storedAnswer, choicesCount, questionType) => {
-    if (!storedAnswer || storedAnswer === "No answer provided") {
-      return questionType === 1 ? [] : null;
-    }
 
-    try {
-      const decimal = parseInt(storedAnswer, 10);
-      if (isNaN(decimal)) return questionType === 1 ? [] : null;
-
-      let binary = decimal.toString(2).padStart(choicesCount, "0");
-
-      binary = binary.split("").reverse().join("");
-
-      if (questionType === 1) {
-        return binary
-          .split("")
-          .map((bit, index) => (bit === "1" ? index : null))
-          .filter((index) => index !== null);
-      }
-
-      return binary.indexOf("1");
-    } catch (error) {
-      console.error("Error decoding answer:", error);
-      return questionType === 1 ? [] : null;
-    }
-  };
-  const fetchStudentAnswers = async (studentId, examId) => {
-    try {
-      const questionsRes = await fetch(
-        `https://localhost:7072/api/Question/GetAll?examId=${examId}`
-      );
-
-      if (!questionsRes.ok) throw new Error("Failed to fetch exam questions");
-      const questions = await questionsRes.json();
-
-      const answers = [];
-      for (const question of questions) {
-        try {
-          const res = await fetch(
-            `https://localhost:7072/Answer/GetQuestionAns/0?questionId=${question.id}&studentId=${studentId}`
-          );
-
-          if (res.ok) {
-            const answer = await res.json();
-            answers.push(answer);
-          } else {
-            answers.push({
-              questionId: question.id,
-              studentId,
-              studentAns: "No answer provided",
-              grade: 0,
-              reasoning: "Student did not answer this question",
-            });
-          }
-        } catch (err) {
-          console.error(
-            `Error fetching answer for question ${question.id}:`,
-            err
-          );
-        }
-      }
-
-      setStudentAnswers(answers);
-    } catch (err) {
-      console.error("Error fetching student answers:", err);
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Failed to load student answers. Please try again.",
-      });
-    }
-  };
-  useEffect(() => {
-    if (selectedExamId) {
-      fetchResults(selectedExamId);
-    }
-  }, [selectedExamId]);
-  const fetchExamQuestions = async (examId) => {
-    try {
-      const res = await fetch(
-        `https://localhost:7072/api/Question/GetAll?examId=${examId}`
-      );
-      if (!res.ok) throw new Error("Failed to fetch exam questions");
-      const data = await res.json();
-      setExamQuestions(data);
-    } catch (err) {
-      console.error("Error fetching exam questions:", err);
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Failed to load exam questions. Please try again.",
-      });
-    }
-  };
-  const handleShowAnswers = async (studentId, studentName) => {
-    setCurrentStudentId(studentId);
-    setCurrentStudent(studentName);
-    setIsAnswersModalOpen(true);
-
-    await fetchExamQuestions(selectedExamId);
-    await fetchStudentAnswers(studentId, selectedExamId);
-  };
-  const saveGrades = async () => {
-    setIsSavingGrades(true);
-
-    try {
-      const updates = studentAnswers.map((ans) => ({
-        studentId: ans.studentId,
-        questionId: ans.questionId,
-        grade:
-          editedGrades[ans.questionId] !== undefined
-            ? parseFloat(editedGrades[ans.questionId])
-            : ans.grade,
-        reasoning: ans.reasoning,
-      }));
-
-      const res = await fetch(
-        "https://localhost:7072/Answer/UpdateGrades/UpdateGrades",
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(updates),
-        }
-      );
-
-      if (res.ok) {
-        const updatedAnswers = studentAnswers.map((ans) => {
-          const newGrade = editedGrades[ans.questionId];
-          return newGrade !== undefined
-            ? { ...ans, grade: parseFloat(newGrade) }
-            : ans;
-        });
-
-        setStudentAnswers(updatedAnswers);
-
-        const totalGrade = updatedAnswers.reduce(
-          (sum, ans) => sum + ans.grade,
-          0
-        );
-
-        setResults((prev) =>
-          prev.map((r) =>
-            r.studentId === currentStudentId ? { ...r, totalGrade } : r
-          )
-        );
-
-        showSuccessAlert("Grades saved successfully!");
-        setEditedGrades({});
-      } else {
-        const errorText = await res.text();
-        showErrorAlert(errorText || "Failed to save grades");
-      }
-    } catch (err) {
-      console.error("Error saving grades:", err);
-      showErrorAlert("Network error. Please try again.");
-    } finally {
-      setIsSavingGrades(false);
-    }
-  };
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -1064,7 +1055,7 @@ const CoursePage = () => {
         <div>
           <h3 className={styles.postTitle}>{post.title}</h3>
           <div className={styles.postMeta}>
-            <span className={styles.postAuthor}>Professor</span>
+            <span className={styles.postAuthor}>TA</span>
             <span className={styles.postDate}>
               {new Date(post.uploadedAt).toLocaleString()}
             </span>
@@ -1433,6 +1424,11 @@ const CoursePage = () => {
                         <div className={styles.resultsTableContainer}>
                           <div className={styles.examInfo}>
                             <h3>{examDetails.description}</h3>
+                            <p>
+                              <strong>Total Grade:</strong> {examDetails.grade}{" "}
+                              |<strong> Passing Score:</strong>{" "}
+                              {examDetails.passingScore}
+                            </p>
                           </div>
                           <table className={styles.resultsTable}>
                             <thead>
@@ -1440,51 +1436,118 @@ const CoursePage = () => {
                                 <th>Student</th>
                                 <th>Score</th>
                                 <th>Status</th>
-                                <th>Actions</th>
+                                <th>Actions</th> {/* New column */}
                               </tr>
                             </thead>
                             <tbody>
                               {results.map((result) => (
                                 <tr key={result.studentId}>
                                   <td>{result.studentName}</td>
-                                  <td>
-                                    <strong>
-                                      {result.totalGrade.toFixed(2)}
-                                    </strong>{" "}
-                                    / {examDetails.grade}
-                                  </td>
-                                  <td className={styles.statusCell}>
-                                    {result.totalGrade >=
-                                    examDetails.passingScore ? (
-                                      <span className={styles.passBadge}>
-                                        <FaCheck /> Passed
-                                      </span>
+                                  <td
+                                    className={
+                                      result.totalGrade >=
+                                      examDetails.passingScore
+                                        ? styles.pass
+                                        : styles.fail
+                                    }
+                                  >
+                                    {editing[result.studentId] ? (
+                                      <input
+                                        type="number"
+                                        value={updatedGrades[result.studentId]}
+                                        onChange={(e) =>
+                                          setUpdatedGrades({
+                                            ...updatedGrades,
+                                            [result.studentId]: parseFloat(
+                                              e.target.value
+                                            ),
+                                          })
+                                        }
+                                        min="0"
+                                        max={examDetails.grade}
+                                        step="0.01"
+                                        className={styles.gradeInput}
+                                      />
                                     ) : (
-                                      <span className={styles.failBadge}>
-                                        <FaTimes /> Failed
-                                      </span>
+                                      `${result.totalGrade.toFixed(2)} / ${
+                                        examDetails.grade
+                                      }`
                                     )}
                                   </td>
                                   <td>
-                                    <button
-                                      className={styles.showButton}
-                                      onClick={() =>
-                                        handleShowAnswers(
-                                          result.studentId,
-                                          result.studentName
-                                        )
-                                      }
-                                    >
-                                      <FaEye /> Show Answers
-                                    </button>
+                                    {result.totalGrade >=
+                                    examDetails.passingScore ? (
+                                      <span className={styles.passBadge}>
+                                        Passed
+                                      </span>
+                                    ) : (
+                                      <span className={styles.failBadge}>
+                                        Failed
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td className={styles.actionsCell}>
+                                    {editing[result.studentId] ? (
+                                      <>
+                                        <button
+                                          onClick={() =>
+                                            handleSaveGrade(result.studentId)
+                                          }
+                                          className={styles.saveButton}
+                                          disabled={isSaving[result.studentId]}
+                                        >
+                                          {isSaving[result.studentId] ? (
+                                            <FaSpinner
+                                              className={styles.spinner}
+                                            />
+                                          ) : (
+                                            "Save"
+                                          )}
+                                        </button>
+                                        <button
+                                          onClick={() =>
+                                            handleCancelEdit(result.studentId)
+                                          }
+                                          className={styles.cancelButton}
+                                        >
+                                          Cancel
+                                        </button>
+                                      </>
+                                    ) : (
+                                      <button
+                                        onClick={() =>
+                                          handleEditGrade(
+                                            result.studentId,
+                                            result.totalGrade
+                                          )
+                                        }
+                                        className={styles.editButton}
+                                      >
+                                        Edit
+                                      </button>
+                                    )}
                                   </td>
                                 </tr>
                               ))}
                             </tbody>
                           </table>
+
                           <div className={styles.resultsSummary}>
                             <p>
-                              <strong>Students:</strong> {results.length}
+                              <strong>Students:</strong> {results.length} |
+                              <strong> Passed:</strong>{" "}
+                              {
+                                results.filter(
+                                  (r) =>
+                                    r.totalGrade >= examDetails.passingScore
+                                ).length
+                              }{" "}
+                              |<strong> Failed:</strong>{" "}
+                              {
+                                results.filter(
+                                  (r) => r.totalGrade < examDetails.passingScore
+                                ).length
+                              }
                             </p>
                           </div>
                         </div>
@@ -1495,174 +1558,7 @@ const CoursePage = () => {
               )}
             </div>
           )}
-          {isAnswersModalOpen && (
-            <div
-              className={styles.modalOverlay}
-              onClick={() => setIsAnswersModalOpen(false)}
-            >
-              <div
-                className={styles.modalContent}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <button
-                  className={styles.closeButton}
-                  onClick={() => setIsAnswersModalOpen(false)}
-                >
-                  &times;
-                </button>
 
-                <h2 className={styles.modalTitle}>
-                  Exam Answers for {currentStudent}
-                </h2>
-
-                <div className={styles.answersContainer}>
-                  {examQuestions.length === 0 ? (
-                    <div className={styles.noAnswers}>
-                      <FaFileAlt size={48} />
-                      <p>No questions found for this exam</p>
-                    </div>
-                  ) : (
-                    <div className={styles.questionsList}>
-                      {examQuestions.map((question) => {
-                        const answer = studentAnswers.find(
-                          (ans) => ans.questionId === question.id
-                        );
-
-                        const decodedAnswer = decodeAnswer(
-                          answer?.studentAns,
-                          question.choices.length,
-                          question.type
-                        );
-
-                        return (
-                          <div
-                            key={question.id}
-                            className={styles.questionItem}
-                          >
-                            <div className={styles.questionHeader}>
-                              <h3>Question: {question.title}</h3>
-                              <span>Points: {question.grade}</span>
-                            </div>
-
-                            <div className={styles.questionContent}>
-                              {question.type === 0 || question.type === 1 ? (
-                                <div className={styles.studentAnswerSection}>
-                                  <h4>Student's Selected Answer:</h4>
-                                  <div className={styles.choicesList}>
-                                    {question.choices.map((choice, index) => {
-                                      const isSelected =
-                                        question.type === 1
-                                          ? decodedAnswer.includes(index)
-                                          : decodedAnswer === index;
-
-                                      return (
-                                        <div
-                                          key={choice.id}
-                                          className={styles.choiceItem}
-                                        >
-                                          <input
-                                            type={
-                                              question.type === 1
-                                                ? "checkbox"
-                                                : "radio"
-                                            }
-                                            checked={isSelected}
-                                            readOnly
-                                            className={styles.choiceInput}
-                                          />
-                                          <label className={styles.choiceLabel}>
-                                            {String.fromCharCode(65 + index)}.{" "}
-                                            {choice.choice}
-                                          </label>
-                                        </div>
-                                      );
-                                    })}
-                                  </div>
-                                </div>
-                              ) : question.type === 2 ? (
-                                <div className={styles.studentAnswerSection}>
-                                  <h4>Student's Written Answer:</h4>
-                                  <div
-                                    className={styles.writtenAnswerContainer}
-                                  >
-                                    {answer?.studentAns || "No answer provided"}
-                                  </div>
-                                </div>
-                              ) : question.type === 4 ? (
-                                <div className={styles.studentAnswerSection}>
-                                  <h4>Student's Assignment Submission:</h4>
-                                  {answer?.fileUrl ? (
-                                    <a
-                                      href={answer.fileUrl}
-                                      download={`assignment_${question.id}.pdf`}
-                                      className={styles.downloadLink}
-                                    >
-                                      <FaFilePdf className={styles.fileIcon} />
-                                      Download Assignment Submission
-                                    </a>
-                                  ) : (
-                                    <p>No assignment submitted</p>
-                                  )}
-                                </div>
-                              ) : null}
-
-                              <div className={styles.gradingInfo}>
-                                <div className={styles.gradeEditor}>
-                                  <span>
-                                    <strong>Grade:</strong>
-                                  </span>
-                                  <input
-                                    type="number"
-                                    min="0"
-                                    max={question.grade}
-                                    step="0.5"
-                                    value={
-                                      editedGrades[question.id] ??
-                                      answer?.grade ??
-                                      0
-                                    }
-                                    onChange={(e) =>
-                                      setEditedGrades((prev) => ({
-                                        ...prev,
-                                        [question.id]: e.target.value,
-                                      }))
-                                    }
-                                    className={styles.gradeInput}
-                                  />
-                                  <span> / {question.grade}</span>
-                                </div>
-
-                                {answer?.reasoning && (
-                                  <p className={styles.reasoning}>
-                                    <strong>Feedback:</strong>{" "}
-                                    {answer.reasoning}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  <div className={styles.modalActions}>
-                    <button
-                      onClick={saveGrades}
-                      className={styles.saveButton}
-                      disabled={isSavingGrades}
-                    >
-                      {isSavingGrades ? (
-                        <FaSpinner className={styles.spinner} />
-                      ) : (
-                        "Save Grades"
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
           <PreviewModal
             isPreviewModalOpen={isPreviewModalOpen}
             setIsPreviewModalOpen={setIsPreviewModalOpen}
@@ -1676,4 +1572,4 @@ const CoursePage = () => {
   );
 };
 
-export default CoursePage;
+export default CoursePageTA;

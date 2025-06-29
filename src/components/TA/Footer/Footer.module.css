@@ -1,0 +1,36 @@
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #003366, #0066cc, #3399ff);
+  color: white;
+  padding: 30px 50px;
+  border-radius: 10px 10px 0 0;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  background-color: white;
+  color: #0033cc;
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+.lightMode {
+  background-color: #f1f0f0;
+}
+
+.darkMode {
+  background: linear-gradient(135deg, #0a0a0a, #161616, #222222);
+}
+
+.lightText {
+  color: #fff;
+}
+
+.darkText {
+  color: #333;
+}

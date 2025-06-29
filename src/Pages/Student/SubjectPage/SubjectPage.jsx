@@ -492,7 +492,7 @@ const SubjectPage = () => {
   }, [activeTab, subject]);
 
   const examTypeLabel = (type) =>
-    ["Final", "Midterm", "Practical", "Quiz"][type] || "Unknown";
+    ["Final", "Midterm", "Practical", "Quiz", "Assigment"][type];
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -952,7 +952,7 @@ const ExamGradeItem = ({ exam, studentId }) => {
   }, [exam.id, studentId]);
 
   const examTypeLabel = (type) =>
-    ["Final", "Midterm", "Practical", "Quiz"][type] || "Unknown";
+    ["Final", "Midterm", "Practical", "Quiz", "Assignment"][type];
 
   return (
     <li className={styles.examItem}>

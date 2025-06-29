@@ -404,6 +404,43 @@
   color: #dc2626;
   font-weight: 500;
 }
+.uploadSection {
+  margin-top: 10px;
+}
+
+.fileInput {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+.uploadSection {
+  margin-top: 1rem;
+}
+
+.uploadLabel {
+  display: inline-block;
+  background-color: #007bff;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background-color 0.3s ease;
+}
+
+.uploadLabel:hover {
+  background-color: #0056b3;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.selectedFile {
+  margin-top: 0.5rem;
+  color: #333;
+  font-size: 0.9rem;
+}
 
 .submitButton {
   background: linear-gradient(135deg, #059669 0%, #10b981 100%);
