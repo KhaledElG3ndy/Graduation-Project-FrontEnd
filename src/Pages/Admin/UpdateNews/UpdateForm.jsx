@@ -10,6 +10,8 @@ const UpdateForm = () => {
   const [image, setImage] = useState(null);
   const [existingImageBase64, setExistingImageBase64] = useState("");
   const [existingImageFile, setExistingImageFile] = useState(null);
+  const [title, setTitle] = useState("");
+
   const navigate = useNavigate();
   useEffect(() => {
     const token = localStorage.getItem("Token");
@@ -43,9 +45,15 @@ const UpdateForm = () => {
   useEffect(() => {
     const fetchNews = async () => {
       try {
-        const res = await fetch(`https://localhost:7072/api/News/id?Id=${id}`);
+        const res = await fetch(`https://localhost:7072/api/News/id?Id=${id}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Token")}`,
+          },
+        });
         const data = await res.json();
         setContent(data.content);
+        setTitle(data.title);
+
         setExistingImageBase64(`data:image/jpeg;base64,${data.image}`);
         const blob = await fetch(`data:image/jpeg;base64,${data.image}`).then(
           (r) => r.blob()
@@ -68,10 +76,16 @@ const UpdateForm = () => {
     formData.append("Id", id);
     formData.append("Content", content || "");
     formData.append("Image", image || existingImageFile);
+    formData.append("Title", title);
 
     try {
+      const token = localStorage.getItem("Token");
+
       const res = await fetch("https://localhost:7072/api/News", {
         method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         body: formData,
       });
 
@@ -94,6 +108,14 @@ const UpdateForm = () => {
       <div className={styles.container}>
         <form onSubmit={handleSubmit} className={styles.formWrapper}>
           <h1 className={styles.title}>Update News</h1>
+          <input
+            type="text"
+            placeholder="Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className={styles.input}
+          />
+
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}

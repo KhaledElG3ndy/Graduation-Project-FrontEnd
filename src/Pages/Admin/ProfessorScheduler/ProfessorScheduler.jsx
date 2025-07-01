@@ -218,34 +218,6 @@ const ProfessorScheduler = () => {
               )}
             </select>
           </div>
-
-          <div className={styles.fileUpload}>
-            <div className={styles.cardHeader}>
-              <div className={styles.uploadIconWrapper}>
-                <FaUpload className={styles.cardIcon} />
-              </div>
-              <h3 className={styles.cardTitle}>Import Schedule (Excel)</h3>
-            </div>
-            <div className={styles.uploadSection}>
-              <input
-                id="fileInput"
-                type="file"
-                accept=".xlsx,.xls"
-                onChange={handleFileUpload}
-                className={styles.fileInput}
-              />
-              <button
-                onClick={handleUploadExcel}
-                disabled={!uploadFile}
-                className={styles.uploadBtn}
-              >
-                <FaUpload className={styles.uploadIcon} />
-                {uploadFile
-                  ? `Upload ${uploadFile.name}`
-                  : "Select a file first"}
-              </button>
-            </div>
-          </div>
         </div>
 
         <div className={styles.scheduleSection}>

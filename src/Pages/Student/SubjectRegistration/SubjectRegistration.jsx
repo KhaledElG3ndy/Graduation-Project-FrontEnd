@@ -39,7 +39,11 @@ const SubjectRegistration = () => {
       const availableCourses = await Promise.all(coursePromises);
 
       const subjectsRes = await fetch(
-        "https://localhost:7072/Subjects/GetSubjects"
+        "https://localhost:7072/Subjects/GetSubjects", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },  
+        }
       );
       const subjectsData = await subjectsRes.json();
 
@@ -53,13 +57,12 @@ const SubjectRegistration = () => {
   };
 
   useEffect(() => {
-   
     fetchAvailableCourses();
   }, []);
-  
 
   const getSubjectName = (subjectId) => {
     const subject = subjects.find((s) => s.id === subjectId);
+    console.log({ subjectId, subject });
     return subject ? subject.name : "Unknown Subject";
   };
 
@@ -93,7 +96,7 @@ const SubjectRegistration = () => {
       }
 
       alert(`Successfully registered for ${courseName}!`);
-      await fetchAvailableCourses(); 
+      await fetchAvailableCourses();
     } catch (err) {
       console.error("Registration failed:", err.message);
       alert(`Registration failed for ${courseName}:\n${err.message}`);
@@ -164,14 +167,15 @@ const SubjectRegistration = () => {
         ) : (
           <div className={styles.coursesGrid}>
             {courses.map((course) => {
-              const subjectName = getSubjectName(course.subjectId);
-              const isRegistering = registering === course.id;
+              console.log({ course });
+              const subjectName = course.subjectName;
+              const isRegistering = registering === course.courseId;
 
               return (
                 <div key={course.id} className={styles.courseCard}>
                   <div className={styles.cardHeader}>
                     <div className={styles.subjectIcon}>
-                      {subjectName.charAt(0).toUpperCase()}
+                      {course.subjectName.charAt(0).toUpperCase()}
                     </div>
                     <div className={styles.courseInfo}>
                       <h3 className={styles.subjectName}>{subjectName}</h3>
@@ -206,14 +210,18 @@ const SubjectRegistration = () => {
                       </div>
                       <div className={styles.detailItem}>
                         <span className={styles.detailLabel}>Course ID:</span>
-                        <span className={styles.detailValue}>#{course.id}</span>
+                        <span className={styles.detailValue}>
+                          #{course.courseId}
+                        </span>
                       </div>
                     </div>
                   </div>
 
                   <div className={styles.cardFooter}>
                     <button
-                      onClick={() => handleRegister(course.id, subjectName)}
+                      onClick={() =>
+                        handleRegister(course.courseId, subjectName)
+                      }
                       disabled={isRegistering}
                       className={`${styles.registerButton} ${
                         isRegistering ? styles.registering : ""

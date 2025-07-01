@@ -108,9 +108,6 @@ const News = () => {
         <div className={styles.container}>
           <div className={styles.headerSection}>
             <h1 className={styles.heading}>Latest News & Updates</h1>
-            <p className={styles.subheading}>
-              Stay informed with the latest developments and announcements
-            </p>
           </div>
 
           {loading ? (
@@ -164,9 +161,6 @@ const News = () => {
 
                     <div className={styles.cardContent}>
                       <div className={styles.cardHeader}>
-                        <h2 className={styles.title}>
-                          {news.title || ` News Item #${news.id}`}
-                        </h2>
                         <time
                           className={styles.date}
                           dateTime={news.publishedDate}

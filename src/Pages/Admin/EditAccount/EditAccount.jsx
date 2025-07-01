@@ -12,6 +12,7 @@ import {
   FaFemale,
 } from "react-icons/fa";
 import Swal from "sweetalert2";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 const EditAccount = () => {
   const { selectedAccount } = useContext(AccountContext);
@@ -21,6 +22,8 @@ const EditAccount = () => {
   const [year, setYear] = useState("");
   const [gender, setGender] = useState(1);
   const [departmentId, setDepartmentId] = useState("");
+  const [departments, setDepartments] = useState([]);
+
   const navigate = useNavigate();
   useEffect(() => {
     const token = localStorage.getItem("Token");
@@ -52,19 +55,38 @@ const EditAccount = () => {
     }
   }, [navigate]);
   useEffect(() => {
-    if (selectedAccount) {
+    if (selectedAccount && departments.length > 0) {
       setName(selectedAccount.name);
       setPhoneNumber(selectedAccount.phoneNumber);
       setNationalId(selectedAccount.nationalId);
       setYear(selectedAccount.year);
       setGender(selectedAccount.gender === 0 ? 0 : 1);
-      setDepartmentId(selectedAccount.departmentId);
+      const dept = departments.find(
+        (d) => d.id === selectedAccount.departmentId
+      );
+      if (dept) setDepartmentId(dept.name); // Store department **name**
     }
-  }, [selectedAccount]);
+  }, [selectedAccount, departments]);
+
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const res = await axios.get(
+          "https://localhost:7072/Departments/GetDepartments"
+        );
+        setDepartments(res.data);
+      } catch (error) {
+        console.error("Failed to fetch departments", error);
+      }
+    };
+
+    fetchDepartments();
+  }, []);
 
   const handleEdit = async () => {
-    const api_url = "https://localhost:7072/api/Account";
-    let role = selectedAccount.Type === "Staff" ? 1 : 0;
+    const role = selectedAccount.Type === "Staff" ? 1 : 0;
+    const selectedDept = departments.find((d) => d.name === departmentId);
+    const deptId = selectedDept ? selectedDept.id : 1;
 
     const formData = new FormData();
     formData.append("FirstName", selectedAccount.firstName);
@@ -74,39 +96,52 @@ const EditAccount = () => {
     formData.append("NationalId", nationalId);
     formData.append("Year", year);
     formData.append("Gender", gender === 1);
-    formData.append("DepartmentId", departmentId);
+    formData.append("DepartmentId", deptId.toString());
 
     try {
-      const response = await fetch(
-        `${api_url}/Update?role=${role}&id=${selectedAccount.id}`,
+      const res = await axios.put(
+        `https://localhost:7072/api/Account/Update?role=${role}&id=${selectedAccount.id}`,
+        formData,
         {
-          method: "PUT",
-          body: formData,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Token")}`,
+          },
         }
       );
 
-      const responseText = await response.text();
+      const successMessage =
+        typeof res.data === "string"
+          ? res.data
+          : "Account updated successfully";
 
-      if (!response.ok) {
-        throw new Error(responseText);
+      Swal.fire({
+        icon: "success",
+        title: "Success",
+        text: successMessage,
+      });
+    } catch (error) {
+      let errorMessage = "Update failed. Please try again.";
+
+      if (
+        error.response &&
+        error.response.status === 400 &&
+        typeof error.response.data === "object"
+      ) {
+        const errors = error.response.data.errors;
+        if (errors) {
+          errorMessage = Object.values(errors).flat().join("\n");
+        } else if (typeof error.response.data === "string") {
+          errorMessage = error.response.data;
+        }
       }
 
-      const result = JSON.parse(responseText);
       Swal.fire({
-        title: "Success!",
-        text: "Account updated successfully!",
-        icon: "success",
-        confirmButtonColor: "#3085d6",
-        confirmButtonText: "OK",
-      });
-    } catch (err) {
-      Swal.fire({
-        title: "Error!",
-        text: "Error updating account: " + err.message,
         icon: "error",
-        confirmButtonColor: "#d33",
-        confirmButtonText: "Try Again",
+        title: "Update Failed",
+        text: errorMessage,
       });
+
+      console.error("Error updating account:", error);
     }
   };
 
@@ -165,6 +200,21 @@ const EditAccount = () => {
             >
               <option value={1}>Male</option>
               <option value={0}>Female</option>
+            </select>
+          </div>
+          <div className={styles.inputWithIcon}>
+            <FaEnvelope className={styles.icon} />
+            <select
+              className={styles.inputFullWidth}
+              value={departmentId}
+              onChange={(e) => setDepartmentId(e.target.value)}
+            >
+              <option value="">Select Department</option>
+              {departments.map((dept) => (
+                <option key={dept.id} value={dept.name}>
+                  {dept.name}
+                </option>
+              ))}
             </select>
           </div>
 

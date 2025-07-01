@@ -96,6 +96,9 @@ const CreateChannel = () => {
         {
           method: "POST",
           body: formData,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Token")}`,
+          },
         }
       );
 

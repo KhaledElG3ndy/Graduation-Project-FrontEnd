@@ -60,7 +60,6 @@ const CreateStudentAccount = () => {
     formData.append("NationalId", nationalId);
     formData.append("Gender", gender === "Male" ? "true" : "false");
 
-
     if (role === "student") {
       formData.append("Year", year.toString());
       formData.append("DepartmentId", parseInt(departmentId || "1"));
@@ -72,7 +71,6 @@ const CreateStudentAccount = () => {
     const roleMap = {
       student: 3,
       professor: 1,
-      ta: 2,
     };
 
     try {
@@ -110,62 +108,81 @@ const CreateStudentAccount = () => {
       setDepartmentId("");
       setRole("student");
     } catch (error) {
+      let errorMessage = "Creation failed. Please try again.";
+
+      if (
+        error.response &&
+        error.response.status === 400 &&
+        typeof error.response.data === "string"
+      ) {
+        errorMessage = error.response.data;
+      }
+
       Swal.fire({
         icon: "error",
         title: "Creation Failed",
-        text: `${error.message}`,
+        text: errorMessage,
       });
+
       console.error("Error creating account:", error);
     }
   };
-
   const handleExcelUpload = async () => {
     if (!excelFile) {
       Swal.fire({
         icon: "warning",
         title: "No File Selected",
-        text: "Please select a file.",
+        text: "Please upload an Excel file before submitting.",
       });
       return;
     }
 
     const formData = new FormData();
-    formData.append("excelFile", excelFile);
-
-    const excelRoleMap = {
-      student: 0,
-      professor: 1,
-      ta: 2,
-    };
-
-    formData.append("role", excelRoleMap[excelRole]);
+    formData.append("file", excelFile);
 
     try {
       Swal.fire({
-        title: "Uploading file...",
+        title: "Uploading...",
         allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        },
+        didOpen: () => Swal.showLoading(),
       });
 
-      await axios.post("https://localhost:7072/api/Account/import", formData);
+      await axios.post(
+        "https://localhost:7072/api/Account/AddByExcel",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Token")}`,
+          },
+        }
+      );
 
       Swal.fire({
         icon: "success",
-        title: "Import Successful",
-        text: "Excel data imported successfully!",
+        title: "Success",
+        text: "Accounts uploaded successfully!",
       });
 
       setExcelFile(null);
-      setExcelRole("student");
+      document.getElementById("excelInput").value = ""; 
     } catch (error) {
+      let errorMessage = "Upload failed. Please try again.";
+
+      if (
+        error.response &&
+        error.response.status === 400 &&
+        typeof error.response.data === "string"
+      ) {
+        errorMessage = error.response.data;
+      }
+
       Swal.fire({
         icon: "error",
-        title: "Import Failed",
-        text: "Failed to import Excel data.",
+        title: "Upload Failed",
+        text: errorMessage,
       });
-      console.error("Error importing Excel file:", error);
+
+      console.error("Error uploading Excel:", error);
     }
   };
 
@@ -198,16 +215,7 @@ const CreateStudentAccount = () => {
               checked={role === "professor"}
               onChange={() => setRole("professor")}
             />
-            Professor
-          </label>
-          <label>
-            <input
-              type="radio"
-              value="ta"
-              checked={role === "ta"}
-              onChange={() => setRole("ta")}
-            />
-            TA
+            Professor / TA
           </label>
         </div>
 

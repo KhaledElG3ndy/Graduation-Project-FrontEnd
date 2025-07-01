@@ -7,6 +7,8 @@ import {
   FiMessageCircle,
   FiBarChart2,
 } from "react-icons/fi";
+import { SiGooglemeet } from "react-icons/si";
+
 import styles from "./CoursePage.module.css";
 
 const Sidebar = ({ subjectName, activeTab, handleTabChange }) => {
@@ -62,6 +64,14 @@ const Sidebar = ({ subjectName, activeTab, handleTabChange }) => {
       >
         <FiMessageCircle className={styles.buttonIcon} />
         Chat
+      </button>
+
+      <button
+        onClick={() => handleTabChange("Meetings")}
+        className={activeTab === "Meetings" ? styles.active : ""}
+      >
+        <SiGooglemeet className={styles.buttonIcon} />
+        Meetings
       </button>
     </aside>
   );

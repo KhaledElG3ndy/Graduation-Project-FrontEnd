@@ -100,7 +100,12 @@ export default function EmailCRUD() {
     if (!searchTerm.trim()) return;
     try {
       const response = await fetch(
-        `${API_URL}/ByEmail?email=${searchTerm.toLowerCase()}`
+        `${API_URL}/ByEmail?email=${searchTerm.toLowerCase()}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Token")}`,
+          },
+        }
       );
 
       if (!response.ok) {
@@ -123,6 +128,7 @@ export default function EmailCRUD() {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("Token")}`,
         },
         body: JSON.stringify(account),
       });
@@ -152,6 +158,9 @@ export default function EmailCRUD() {
     try {
       const response = await fetch(`${API_URL}/Delete?role=${role}&id=${id}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("Token")}`,
+        },
       });
 
       if (!response.ok) throw new Error("Failed to delete");
@@ -159,12 +168,20 @@ export default function EmailCRUD() {
       setAccounts((prevAccounts) =>
         prevAccounts.filter((acc) => acc.id !== id)
       );
-      Swal.fire("Deleted!", "The account has been deleted.", "success");
+
+      // ✅ Show confirmation after state update
+      Swal.fire({
+        icon: "success",
+        title: "Deleted!",
+        text: "The account has been successfully deleted.",
+        confirmButtonColor: "#3085d6",
+      });
     } catch (error) {
       Swal.fire("Error!", "Failed to delete the account.", "error");
       console.error("Delete Error:", error);
     }
   };
+  
 
   const handleToggle = () => {
     setSelectedRole((prevRole) =>

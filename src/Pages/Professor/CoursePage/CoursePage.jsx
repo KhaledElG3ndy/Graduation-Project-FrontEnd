@@ -22,9 +22,12 @@ import {
   FaTimes,
   FaEye,
   FaCheck,
+  FaEdit,
+  FaTrash,
 } from "react-icons/fa";
 import * as signalR from "@microsoft/signalr";
 import { FiSend, FiClipboard, FiBarChart2 } from "react-icons/fi";
+import MeetingProfessor from "../../../components/MeetingProfessor";
 
 import styles from "./CoursePage.module.css";
 import Header from "../../../components/Professor/Header/Header";
@@ -69,6 +72,13 @@ const CoursePage = () => {
   const [previewType, setPreviewType] = useState("");
   const [previewFileName, setPreviewFileName] = useState("");
   const navigate = useNavigate();
+  const [editingPostId, setEditingPostId] = useState(null);
+  const [editForm, setEditForm] = useState({
+    id: 0,
+    title: "",
+    content: "",
+    image: null,
+  });
 
   const [connection, setConnection] = useState(null);
   const [chatMessages, setChatMessages] = useState([]);
@@ -95,10 +105,11 @@ const CoursePage = () => {
   const [examQuestions, setExamQuestions] = useState([]);
   const [isAnswersModalOpen, setIsAnswersModalOpen] = useState(false);
   const [currentStudent, setCurrentStudent] = useState(null);
+  const [staffId, setStaffId] = useState(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("Token");
-    if (!token) {
+    const Token = localStorage.getItem("Token");
+    if (!Token) {
       navigate("/login/signin");
       return;
     }
@@ -107,12 +118,12 @@ const CoursePage = () => {
       try {
         return JSON.parse(atob(token.split(".")[1]));
       } catch (e) {
-        console.error("Invalid token", e);
+        console.error("Invalid Token", e);
         return null;
       }
     };
 
-    const payload = parseJwt(token);
+    const payload = parseJwt(Token);
     if (!payload) {
       navigate("/login/signin");
       return;
@@ -120,11 +131,126 @@ const CoursePage = () => {
 
     const role =
       payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+    const staffId =
+      payload[
+        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
+      ];
 
     if (role !== "Professor") {
       navigate("/login/signin");
+      return;
     }
+
+    setStaffId(staffId);
   }, [navigate]);
+  const handleDeletePost = async (postId) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const res = await fetch(`https://localhost:7072/api/Post/${postId}`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Token")}`,
+          },
+        });
+
+        if (res.ok) {
+          showSuccessAlert("Post deleted successfully!");
+          fetchPosts();
+        } else {
+          const errorText = await res.text();
+          showErrorAlert(errorText || "Failed to delete post.");
+        }
+      } catch (err) {
+        console.error(err);
+        showErrorAlert("Network error. Please try again.");
+      }
+    }
+  };
+  const handleEditPost = (post) => {
+    setEditingPostId(post.id);
+    setEditForm({
+      id: post.id,
+      title: post.title,
+      content: post.content,
+      image: null,
+    });
+  };
+  const handleEditInputChange = (e) => {
+    setEditForm({ ...editForm, [e.target.name]: e.target.value });
+  };
+
+  const handleEditFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const allowedTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/gif",
+      ];
+      if (!allowedTypes.includes(file.type)) {
+        showErrorAlert("Please select a valid image file (JPEG, PNG, or GIF)");
+        e.target.value = "";
+        return;
+      }
+    }
+    setEditForm({ ...editForm, image: file });
+  };
+
+  const handleUpdatePost = async (e) => {
+    e.preventDefault();
+
+    if (!editForm.title.trim() || !editForm.content.trim()) {
+      showErrorAlert("Please fill all required fields");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const formData = new FormData();
+    formData.append("id", editForm.id.toString());
+    formData.append("Title", editForm.title);
+    formData.append("Content", editForm.content);
+
+    if (editForm.image) {
+      formData.append("Image", editForm.image);
+    }
+
+    formData.append("CourseId", id);
+    formData.append("StaffId", staffId);
+
+    try {
+      const res = await fetch("https://localhost:7072/api/Post", {
+        method: "PUT",
+        body: formData,
+      });
+
+      if (res.ok) {
+        showSuccessAlert("Post updated successfully!");
+        setEditingPostId(null);
+        setEditForm({ id: 0, title: "", content: "", image: null });
+        fetchPosts();
+      } else {
+        const errorText = await res.text();
+        showErrorAlert(errorText || "Failed to update post.");
+      }
+    } catch (err) {
+      console.error(err);
+      showErrorAlert("Network error. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     if (activeTab === "results" && !exams.length) {
@@ -136,7 +262,12 @@ const CoursePage = () => {
     setLoadingExams(true);
     try {
       const res = await fetch(
-        `https://localhost:7072/Exams/GetCourseExams/${id}`
+        `https://localhost:7072/Exams/GetCourseExams/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Token")}`,
+          },
+        }
       );
       if (!res.ok) throw new Error("Failed to fetch exams");
 
@@ -168,7 +299,12 @@ const CoursePage = () => {
       });
 
       const resultsRes = await fetch(
-        `https://localhost:7072/Exams/GetStudentGradesForExam?examId=${examId}`
+        `https://localhost:7072/Exams/GetStudentGradesForExam?examId=${examId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Token")}`,
+          },
+        }
       );
       if (!resultsRes.ok) throw new Error("Failed to fetch results");
 
@@ -290,57 +426,55 @@ const CoursePage = () => {
     setIsSavingGrades(true);
 
     try {
-      const updates = studentAnswers.map((ans) => ({
-        studentId: ans.studentId,
-        questionId: ans.questionId,
-        grade:
-          editedGrades[ans.questionId] !== undefined
-            ? parseFloat(editedGrades[ans.questionId])
-            : ans.grade,
-        reasoning: ans.reasoning,
-      }));
-
-      const res = await fetch(
-        "https://localhost:7072/Answer/UpdateGrades/UpdateGrades",
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(updates),
+      const updatePromises = Object.entries(editedGrades).map(
+        ([questionId, grade]) => {
+          const url = `https://localhost:7072/Answer/EditQuestionAnsGrade?studentId=${currentStudentId}&questionId=${questionId}&grade=${grade}`;
+          return fetch(url, {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("Token")}`,
+            },
+          }).then((res) => {
+            if (res.status === 204) {
+              return;
+            } else if (res.status === 404) {
+              throw new Error(`No answer found for question ${questionId}`);
+            } else {
+              throw new Error(
+                `Failed to update grade for question ${questionId}: ${res.statusText}`
+              );
+            }
+          });
         }
       );
 
-      if (res.ok) {
-        const updatedAnswers = studentAnswers.map((ans) => {
-          const newGrade = editedGrades[ans.questionId];
-          return newGrade !== undefined
-            ? { ...ans, grade: parseFloat(newGrade) }
-            : ans;
-        });
+      await Promise.all(updatePromises);
 
-        setStudentAnswers(updatedAnswers);
+      // All updates successful
+      const updatedAnswers = studentAnswers.map((ans) => {
+        const newGrade = editedGrades[ans.questionId];
+        return newGrade !== undefined
+          ? { ...ans, grade: parseFloat(newGrade) }
+          : ans;
+      });
+      setStudentAnswers(updatedAnswers);
 
-        const totalGrade = updatedAnswers.reduce(
-          (sum, ans) => sum + ans.grade,
-          0
-        );
+      // Update total grade in results
+      const totalGrade = updatedAnswers.reduce(
+        (sum, ans) => sum + ans.grade,
+        0
+      );
+      setResults((prev) =>
+        prev.map((r) =>
+          r.studentId === currentStudentId ? { ...r, totalGrade } : r
+        )
+      );
 
-        setResults((prev) =>
-          prev.map((r) =>
-            r.studentId === currentStudentId ? { ...r, totalGrade } : r
-          )
-        );
-
-        showSuccessAlert("Grades saved successfully!");
-        setEditedGrades({});
-      } else {
-        const errorText = await res.text();
-        showErrorAlert(errorText || "Failed to save grades");
-      }
+      showSuccessAlert("Grades updated successfully!");
+      setEditedGrades({});
     } catch (err) {
-      console.error("Error saving grades:", err);
-      showErrorAlert("Network error. Please try again.");
+      console.error("Error updating grades:", err);
+      showErrorAlert(err.message || "Failed to update grades");
     } finally {
       setIsSavingGrades(false);
     }
@@ -349,12 +483,22 @@ const CoursePage = () => {
     const fetchUsers = async () => {
       try {
         const profRes = await fetch(
-          "https://localhost:7072/api/Account/GetAllByRole?role=2"
+          "https://localhost:7072/api/Account/GetAllByRole?role=2",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("Token")}`,
+            },
+          }
         );
         const profData = await profRes.json();
 
         const studentRes = await fetch(
-          "https://localhost:7072/api/Account/GetAllByRole?role=3"
+          "https://localhost:7072/api/Account/GetAllByRole?role=3",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("Token")}`,
+            },
+          }
         );
         const studentData = await studentRes.json();
 
@@ -381,19 +525,29 @@ const CoursePage = () => {
     const fetchCourse = async () => {
       try {
         const res = await fetch(
-          `https://localhost:7072/Courses/GetCourse/${id}`
+          `https://localhost:7072/Courses/GetCourse/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("Token")}`,
+            },
+          }
         );
         const data = await res.json();
         setCourse(data);
 
         const subjectRes = await fetch(
-          "https://localhost:7072/Subjects/GetSubjects"
+          "https://localhost:7072/Subjects/GetSubjects",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("Token")}`,
+            },
+          }
         );
         const subjects = await subjectRes.json();
-        const matchedSubject = subjects.find((s) => s.id === data.subjectId);
-        setSubjectName(
-          matchedSubject ? matchedSubject.name : "Unknown Subject"
-        );
+        console.log("Fetched subjects:", data);
+        const matchedSubject = subjects.find((s) => s.id === data.courseId?.id);
+        console.log("Matched subject:", matchedSubject);
+        setSubjectName(data.subjectName);
       } catch (err) {
         console.error("Failed to fetch course or subject", err);
         setSubjectName("Error loading subject");
@@ -406,9 +560,15 @@ const CoursePage = () => {
   const fetchPosts = async () => {
     try {
       const res = await fetch(
-        `https://localhost:7072/api/Post/getAllPosts/${id}`
+        `https://localhost:7072/api/Post/getAllPosts/1?courseId=${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Token")}`,
+          },
+        }
       );
       const data = await res.json();
+      console.log("Fetched posts:", data);
       setPosts(Array.isArray(data) ? data : [data]);
     } catch (err) {
       console.error("Failed to fetch posts", err);
@@ -419,7 +579,12 @@ const CoursePage = () => {
   const fetchComments = async (postId) => {
     try {
       const res = await fetch(
-        `https://localhost:7072/api/Post/getAllComments?postId=${postId}`
+        `https://localhost:7072/api/Post/getAllComments?postId=${postId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Token")}`,
+          },
+        }
       );
       const data = await res.json();
       setComments((prev) => ({
@@ -442,10 +607,10 @@ const CoursePage = () => {
   }, [activeTab, connection, messagesLoaded, connected]);
 
   useEffect(() => {
-    const token = localStorage.getItem("Token");
-    if (!token || !id) return;
+    const Token = localStorage.getItem("Token");
+    if (!Token || !id) return;
 
-    const payload = JSON.parse(atob(token.split(".")[1]));
+    const payload = JSON.parse(atob(Token.split(".")[1]));
     const userEmail =
       payload[
         "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
@@ -453,7 +618,14 @@ const CoursePage = () => {
 
     const newConnection = new signalR.HubConnectionBuilder()
       .withUrl(
-        `https://localhost:7072/chathub?userId=${encodeURIComponent(userEmail)}`
+        `https://localhost:7072/chathub?userId=${encodeURIComponent(
+          userEmail
+        )}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Token")}`,
+          },
+        }
       )
       .configureLogging(signalR.LogLevel.Information)
       .build();
@@ -539,10 +711,10 @@ const CoursePage = () => {
   };
 
   const getUserFromToken = () => {
-    const token = localStorage.getItem("Token");
-    if (!token) return null;
+    const Token = localStorage.getItem("Token");
+    if (!Token) return null;
     try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
+      const payload = JSON.parse(atob(Token.split(".")[1]));
       return {
         id: parseInt(
           payload[
@@ -558,7 +730,7 @@ const CoursePage = () => {
         ],
       };
     } catch (err) {
-      console.error("Invalid token:", err);
+      console.error("Invalid Token:", err);
       return null;
     }
   };
@@ -634,13 +806,13 @@ const CoursePage = () => {
 
   const handleDeleteFile = async (fileId) => {
     try {
-      const token = localStorage.getItem("Token");
+      const Token = localStorage.getItem("Token");
       const response = await fetch(
         `https://localhost:7072/api/Materials/DeleteFile/${fileId}`,
         {
           method: "DELETE",
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${Token}`,
           },
         }
       );
@@ -675,7 +847,12 @@ const CoursePage = () => {
   const fetchMaterials = async () => {
     try {
       const res = await fetch(
-        `https://localhost:7072/api/Materials/getAllMaterials/${id}?p=1`
+        `https://localhost:7072/api/Materials/getAllMaterials/${id}?p=1`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Token")}`,
+          },
+        }
       );
       const data = await res.json();
       setMaterials(
@@ -741,11 +918,6 @@ const CoursePage = () => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        showErrorAlert("File size must be less than 5MB");
-        e.target.value = "";
-        return;
-      }
       const allowedTypes = [
         "image/jpeg",
         "image/jpg",
@@ -780,12 +952,15 @@ const CoursePage = () => {
       formData.append("Image", postForm.image);
     }
 
-    formData.append("CourseId", course.id.toString());
+    formData.append("CourseId", course.courseId);
     formData.append("StaffId", "1");
 
     try {
       const res = await fetch("https://localhost:7072/api/Post", {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("Token")}`,
+        },
         body: formData,
       });
 
@@ -855,6 +1030,9 @@ const CoursePage = () => {
         "https://localhost:7072/api/Post/addComment",
         {
           method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Token")}`,
+          },
           body: formData,
         }
       );
@@ -971,7 +1149,7 @@ const CoursePage = () => {
       formData.append("Id", 0);
       formData.append("Name", materialForm.title);
       formData.append("StaffId", "1");
-      formData.append("CourseId", course.id);
+      formData.append("CourseId", id);
 
       const files = materialForm.files;
       for (let i = 0; i < files.length; i++) {
@@ -980,6 +1158,9 @@ const CoursePage = () => {
 
       const response = await fetch("https://localhost:7072/api/Materials", {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("Token")}`,
+        },
         body: formData,
       });
 
@@ -1059,110 +1240,209 @@ const CoursePage = () => {
 
   const PostItem = ({ post }) => (
     <div className={styles.postCard}>
-      <div className={styles.postHeader}>
-        <FaUserCircle size={24} className={styles.postAvatar} />
-        <div>
-          <h3 className={styles.postTitle}>{post.title}</h3>
-          <div className={styles.postMeta}>
-            <span className={styles.postAuthor}>Professor</span>
-            <span className={styles.postDate}>
-              {new Date(post.uploadedAt).toLocaleString()}
-            </span>
+      {editingPostId === post.id ? (
+        <form onSubmit={handleUpdatePost} className={styles.editForm}>
+          <div className={styles.formGroup}>
+            <input
+              type="text"
+              name="title"
+              value={editForm.title}
+              onChange={handleEditInputChange}
+              placeholder="Title"
+              className={styles.formInput}
+              required
+            />
           </div>
-        </div>
-      </div>
-
-      <div className={styles.postContent}>
-        <p>{post.content}</p>
-        {post.image && (
-          <img
-            src={`data:image/jpeg;base64,${post.image}`}
-            alt={post.title}
-            className={styles.postImage}
-          />
-        )}
-      </div>
-
-      <div className={styles.postActions}>
-        <button
-          onClick={() => toggleComments(post.id)}
-          className={`${styles.commentsToggle} ${
-            expandedComments[post.id] ? styles.expanded : ""
-          }`}
-        >
-          <FaCommentAlt className={styles.buttonIcon} />
-          <span>{comments[post.id]?.length || 0} Comments</span>
-          <FaChevronDown
-            className={`${styles.chevronIcon} ${
-              expandedComments[post.id] ? styles.rotated : ""
-            }`}
-          />
-        </button>
-      </div>
-
-      {expandedComments[post.id] && (
-        <div className={styles.commentsSection}>
-          <div className={styles.commentsContainer}>
-            {comments[post.id]?.length > 0 ? (
-              <div className={styles.commentsList}>
-                {comments[post.id].map((comment) => (
-                  <div key={comment.id} className={styles.commentItem}>
-                    <div className={styles.commentHeader}>
-                      <FaUserCircle className={styles.commentAvatar} />
-                      <div>
-                        <strong className={styles.commentAuthor}>
-                          {userCache[comment.commenterId] || "Unknown User"}
-                        </strong>
-                        <span className={styles.commentDate}>
-                          {new Date(comment.sentAt).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            day: "2-digit",
-                            month: "short",
-                          })}
-                        </span>
-                      </div>
-                    </div>
-                    <p className={styles.commentContent}>{comment.content}</p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className={styles.noComments}>
-                <FaComments className={styles.commentIcon} />
-                <p>No comments yet. Be the first to comment!</p>
+          <div className={styles.formGroup}>
+            <textarea
+              name="content"
+              value={editForm.content}
+              onChange={handleEditInputChange}
+              placeholder="Content"
+              className={styles.formTextarea}
+              rows="4"
+              required
+            />
+          </div>
+          <div className={styles.formGroup}>
+            <label className={styles.fileInputLabel}>
+              <span>Change Image (optional)</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleEditFileChange}
+                className={styles.fileInput}
+              />
+            </label>
+            {post.image && !editForm.image && (
+              <div className={styles.imagePreviewContainer}>
+                <p>Current Image:</p>
+                <img
+                  src={`data:image/jpeg;base64,${post.image}`}
+                  alt="Current"
+                  className={styles.imagePreview}
+                />
               </div>
             )}
+            {editForm.image && (
+              <div className={styles.imagePreviewContainer}>
+                <p>New Image:</p>
+                <img
+                  src={URL.createObjectURL(editForm.image)}
+                  alt="New"
+                  className={styles.imagePreview}
+                />
+              </div>
+            )}
+          </div>
+          <div className={styles.formActions}>
+            <button
+              type="button"
+              onClick={() => setEditingPostId(null)}
+              className={styles.cancelButton}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={styles.submitButton}
+            >
+              {isSubmitting ? (
+                <FaSpinner className={styles.spinner} />
+              ) : (
+                "Update Post"
+              )}
+            </button>
+          </div>
+        </form>
+      ) : (
+        <>
+          <div className={styles.postHeader}>
+            <FaUserCircle size={24} className={styles.postAvatar} />
+            <div>
+              <h3 className={styles.postTitle}>{post.title}</h3>
+              <div className={styles.postMeta}>
+                <span className={styles.postAuthor}>Professor</span>
+                <span className={styles.postDate}>
+                  {new Date(post.uploadedAt).toLocaleString()}
+                </span>
+              </div>
+            </div>
+          </div>
 
-            <div className={styles.addCommentForm}>
-              <textarea
-                placeholder="Write a comment..."
-                value={commentForms[post.id] || ""}
-                onChange={(e) => handleCommentChange(post.id, e.target.value)}
-                className={styles.commentTextarea}
-                rows="3"
+          <div className={styles.postContent}>
+            <p>{post.content}</p>
+            {post.image && (
+              <img
+                src={`data:image/jpeg;base64,${post.image}`}
+                alt={post.title}
+                className={styles.postImage}
               />
+            )}
+          </div>
+
+          <div className={styles.postActions}>
+            <button
+              onClick={() => toggleComments(post.id)}
+              className={`${styles.commentsToggle} ${
+                expandedComments[post.id] ? styles.expanded : ""
+              }`}
+            >
+              <FaCommentAlt className={styles.buttonIcon} />
+              <span>{comments[post.id]?.length || 0} Comments</span>
+              <FaChevronDown
+                className={`${styles.chevronIcon} ${
+                  expandedComments[post.id] ? styles.rotated : ""
+                }`}
+              />
+            </button>
+
+            {/* Add Edit and Delete buttons */}
+            <div className={styles.postManagementActions}>
               <button
-                onClick={() =>
-                  handleCommentSubmit(post.id, commentForms[post.id] || "")
-                }
-                className={styles.addCommentButton}
-                disabled={submittingComments[post.id]}
+                onClick={() => handleEditPost(post)}
+                className={styles.editButton}
               >
-                {submittingComments[post.id] ? (
-                  <FaSpinner
-                    className={`${styles.spinner} ${styles.buttonIcon}`}
-                  />
-                ) : (
-                  <>
-                    <FaPaperPlane className={styles.buttonIcon} />
-                    Post Comment
-                  </>
-                )}
+                <FaEdit /> Edit
+              </button>
+              <button
+                onClick={() => handleDeletePost(post.id)}
+                className={styles.deleteButton}
+              >
+                <FaTrash /> Delete
               </button>
             </div>
           </div>
-        </div>
+          {expandedComments[post.id] && (
+            <div className={styles.commentsSection}>
+              <div className={styles.commentsContainer}>
+                {comments[post.id]?.length > 0 ? (
+                  <div className={styles.commentsList}>
+                    {comments[post.id].map((comment) => (
+                      <div key={comment.id} className={styles.commentItem}>
+                        <div className={styles.commentHeader}>
+                          <FaUserCircle className={styles.commentAvatar} />
+                          <div>
+                            <strong className={styles.commentAuthor}>
+                              {userCache[comment.commenterId] || "Unknown User"}
+                            </strong>
+                            <span className={styles.commentDate}>
+                              {new Date(comment.sentAt).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                day: "2-digit",
+                                month: "short",
+                              })}
+                            </span>
+                          </div>
+                        </div>
+                        <p className={styles.commentContent}>
+                          {comment.content}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className={styles.noComments}>
+                    <FaComments className={styles.commentIcon} />
+                    <p>No comments yet. Be the first to comment!</p>
+                  </div>
+                )}
+
+                <div className={styles.addCommentForm}>
+                  <textarea
+                    placeholder="Write a comment..."
+                    value={commentForms[post.id] || ""}
+                    onChange={(e) =>
+                      handleCommentChange(post.id, e.target.value)
+                    }
+                    className={styles.commentTextarea}
+                    rows="3"
+                  />
+                  <button
+                    onClick={() =>
+                      handleCommentSubmit(post.id, commentForms[post.id] || "")
+                    }
+                    className={styles.addCommentButton}
+                    disabled={submittingComments[post.id]}
+                  >
+                    {submittingComments[post.id] ? (
+                      <FaSpinner
+                        className={`${styles.spinner} ${styles.buttonIcon}`}
+                      />
+                    ) : (
+                      <>
+                        <FaPaperPlane className={styles.buttonIcon} />
+                        Post Comment
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
@@ -1230,7 +1510,7 @@ const CoursePage = () => {
           {activeTab === "exam" && (
             <ExamMain
               subjectName={subjectName}
-              courseId={course?.id}
+              courseId={id}
               onSuccess={(message) => {
                 showSuccessAlert(message);
                 setActiveTab("allPosts");
@@ -1319,7 +1599,7 @@ const CoursePage = () => {
                           onClick={removeChatFile}
                           className={styles.removePreview}
                         >
-                          &times;
+                          ×
                         </button>
                       </div>
                     )}
@@ -1334,7 +1614,7 @@ const CoursePage = () => {
                           onClick={removeChatFile}
                           className={styles.removePreview}
                         >
-                          &times;
+                          ×
                         </button>
                       </div>
                     )}
@@ -1495,6 +1775,7 @@ const CoursePage = () => {
               )}
             </div>
           )}
+          {activeTab === "Meetings" && <MeetingProfessor />}
           {isAnswersModalOpen && (
             <div
               className={styles.modalOverlay}
@@ -1508,7 +1789,7 @@ const CoursePage = () => {
                   className={styles.closeButton}
                   onClick={() => setIsAnswersModalOpen(false)}
                 >
-                  &times;
+                  ×
                 </button>
 
                 <h2 className={styles.modalTitle}>

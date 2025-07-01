@@ -19,7 +19,7 @@ import News from "./Pages/Student/News/News";
 import NewsCRUD from "./Pages/Admin/NewsCRUD/NewsCRUD";
 import AddPost from "./Pages/Professor/AddPost/AddPost";
 import AddSubjects from "./Pages/Admin/AddSubjects/AddSubjects";
-import Profile from "./Pages/Student/Profile/Profile";
+import StudentProfile from "./Pages/Student/Profile/StudentProfile";
 import AddDepartmentPage from "./Pages/Admin/AddDepartment/AddDepartment";
 import Departments from "./Pages/Admin/Departments/Departments";
 import Channels from "./Pages/Professor/Channels/Channels";
@@ -46,6 +46,7 @@ import Map from "./Pages/Student/Map/Map";
 import TAHomePage from "./Pages/TA/Home/Home";
 import AddPostTA from "./Pages/TA/AddPost/AddPost";
 import CoursePageTA from "./Pages/TA/CoursePage/CoursePage";
+import Room from "./Pages/Student/Room"
 function App() {
   const { isDarkMode, toggleTheme } = useDarkMode();
 
@@ -78,7 +79,7 @@ function App() {
         />
         <Route path="student/communication" element={<Chat />} />
         <Route path="student/GroupChat" element={<CroupChat />} />
-
+        <Route path="/room/:roomName" element={<Room />} />
         <Route path="/student/subject/:id" element={<SubjectPage />} />
         <Route path="/exam/:examId" element={<ExamPage />} />
         <Route path="/exam-review/:id" element={<ExamReview />} />
@@ -105,7 +106,7 @@ function App() {
           element={<ProfessorScheduler />}
         />
         <Route path="/NewsCRUD" element={<NewsCRUD />} />
-        <Route path="/Profile" element={<Profile />} />
+        <Route path="/student/Profile" element={<StudentProfile />} />
 
         <Route path="/Professor" element={<Professor />} />
         <Route path="/Professor/AddPost" element={<AddPost />} />

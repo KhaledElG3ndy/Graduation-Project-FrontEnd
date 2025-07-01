@@ -75,13 +75,14 @@ export default function AddNews() {
     if (!result.isConfirmed) return;
 
     const api_url = "https://localhost:7072/api/News";
-
     const data = new FormData();
-    data.append("staffId", 7);
     data.append("title", title);
     data.append("content", content);
-    data.append("image", image);
-
+    if (image) {
+      data.append("image", image);
+    }
+    
+    console.log("Submitting news:", { title, content, image });
     setLoading(true);
     try {
       const response = await fetch(api_url, {

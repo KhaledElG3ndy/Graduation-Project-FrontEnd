@@ -2,17 +2,24 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import * as signalR from "@microsoft/signalr";
 import { FiFileText, FiDownload, FiPaperclip, FiSend } from "react-icons/fi";
+
+import Header from "../../../components/student/Header/Header";
+import styles from "./SubjectPage.module.css";
+import Swal from "sweetalert2";
 import {
   BookOpen,
   FileText,
   ClipboardList,
   MessageCircle,
   File,
+  Video,
+  Users,
+  Clock,
+  Calendar,
+  Key,
+  User,
 } from "lucide-react";
-import Header from "../../../components/student/Header/Header";
-import styles from "./SubjectPage.module.css";
-import Swal from "sweetalert2";
-
+import MeetingsDashboard from "../../../components/MeetingsDashboard";
 const SubjectPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -48,6 +55,7 @@ const SubjectPage = () => {
     { name: "Exams & Quizzes", icon: <ClipboardList size={18} /> },
     { name: "Grades", icon: <File size={18} /> },
     { name: "Chat", icon: <MessageCircle size={18} /> },
+    { name: "Meetings", icon: <Video size={18} /> },
   ];
 
   useEffect(() => {
@@ -137,7 +145,12 @@ const SubjectPage = () => {
       setExamsLoading(true);
       try {
         const res = await fetch(
-          `https://localhost:7072/Exams/GetCourseExams/${courseId}`
+          `https://localhost:7072/Exams/GetCourseExams/${courseId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("Token")}`,
+            },
+          }
         );
         const data = await res.json();
         setExams(data);
@@ -162,7 +175,12 @@ const SubjectPage = () => {
       if (!studentId) return;
       try {
         const res = await fetch(
-          `https://localhost:7072/Exams/GetStudentExams?studentId=${studentId}`
+          `https://localhost:7072/Exams/GetStudentExams?studentId=${studentId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("Token")}`,
+            },
+          }
         );
         const data = await res.json();
         setExams(data);
@@ -217,7 +235,12 @@ const SubjectPage = () => {
   const fetchGroupMessages = async () => {
     try {
       const res = await fetch(
-        `https://localhost:7072/Chat/GetGroupConversation?courseId=${id}`
+        `https://localhost:7072/Chat/GetGroupConversation?courseId=${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Token")}`,
+          },
+        }
       );
       const data = await res.json();
 
@@ -441,9 +464,16 @@ const SubjectPage = () => {
   useEffect(() => {
     const fetchSubject = async () => {
       try {
-        const res = await fetch("https://localhost:7072/Subjects/GetSubjects");
+        const res = await fetch("https://localhost:7072/Subjects/GetSubjects", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Token")}`,
+          },
+        });
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const data = await res.json();
+        console.log("Fetched subjects:", data);
         const found = data.find((s) => s.id === parseInt(id));
+        console.log(found);
         setSubject(found);
         setLoading(false);
       } catch (err) {
@@ -455,9 +485,19 @@ const SubjectPage = () => {
     const fetchPosts = async () => {
       try {
         const res = await fetch(
-          `https://localhost:7072/api/Post/getAllPosts/${id}`
+          `https://localhost:7072/api/Post/getAllPosts/1?courseId=${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("Token")}`,
+            },
+          }
+        );
+        console.log(
+          "https://localhost:7072/api/Post/getAllPosts/1?courseId=${id}"
         );
         const data = await res.json();
+        console.log("Fetching posts for subject ID:", id);
+        console.log("Fetched posts:", data);
         setPosts(data);
       } catch (err) {
         console.error("Error fetching posts:", err);
@@ -476,7 +516,12 @@ const SubjectPage = () => {
       setExamsLoading(true);
       try {
         const res = await fetch(
-          `https://localhost:7072/Exams/GetCourseExams/${courseId}`
+          `https://localhost:7072/Exams/GetCourseExams/${courseId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("Token")}`,
+            },
+          }
         );
         const data = await res.json();
         setExams(data);
@@ -499,7 +544,6 @@ const SubjectPage = () => {
       case "Posts":
         return (
           <div className={styles.tabContent}>
-            <h3 className={styles.tabTitle}>Recent Posts</h3>
             <div className={styles.postsGrid}>
               {posts.length === 0 ? (
                 <div className={styles.emptyState}>
@@ -670,7 +714,15 @@ const SubjectPage = () => {
                         try {
                           const res = await fetch(
                             `https://localhost:7072/Answer/InitExamAnss?examId=${exam.id}&studentId=${studentId}`,
-                            { method: "POST" }
+                            {
+                              method: "POST",
+
+                              headers: {
+                                Authorization: `Bearer ${localStorage.getItem(
+                                  "Token"
+                                )}`,
+                              },
+                            }
                           );
 
                           if (res.ok) {
@@ -879,6 +931,8 @@ const SubjectPage = () => {
             )}
           </div>
         );
+      case "Meetings":
+        return <MeetingsDashboard />;
       default:
         return (
           <div className={styles.tabContent}>
@@ -937,9 +991,14 @@ const ExamGradeItem = ({ exam, studentId }) => {
     const fetchStudentAnswers = async () => {
       try {
         const res = await fetch(
-          `https://localhost:7072/Exams/GetStudentExam?studentId=${studentId}&examId=${exam.id}`
+          `https://localhost:7072/Exams/GetStudentExam?studentId=${studentId}&examId=${exam.id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("Token")}`,
+            },
+          }
         );
-        const data = await res.json();
+        const data = await res.text();
         const total = data.reduce((sum, ans) => sum + ans.grade, 0);
         setGrade(total);
       } catch (err) {

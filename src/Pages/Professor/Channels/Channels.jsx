@@ -316,7 +316,7 @@ const Channels = () => {
 
                     <div className={styles.cardContent}>
                       <h3 className={styles.courseTitle}>
-                        {getSubjectName(course.subjectId)}
+                        {course.subjectName}
                       </h3>
 
                       <div className={styles.courseDetails}>
@@ -335,7 +335,7 @@ const Channels = () => {
                       </div>
 
                       <Link
-                        to={`/course/${course.id}`}
+                        to={`/course/${course.courseId}`}
                         className={styles.viewButton}
                       >
                         View Course Details

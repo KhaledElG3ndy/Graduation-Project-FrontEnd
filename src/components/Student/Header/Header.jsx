@@ -53,7 +53,7 @@ const Header = () => {
           <a href="#about" className={styles.navLink}>
             About
           </a>
-          <Link to="/profile" className={styles.navLink}>
+          <Link to="/student/Profile" className={styles.navLink}>
             Profile
           </Link>
         </nav>

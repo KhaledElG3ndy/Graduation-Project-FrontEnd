@@ -69,6 +69,9 @@ const ExamMain = ({ subjectName, courseId, onSuccess }) => {
         {
           method: "POST",
           body: formData,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Token")}`,
+          },  
         }
       );
 

@@ -42,7 +42,12 @@ function Departments() {
   const fetchDepartments = async () => {
     try {
       const res = await fetch(
-        "https://localhost:7072/Departments/GetDepartments"
+        "https://localhost:7072/Departments/GetDepartments",
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Token")}`,
+          },
+        }
       );
       const data = await res.json();
       setDepartments(data);
@@ -75,6 +80,9 @@ function Departments() {
           `https://localhost:7072/Departments/DeleteDepartment/${id}`,
           {
             method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("Token")}`,
+            },
           }
         );
 
@@ -127,6 +135,9 @@ function Departments() {
           id: id.toString(),
         },
         body: formData,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("Token")}`,
+        },
       }
     );
 

@@ -49,6 +49,9 @@ function AddDepartmentPage() {
         {
           method: "POST",
           body: formData,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("Token")}`,
+          },
         }
       );
 
@@ -59,7 +62,7 @@ function AddDepartmentPage() {
           text: "Department added successfully!",
           confirmButtonText: "OK",
         });
-        //navigate("/departments");
+        navigate("/Admin/departments");
       } else {
         const errorMessage = await response.text();
         Swal.fire({

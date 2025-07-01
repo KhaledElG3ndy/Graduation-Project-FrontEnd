@@ -5,7 +5,7 @@ import styles from "./Study.module.css";
 import { useNavigate } from "react-router-dom";
 
 const Study = () => {
-  const [courses, setCourses] = useState([]); 
+  const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -68,11 +68,17 @@ const Study = () => {
         }
 
         const coursesRes = await fetch(
-          `https://localhost:7072/Registeration/GetStudentCourses?id=${studentId}`
+          `https://localhost:7072/Registeration/GetStudentCourses?id=${studentId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("Token")}`,
+            },
+          }
         );
         if (!coursesRes.ok)
           throw new Error("Failed to fetch registered courses");
         const registeredCourses = await coursesRes.json();
+        console.log("Registered Courses:", registeredCourses);
 
         const subjectIds = [
           ...new Set(
@@ -83,28 +89,29 @@ const Study = () => {
         ].filter((id) => id);
 
         const subjectsRes = await fetch(
-          `https://localhost:7072/Subjects/GetSubjects`
+          `https://localhost:7072/Subjects/GetSubjects`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("Token")}`,
+            },
+          }
         );
         if (!subjectsRes.ok) throw new Error("Failed to fetch subjects");
         const allSubjects = await subjectsRes.json();
 
         const combinedData = registeredCourses.map((course) => {
-          const subject = allSubjects.find(
-            (s) => s.id === (course.subject?.id || course.subjectId)
-          );
-
           return {
-            courseId: course.id,
-            subjectId: subject?.id,
-            name: subject?.name || "Unnamed Subject",
-            departmentName: subject?.departmentName || "Unknown",
-            hours: subject?.hours || "N/A",
-            imageUrl: subject?.imageUrl || "",
+            courseId: course.courseId,
+            subjectId: course.subjectId ?? null, // subjectId might not exist
+            name: course.subjectName || "Unnamed Subject",
+            departmentName: course.departments?.join(", ") || "Unknown",
+            hours: course.hours || "N/A",
+            imageUrl: course.imageUrl || "",
             year: course.year,
             semester: course.semester,
           };
         });
-
+        
         setCourses(combinedData);
       } catch (err) {
         setError(err.message);
@@ -125,7 +132,7 @@ const Study = () => {
       <Header />
       <div className={styles.content}>
         <div className={styles.titleSection}>
-          <h2 className={styles.title}>Your Courses</h2> 
+          <h2 className={styles.title}>Your Courses</h2>
           <button
             className={styles.registerButton}
             onClick={handleSubjectRegistration}
@@ -159,12 +166,10 @@ const Study = () => {
                     className={styles.subjectImage}
                   />
                 )}
-
                 <div className={styles.header}>
                   <FaBookOpen className={styles.headerIcon} />
                   <span className={styles.subjectTitle}>{course.name}</span>
                 </div>
-
                 <div className={styles.body}>
                   <div className={styles.row}>
                     <strong>Department:</strong> {course.departmentName}
@@ -180,7 +185,7 @@ const Study = () => {
                     <strong>Semester:</strong> {course.semester}
                   </div>
                 </div>
-
+                {console.log(course)}
                 <div className={styles.footer}>
                   <button
                     className={styles.button}

@@ -35,7 +35,6 @@ const PostForm = ({
           name="image"
           onChange={handleFileChange}
           accept="image/*"
-          required
           disabled={isSubmitting}
         />
         <button

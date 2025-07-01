@@ -28,7 +28,7 @@ const Sidebar = ({ children, onLocationSelect }) => {
           Laboratories Building
         </button>
 
-        <Link to="/explore-places" className={styles.exploreLink}>
+        <Link to="/student/explorePlaces" className={styles.exploreLink}>
           Move inside buildings
         </Link>
       </div>

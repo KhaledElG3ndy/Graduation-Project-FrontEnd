@@ -92,9 +92,12 @@ const ExamForm = ({ subjectName, courseId, onNext }) => {
     formData.append("CourseId", courseId);
 
     try {
-      const response = await fetch("https://localhost:7072/Exams/PostExam/0", {
+      const response = await fetch("https://localhost:7072/Exams/PostExam", {
         method: "POST",
         body: formData,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("Token")}`,
+        },
       });
 
       if (!response.ok) {

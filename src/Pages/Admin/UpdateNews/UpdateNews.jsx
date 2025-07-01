@@ -39,8 +39,14 @@ const UpdateNews = () => {
     }
   }, [navigate]);
   const fetchNews = async () => {
+    const token = localStorage.getItem("Token");
+
     try {
-      const response = await fetch("https://localhost:7072/api/News");
+      const response = await fetch("https://localhost:7072/api/News", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       const data = await response.json();
       setNewsList(data);
     } catch (error) {
@@ -52,6 +58,8 @@ const UpdateNews = () => {
   };
 
   const handleDelete = (id) => {
+    const token = localStorage.getItem("Token");
+
     Swal.fire({
       title: "Are you sure?",
       text: "This news item will be permanently deleted.",
@@ -67,8 +75,12 @@ const UpdateNews = () => {
             `https://localhost:7072/api/News/id?Id=${id}`,
             {
               method: "DELETE",
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
             }
           );
+
           if (response.ok) {
             setNewsList(newsList.filter((news) => news.id !== id));
             Swal.fire("Deleted!", "The news item has been deleted.", "success");
@@ -105,7 +117,7 @@ const UpdateNews = () => {
           <div className={styles.newsList}>
             {newsList.map((news) => (
               <div key={news.id} className={styles.newsItem}>
-                <h2 className={styles.newsHeading}>News #{news.id}</h2>
+                <h2 className={styles.newsHeading}>{news.title || "News title"}</h2>
                 <p className={styles.newsContent}>{news.content}</p>
                 {news.image && (
                   <img

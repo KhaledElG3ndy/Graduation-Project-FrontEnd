@@ -173,6 +173,7 @@ const ExamPage = () => {
         {
           method: "PUT",
           headers: {
+            Authorization: `Bearer ${localStorage.getItem("Token")}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify(formattedAnswers),
@@ -182,7 +183,12 @@ const ExamPage = () => {
       if (res.ok) {
         await fetch(
           `https://localhost:7072/Answer/EvaluateExam?examId=${examId}&studentId=${studentId}`,
-          { method: "POST" }
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("Token")}`,
+            },
+          }
         );
 
         navigate(`/student/subject/${examInfo.courseId}`);
@@ -210,7 +216,6 @@ const ExamPage = () => {
 
     return writtenOrSelected + uploadedAssignments;
   };
-  
 
   if (loading) {
     return (
@@ -256,8 +261,7 @@ const ExamPage = () => {
       }
     }
   };
-  
-  
+
   return (
     <div className={styles.examLayout}>
       <div className={styles.container}>
@@ -359,7 +363,7 @@ const ExamPage = () => {
                 </div>
               )}
 
-              {q.type === 2 && examInfo?.type !== 4  ? (
+              {q.type === 2 && examInfo?.type !== 4 ? (
                 <textarea
                   className={styles.writtenAnswer}
                   placeholder="Write your answer here..."

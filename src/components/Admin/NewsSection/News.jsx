@@ -52,7 +52,7 @@ const NewsSection = () => {
               }`}
             >
               <h2 className={`${isDarkMode && styles.darkText}`}>
-                {news.title || "News Title Here"}
+                {news.title || "News Item # " + news.id}
               </h2>
               <p className={`${isDarkMode && styles.darkText}`}>
                 {news.content.length > 50

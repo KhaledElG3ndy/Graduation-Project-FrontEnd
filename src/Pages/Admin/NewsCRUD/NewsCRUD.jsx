@@ -115,27 +115,34 @@ export default function NewsCRUD() {
     e.preventDefault();
     try {
       const updateData = new FormData();
-      updateData.append("Id", formData.id);
+      updateData.append("id", formData.id); // ✅ ID is required
       updateData.append("title", formData.title);
       updateData.append("content", formData.content);
       if (formData.image) {
         updateData.append("image", formData.image);
       }
-      const response = await fetch("http://localhost:5102/api/News", {
+
+      const response = await fetch("https://localhost:7072/api/News", {
         method: "PUT",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("Token")}`,
+          // ⚠️ DO NOT set Content-Type manually with FormData
+        },
         body: updateData,
       });
+
       if (response.ok) {
         closeModal();
         fetchNews();
       } else {
-        console.error("Update failed");
+        const error = await response.text();
+        console.error("Update failed:", error);
       }
     } catch (error) {
       console.error("Error updating news:", error);
     }
   };
-
+  
   return (
     <>
       <Header />
